@@ -182,6 +182,8 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                           _stateToggleVerifyButton
                               ? _buttonGetOtp(loaderState: _stateToggleOnValidateLoader)
                               : SizedBox(),
+                          Spacer(flex: 10),
+                          _onLogin(),
                           SizedBox(height: 30),
                         ],
                       ),
@@ -241,9 +243,31 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     );
   }
 
+  SizedBox _onLogin() {
+    return SizedBox(
+      height: 60,
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () => Get.offAllNamed("/login"),
+        child: Text(
+          "Already have an account?",
+          style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300),
+        ),
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          primary: Colors.white,
+          onPrimary: darkGray,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+          ),
+        ),
+      ),
+    );
+  }
+
   GestureDetector _onReturnIcon() {
     return GestureDetector(
-      onTap: () => Get.back(),
+      onTap: () => Get.offAllNamed("/home"),
       child: Icon(
         LineIcons.arrowLeft,
         size: 24,

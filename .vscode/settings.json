@@ -1,0 +1,31 @@
+{
+    "workbench.iconTheme": "material-icon-theme",
+    "[dart]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true,
+        "editor.rulers": [
+            80
+        ],
+        "editor.selectionHighlight": false,
+        "editor.suggest.snippetsPreventQuickSuggestions": false,
+        "editor.suggestSelection": "first",
+        "editor.tabCompletion": "onlySnippets",
+        "editor.wordBasedSuggestions": false
+    },
+    "editor.fontSize": 14,
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "editor.linkedEditing": true,
+    "emmet.includeLanguages": {
+        "javascript": "javascriptreact"
+    },
+    "editor.minimap.maxColumn": 200,
+    "editor.wordWrapColumn": 180,
+    "explorer.confirmDelete": false,
+    "dart.debugExternalLibraries": true,
+    "dart.debugSdkLibraries": true,
+    "editor.formatOnSave": true,
+    "dart.lineLength": 120,
+    "dart.openDevTools": "flutter",
+    "workbench.colorTheme": "GitHub Dark Default"
+}

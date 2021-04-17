@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -19,52 +20,86 @@ class ScreenApplication extends StatelessWidget {
   const ScreenApplication({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    Future _onExitApp() {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Do you wish to exit?", style: _onExitAppTitleTextStyle),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => SystemNavigator.pop(),
+                      child: Text("Yes", style: _onExitAppConfirmTextStyle),
+                    ),
+                    SizedBox(width: 20),
+                    GestureDetector(
+                      onTap: () => Get.back(),
+                      child: Text("Dismiss", style: _onExitAppDismissTextStyle),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      return null;
+    }
+
     final _screenWidth = MediaQuery.of(context).size.width;
     return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Container(
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Container(
-                  width: _screenWidth * 0.8,
-                  child: Column(
-                    children: [
-                      Spacer(),
-                      Container(
-                        width: double.infinity,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Garreta', style: _titleStyle),
-                            Row(
-                              children: [
-                                SizedBox(width: 5),
-                                Text('Near your area', style: _titleAltStyle),
-                                Icon(LineIcons.mapMarker, color: darkGray, size: 18),
-                              ],
-                            ),
-                          ],
+      child: WillPopScope(
+        onWillPop: () async => _onExitApp(),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: Container(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Container(
+                    width: _screenWidth * 0.8,
+                    child: Column(
+                      children: [
+                        Spacer(),
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Garreta', style: _titleStyle),
+                              Row(
+                                children: [
+                                  SizedBox(width: 5),
+                                  Text('Near your area', style: _titleAltStyle),
+                                  Icon(LineIcons.mapMarker, color: darkGray, size: 18),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Spacer(flex: 2),
-                      // Login button
-                      _onLogin(),
-                      SizedBox(height: 5),
-                      // Register button
-                      _onRegister(),
-                      SizedBox(height: 30),
-                      // Skip button
-                      _onSkip(),
-                      SizedBox(height: 30),
-                    ],
+                        Spacer(flex: 2),
+                        // Login button
+                        _onLogin(),
+                        SizedBox(height: 5),
+                        // Register button
+                        _onRegister(),
+                        SizedBox(height: 30),
+                        // Skip button
+                        _onSkip(),
+                        SizedBox(height: 30),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -116,3 +151,20 @@ class ScreenApplication extends StatelessWidget {
     );
   }
 }
+
+final TextStyle _onExitAppConfirmTextStyle = GoogleFonts.roboto(
+  color: darkGray,
+  fontSize: 14,
+  fontWeight: FontWeight.w300,
+);
+final TextStyle _onExitAppTitleTextStyle = GoogleFonts.roboto(
+  color: darkGray,
+  fontSize: 14,
+  fontWeight: FontWeight.w300,
+);
+
+final TextStyle _onExitAppDismissTextStyle = GoogleFonts.roboto(
+  color: darkGray,
+  fontSize: 14,
+  fontWeight: FontWeight.w500,
+);

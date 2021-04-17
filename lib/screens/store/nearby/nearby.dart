@@ -5,20 +5,17 @@ import 'package:garreta/controllers/global/globalController.dart';
 import 'package:garreta/controllers/services/locationController.dart';
 import 'package:garreta/controllers/store/nearbystore/nearbyStoreController.dart';
 import 'package:garreta/utils/colors/colors.dart';
-import 'package:garreta/utils/defaults/default_alert.dart';
 import 'package:garreta/utils/enum/enum.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
-import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:badges/badges.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:get/get.dart';
 
 class ScreenNearbyStore extends StatefulWidget {
   const ScreenNearbyStore({Key key}) : super(key: key);
-
   @override
   _ScreenNearbyStoreState createState() => _ScreenNearbyStoreState();
 }
@@ -35,29 +32,30 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   List nearbyStoreData = [];
 
   String location = "Getting location..";
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _onFetchNearbyStore();
   }
 
-  void _onSelectStore({@required storeId, @required storeName, @required storeDistance}) {
-    // Show bottom modal
+  void _onSelectStore({@required storeId, @required storeName, @required storeDistance, @required storeAddress}) {
     showModalBottomSheet(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40.0)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(30.0),
+        topRight: Radius.circular(30.0),
+      )),
       barrierColor: Colors.black.withOpacity(0.7),
       backgroundColor: Colors.transparent,
       context: context,
       builder: (context) => ClipRRect(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40.0),
-          topRight: Radius.circular(40.0),
+          topLeft: Radius.circular(30.0),
+          topRight: Radius.circular(30.0),
         ),
         child: Container(
           width: double.infinity,
-          height: 250,
+          height: 220,
           padding: EdgeInsets.all(0),
           child: Column(
             children: [
@@ -90,9 +88,9 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withOpacity(0.7),
                         width: double.infinity,
-                        padding: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(20),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -101,7 +99,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  width: 200,
+                                  width: 180,
                                   child: Text(
                                     "$storeName",
                                     style: _bottomSheetStoreNameTextStyle,
@@ -127,18 +125,26 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                 onPressed: () {
                                   // Assign store id to global state
                                   _globalControllerState.storeId = storeId;
-                                  print(_globalControllerState.storeId);
+                                  _globalControllerState.storeName = storeName;
+                                  _globalControllerState.storeAddress = storeAddress;
+                                  if (_globalControllerState.storeId != null) {
+                                    Get.toNamed("/store-product-screen");
+                                  }
                                 },
                                 child: Row(
                                   children: [
-                                    Icon(LineIcons.store, color: red),
+                                    Icon(LineIcons.store, color: Colors.white, size: 18),
                                     SizedBox(width: 2),
-                                    Text("BROWSE", style: GoogleFonts.roboto(fontWeight: FontWeight.w400)),
+                                    Text("BROWSE",
+                                        style: GoogleFonts.roboto(
+                                          fontWeight: FontWeight.w300,
+                                          fontSize: 18,
+                                        )),
                                   ],
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   primary: Colors.transparent,
-                                  onPrimary: red,
+                                  onPrimary: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(0),
                                   ),
@@ -159,34 +165,54 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     );
   }
 
+  void _onLogout() {
+    _globalControllerState.customerId = null;
+    if (_globalControllerState.customerId == null) {
+      Get.offAllNamed("/login");
+    }
+  }
+
   void _onToggleAlert() {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
+        height: 150,
         width: double.infinity,
         color: Colors.white,
-        height: 70,
+        padding: EdgeInsets.all(20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              color: fadeWhite,
-              height: 70,
-              padding: EdgeInsets.all(10),
-              width: double.infinity,
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(LineIcons.cog, color: darkGray.withOpacity(0.7), size: 22),
+                SizedBox(width: 2),
+                Text(
+                  "Settings",
+                  style: GoogleFonts.roboto(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w300,
+                    color: darkGray.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            GestureDetector(
+              onTap: () => _onLogout(),
               child: Row(
                 children: [
-                  Icon(
-                    LineIcons.cog,
-                    color: darkGray.withOpacity(0.7),
-                    size: 22,
-                  ),
+                  Icon(LineIcons.alternateSignOut, color: darkGray.withOpacity(0.7), size: 22),
                   SizedBox(width: 2),
-                  Text("Settings",
-                      style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w300,
-                        color: darkGray.withOpacity(0.7),
-                      )),
+                  Text(
+                    "Sign out",
+                    style: GoogleFonts.roboto(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w300,
+                      color: darkGray.withOpacity(0.7),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -194,6 +220,10 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         ),
       ),
     );
+  }
+
+  void _onBackToHome() {
+    Get.offAllNamed("/home");
   }
 
   bool _onExitApp() {
@@ -261,7 +291,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     }
   }
 
-  List<Container> _widgetNearbyStoreItem({@required data}) {
+  List<Container> _mapNearbyStore({@required data}) {
     List<Container> items = [];
     for (int i = 0; i < data.length; i++) {
       Container widget = Container(
@@ -271,6 +301,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             storeName: data[i]['mer_name'],
             storeId: data[i]['mer_id'],
             storeDistance: data[i]['distance'],
+            storeAddress: data[i]['mer_address'],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,9 +392,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         ),
       );
       items.add(widget);
-      items.add(widget);
-      items.add(widget);
-      items.add(widget);
     }
     return items;
   }
@@ -392,18 +420,31 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
               ],
             ),
             actions: [
-              Badge(
-                position: BadgePosition.topEnd(top: 10),
-                badgeColor: red,
-                badgeContent: Text('99', style: _storeBadgeShoppingCartTextStyle),
-                child: Icon(LineIcons.shoppingCart, color: darkGray),
-              ),
-              SizedBox(width: 10),
-              GestureDetector(
-                onTap: () => _onToggleAlert(),
-                child: Icon(LineIcons.cog, color: darkGray),
-              ),
-              SizedBox(width: 15),
+              _globalControllerState.customerId != null
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Badge(
+                          badgeColor: red,
+                          badgeContent: Text('99', style: _storeBadgeShoppingCartTextStyle),
+                          child: Icon(LineIcons.shoppingCart, color: darkGray, size: 26),
+                        ),
+                        SizedBox(width: 15),
+                        GestureDetector(
+                          onTap: () => _onToggleAlert(),
+                          child: Icon(LineIcons.cog, color: darkGray),
+                        ),
+                        SizedBox(width: 15),
+                      ],
+                    )
+                  : GestureDetector(
+                      onTap: () => _onBackToHome(),
+                      child: Container(
+                        margin: EdgeInsets.only(right: 15),
+                        child: Icon(LineIcons.times, color: darkGray, size: 26),
+                      ),
+                    ),
             ],
           ),
           body: Container(
@@ -486,7 +527,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                           ? _loader
                           : ListView(
                               physics: BouncingScrollPhysics(),
-                              children: _widgetNearbyStoreItem(data: nearbyStoreData),
+                              children: _mapNearbyStore(data: nearbyStoreData),
                             )),
                 ),
               ],
@@ -497,90 +538,88 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     );
   }
 
-  Center _loader = Center(
+  final Center _loader = Center(
     child: SpinkitThreeBounce(
       color: darkGray.withOpacity(0.1),
       size: 44,
     ),
   );
-
-  TextStyle _bottomSheetStoreDistanceTextStyle = GoogleFonts.roboto(
+  final TextStyle _bottomSheetStoreDistanceTextStyle = GoogleFonts.roboto(
     color: Colors.white.withOpacity(0.6),
     fontWeight: FontWeight.w300,
     fontSize: 12,
   );
-
-  TextStyle _bottomSheetStoreNameTextStyle = GoogleFonts.roboto(
+  final TextStyle _bottomSheetStoreNameTextStyle = GoogleFonts.roboto(
     color: Colors.white,
     fontWeight: FontWeight.w300,
-    fontSize: 14,
+    fontSize: 15,
   );
-  TextStyle _onExitAppTitleTextStyle = GoogleFonts.roboto(
+  final TextStyle _onExitAppTitleTextStyle = GoogleFonts.roboto(
     color: darkGray,
     fontSize: 14,
     fontWeight: FontWeight.w300,
   );
-  TextStyle _onExitAppConfirmTextStyle = GoogleFonts.roboto(
+  final TextStyle _onExitAppConfirmTextStyle = GoogleFonts.roboto(
     color: darkGray,
     fontSize: 14,
     fontWeight: FontWeight.w300,
   );
-  TextStyle _onExitAppDismissTextStyle = GoogleFonts.roboto(
+  final TextStyle _onExitAppDismissTextStyle = GoogleFonts.roboto(
     color: darkGray,
     fontSize: 14,
     fontWeight: FontWeight.w500,
   );
-  TextStyle _storeBadgeChangeLocationTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeBadgeChangeLocationTextStyle = GoogleFonts.roboto(
     fontSize: 10,
     color: Colors.white,
   );
-  TextStyle _storeBadgeShoppingCartTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeBadgeShoppingCartTextStyle = GoogleFonts.roboto(
     fontSize: 8,
     color: Colors.white,
   );
-  TextStyle _storeBadgeRecommendedTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeBadgeRecommendedTextStyle = GoogleFonts.roboto(
     fontSize: 10,
     color: darkGray.withOpacity(0.4),
   );
-  TextStyle _storeBadgeDistanceTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeBadgeDistanceTextStyle = GoogleFonts.roboto(
     fontSize: 10,
     color: darkGray.withOpacity(0.4),
   );
-  TextStyle _storeBadgeRatingsTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeBadgeRatingsTextStyle = GoogleFonts.roboto(
     fontSize: 11,
     color: darkGray.withOpacity(0.4),
   );
-  TextStyle _storeAltLocationTitleTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeAltLocationTitleTextStyle = GoogleFonts.roboto(
     color: darkGray,
     fontWeight: FontWeight.w300,
     fontSize: 12,
   );
-  TextStyle _storeLocationTitleTextStlye = GoogleFonts.roboto(
+  final TextStyle _storeLocationTitleTextStlye = GoogleFonts.roboto(
     color: darkGray,
     fontWeight: FontWeight.w500,
     fontSize: 15,
   );
-  TextStyle _storeRatingTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeRatingTextStyle = GoogleFonts.roboto(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: darkGray,
   );
-  TextStyle _storeNameTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeNameTextStyle = GoogleFonts.roboto(
     fontSize: 14,
     fontWeight: FontWeight.w300,
     color: darkGray,
   );
-  TextStyle _storeBizHrsTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeBizHrsTextStyle = GoogleFonts.roboto(
     fontSize: 12,
     fontWeight: FontWeight.w300,
     color: darkGray,
   );
-  TextStyle _storeAddressTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeAddressTextStyle = GoogleFonts.roboto(
     fontSize: 10,
     fontWeight: FontWeight.w300,
     color: darkGray.withOpacity(0.8),
   );
-  TextStyle _storeDistanceTextStyle = GoogleFonts.roboto(
+  final TextStyle _storeDistanceTextStyle = GoogleFonts.roboto(
     fontSize: 8,
     fontWeight: FontWeight.w500,
     color: Colors.white,
