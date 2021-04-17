@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/utils/defaults/default_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Global alert standard duration
-final Duration alertGrowDuration = Duration(milliseconds: 300);
-final Color alertGrowBackgroundOverlay = Colors.black.withOpacity(0.5);
-
-Alert? toggleLoginErrorAlert({context}) {
+Alert toggleLoginErrorAlert({context}) {
   Alert(
     context: context,
     title: "Mobile number and/or password is incorrect.",
@@ -57,7 +54,7 @@ Alert? toggleLoginErrorAlert({context}) {
   ).show();
 }
 
-Alert? toggleNetworkErrorAlert({context}) {
+Alert toggleNetworkErrorAlert({context}) {
   Alert(
     context: context,
     title: "Network problem",
@@ -108,13 +105,13 @@ Alert? toggleNetworkErrorAlert({context}) {
 
 // Widget styles
 TextStyle _onForgotPasswordTextStyle = GoogleFonts.roboto(
-  fontWeight: FontWeight.w600,
-  fontSize: 18,
+  fontWeight: FontWeight.w300,
+  fontSize: 12,
   color: darkGray,
 );
 
 TextStyle _onForgotDismissTextStyle = GoogleFonts.roboto(
-  fontWeight: FontWeight.w600,
-  fontSize: 18,
+  fontWeight: FontWeight.w300,
+  fontSize: 12,
   color: darkGray,
 );

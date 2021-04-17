@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/screens/account/login/login.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -17,7 +16,7 @@ TextStyle _titleAltStyle = GoogleFonts.roboto(
 );
 
 class ScreenApplication extends StatelessWidget {
-  const ScreenApplication({Key? key}) : super(key: key);
+  const ScreenApplication({Key key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     final _screenWidth = MediaQuery.of(context).size.width;
@@ -95,7 +94,7 @@ class ScreenApplication extends StatelessWidget {
       height: 60,
       width: double.infinity,
       child: OutlinedButton(
-        onPressed: () => print("it's pressed"),
+        onPressed: () => Get.toNamed("/registration"),
         child: Text("I want to create an account", style: TextStyle(color: darkGray)),
         style: ElevatedButton.styleFrom(
           elevation: 0,
@@ -112,7 +111,7 @@ class ScreenApplication extends StatelessWidget {
 
   GestureDetector _onSkip() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () => Get.toNamed("/store-nearby-store"),
       child: Text("Skip", style: TextStyle(color: darkGray)),
     );
   }

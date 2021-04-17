@@ -4,8 +4,7 @@ import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 
-Container textFieldPassword({
-  bool isVisible,
+Container textFieldConfirmPassword({
   @required TextEditingController textFieldController,
   @required FocusNode textFieldFocusNode,
 }) {
@@ -19,10 +18,10 @@ Container textFieldPassword({
       textAlign: TextAlign.left,
       keyboardType: TextInputType.text,
       cursorWidth: 1.0,
-      obscureText: isVisible != true ? true : false,
+      obscureText: true,
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.auto,
-        labelText: 'Password',
+        labelText: 'Confirm password',
         labelStyle: _fieldLabelStyle,
         prefixIcon: _fieldMobileNumberPrefixIconStyle,
         hintStyle: _fieldHintTextStyle,

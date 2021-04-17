@@ -3,7 +3,7 @@ import 'package:garreta/controllers/login/loginController.dart';
 import 'package:get/get.dart';
 
 class ScreenPlayground extends StatefulWidget {
-  ScreenPlayground({Key? key}) : super(key: key);
+  ScreenPlayground({Key key}) : super(key: key);
 
   @override
   _ScreenPlaygroundState createState() => _ScreenPlaygroundState();
@@ -11,6 +11,7 @@ class ScreenPlayground extends StatefulWidget {
 
 class _ScreenPlaygroundState extends State<ScreenPlayground> {
   final _loginControllerState = Get.find<LoginController>();
+  final _loginController = Get.put(LoginController());
 
   @override
   void initState() {

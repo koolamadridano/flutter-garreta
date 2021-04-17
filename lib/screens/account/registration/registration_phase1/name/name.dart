@@ -4,8 +4,7 @@ import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 
-Container textFieldPassword({
-  bool isVisible,
+Container textFieldName({
   @required TextEditingController textFieldController,
   @required FocusNode textFieldFocusNode,
 }) {
@@ -19,12 +18,12 @@ Container textFieldPassword({
       textAlign: TextAlign.left,
       keyboardType: TextInputType.text,
       cursorWidth: 1.0,
-      obscureText: isVisible != true ? true : false,
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.auto,
-        labelText: 'Password',
+        labelText: 'Name',
         labelStyle: _fieldLabelStyle,
         prefixIcon: _fieldMobileNumberPrefixIconStyle,
+        prefixStyle: _fieldPrefixTextStyle,
         hintStyle: _fieldHintTextStyle,
         enabledBorder: _fieldEnabledBorderStyle,
         focusedBorder: _fieldFocusedBorderStyle,
@@ -54,6 +53,11 @@ TextStyle _fieldTextStyle = GoogleFonts.roboto(
   color: darkGray,
   fontSize: 16.0,
 );
+TextStyle _fieldPrefixTextStyle = GoogleFonts.roboto(
+  fontWeight: FontWeight.w300,
+  color: darkGray,
+  fontSize: 16.0,
+);
 TextStyle _fieldHintTextStyle = GoogleFonts.roboto(
   fontWeight: FontWeight.w300,
   color: darkGray,
@@ -65,7 +69,7 @@ TextStyle _fieldLabelStyle = GoogleFonts.roboto(
   fontSize: 15.0,
 );
 Icon _fieldMobileNumberPrefixIconStyle = Icon(
-  LineIcons.lock,
+  LineIcons.user,
   color: darkGray,
   size: 22,
 );

@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +11,7 @@ class LoginController extends GetxController {
   var userId;
 
   // Define error types
-  bool? loginSuccess;
+  bool loginSuccess = false;
   bool connectionError = false;
   bool unauthorizedError = false;
 
@@ -28,11 +28,11 @@ class LoginController extends GetxController {
         //@description reset other error types
         unauthorizedError = false;
         connectionError = false;
-        return;
+        return result.body;
       } else {
         unauthorizedError = true;
 
-        //@description  reset other error types
+        //@description reset other error types
         loginSuccess = false;
         connectionError = false;
         return;
@@ -40,7 +40,7 @@ class LoginController extends GetxController {
     } catch (e) {
       connectionError = true;
 
-      //@description  reset other error types
+      //@description reset other error types
       loginSuccess = false;
       unauthorizedError = false;
       return;
