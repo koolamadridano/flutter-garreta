@@ -7,6 +7,7 @@ import 'package:garreta/screens/account/registration/registration_phase3/registr
 import 'package:garreta/screens/app.dart';
 import 'package:garreta/screens/store/nearby/nearby.dart';
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
+import 'package:garreta/screens/store/store.dart';
 import 'package:get/get.dart';
 
 void main() {
@@ -22,7 +23,10 @@ void main() {
         GetPage(name: "/registration", page: () => ScreenRegistrationPhase1()),
         GetPage(name: "/registration-phase-2", page: () => ScreenRegistrationPhase2()),
         GetPage(name: "/registration-phase-3", page: () => ScreenRegistrationPhase3()),
+
         // # STORE ROUTES
+        GetPage(name: "/store", page: () => ScreenStore()),
+
         GetPage(name: "/store-nearby-store", page: () => ScreenNearbyStore()),
         GetPage(name: "/store-product-screen", page: () => ScreenProductScreen()),
         // # OTP ROUTES

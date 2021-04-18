@@ -8,3 +8,10 @@ enum Location {
   featureNameAndSubLocality,
   featureNameAndLocality,
 }
+
+enum Qty { add, minus }
+
+enum ProductScreenType {
+  grid,
+  list,
+}

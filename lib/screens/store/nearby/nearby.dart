@@ -123,12 +123,18 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                               height: 40,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // Assign store id to global state
-                                  _globalControllerState.storeId = storeId;
-                                  _globalControllerState.storeName = storeName;
-                                  _globalControllerState.storeAddress = storeAddress;
-                                  if (_globalControllerState.storeId != null) {
-                                    Get.toNamed("/store-product-screen");
+                                  if (storeId != null && storeName != null && storeAddress != null) {
+                                    // Assign store id to global state
+                                    _globalControllerState.storeId = storeId;
+                                    _globalControllerState.storeName = storeName;
+                                    _globalControllerState.storeAddress = storeAddress;
+
+                                    print("--- nearby.dart @onSelectStore before ROUTE '/store' ---");
+                                    print("storeId : ${_globalControllerState.storeId}");
+                                    print("storeName : ${_globalControllerState.storeName}");
+                                    print("storeAddress : ${_globalControllerState.storeAddress}");
+                                    Get.back(closeOverlays: true);
+                                    Get.toNamed("/store");
                                   }
                                 },
                                 child: Row(
@@ -270,20 +276,20 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         longitude: currentPosition.longitude,
         type: Location.featureNameAndLocality,
       );
-      setState(() {
-        location = currentLocation;
-      });
-      var nearbyStore = await _nearbyStoreController.getNearbyStore(
-        latitude: currentPosition.latitude.toString(),
-        longitude: currentPosition.longitude.toString(),
-      );
-      var _nearbyStore = jsonDecode(nearbyStore);
-      _nearbyStore.sort((x, y) => double.parse(x["distance"]).compareTo(double.parse(y["distance"])));
+      if (currentLocation != null) {
+        setState(() => location = currentLocation);
+        var nearbyStore = await _nearbyStoreController.getNearbyStore(
+          latitude: currentPosition.latitude.toString(),
+          longitude: currentPosition.longitude.toString(),
+        );
+        var _nearbyStore = jsonDecode(nearbyStore);
+        _nearbyStore.sort((x, y) => double.parse(x["distance"]).compareTo(double.parse(y["distance"])));
 
-      setState(() {
-        nearbyStoreData = _nearbyStore;
-        _stateFetchingNearbyStore = false;
-      });
+        setState(() {
+          nearbyStoreData = _nearbyStore;
+          _stateFetchingNearbyStore = false;
+        });
+      }
     } catch (e) {
       print(e);
       print("Turn on GPS to see nearby store");
@@ -297,12 +303,20 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       Container widget = Container(
         margin: EdgeInsets.only(top: 20),
         child: GestureDetector(
-          onTap: () => _onSelectStore(
-            storeName: data[i]['mer_name'],
-            storeId: data[i]['mer_id'],
-            storeDistance: data[i]['distance'],
-            storeAddress: data[i]['mer_address'],
-          ),
+          onTap: () {
+            print("--- nearby.dart @onSelectStore inside for loop ---");
+            print("storeId : ${data[i]['mer_id']}");
+            print("storeName : ${data[i]['mer_name']}");
+            print("storeAddress : ${data[i]['mer_address']}");
+            print("storeDistance : ${data[i]['distance']}");
+
+            _onSelectStore(
+              storeName: data[i]['mer_name'],
+              storeId: data[i]['mer_id'],
+              storeDistance: data[i]['distance'],
+              storeAddress: data[i]['mer_address'],
+            );
+          },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

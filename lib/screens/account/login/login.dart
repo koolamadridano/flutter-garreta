@@ -39,7 +39,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _mobileNumberFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
@@ -59,11 +58,14 @@ class _ScreenLoginState extends State<ScreenLogin> {
           username: mobileNumber,
           password: password,
         );
+        print("@login $response");
         if (_loginControllerState.loginSuccess) {
           var decodedResponse = jsonDecode(response);
           _globalController.customerId = decodedResponse[0]['personalDetails']['cust_id'];
-          setState(() => _stateSpinner = false);
-          Get.offAllNamed("/store-nearby-store");
+          if (_globalController.customerId != null) {
+            setState(() => _stateSpinner = false);
+            Get.offAllNamed("/store-nearby-store");
+          }
         }
         if (_loginControllerState.unauthorizedError) {
           setState(() => _stateSpinner = false);
@@ -153,7 +155,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
                             value: _statePasswordVisibility,
                           ),
                           Spacer(flex: 8),
-                          _onLogin(action: () => _dispatchLogin(), toggleSpinner: _stateSpinner),
+                          _onLogin(
+                            action: () => _dispatchLogin(),
+                            toggleSpinner: _stateSpinner,
+                          ),
                           SizedBox(height: 10),
                           _onCreateAccount(),
                           SizedBox(height: 30),
@@ -242,10 +247,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     fontWeight: FontWeight.w300,
     color: Colors.blue[600],
   );
-  TextStyle _buttonSignInTextStyle = GoogleFonts.roboto(
-    fontSize: 16,
-    fontWeight: FontWeight.w300,
-  );
+
   TextStyle _titleStyle = GoogleFonts.roboto(
     fontSize: 32,
     fontWeight: FontWeight.w700,

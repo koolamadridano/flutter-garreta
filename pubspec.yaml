@@ -38,7 +38,8 @@ dev_dependencies:
 
   line_icons: ^2.0.0
   ionicons: ^0.1.2
-
+  animate_icons: ^2.0.0
+  
   # Flutter date time picker
   flutter_datetime_picker: ^1.5.0
   jiffy: ^4.1.0
