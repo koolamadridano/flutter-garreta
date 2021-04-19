@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/global/globalController.dart';
-import 'package:garreta/controllers/store/shoppingcart/cartController.dart';
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/search/search.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
@@ -24,6 +21,9 @@ class _ScreenStoreState extends State<ScreenStore> {
   PageController _pageController = PageController();
   final _globalController = Get.put(GlobalController());
 
+  // State
+  int _pageCounter = 0;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -35,16 +35,15 @@ class _ScreenStoreState extends State<ScreenStore> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_globalController.onWillJumpToCart.value) {
         _pageController.jumpToPage(2);
+        setState(() {
+          _pageCounter = 2;
+        });
       } else {
         _pageController.jumpToPage(0);
       }
     });
     super.didChangeDependencies();
   }
-
-  // State
-  bool isPlaying = false;
-  int _pageCounter = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -78,8 +77,13 @@ class _ScreenStoreState extends State<ScreenStore> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    setState(() => _pageCounter = 0);
-                    _pageController.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    if (_globalController.storeId == null) {
+                      Get.toNamed('/store-nearby-store');
+                      return;
+                    } else {
+                      setState(() => _pageCounter = 0);
+                      _pageController.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    }
                   },
                   child: Icon(
                     LineIcons.store,
