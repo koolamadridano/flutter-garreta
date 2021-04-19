@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/global/globalController.dart';
 import 'package:garreta/controllers/store/shoppingcart/cartController.dart';
@@ -19,31 +21,30 @@ class ScreenStore extends StatefulWidget {
 }
 
 class _ScreenStoreState extends State<ScreenStore> {
+  PageController _pageController = PageController();
   final _globalController = Get.put(GlobalController());
-  final _shoppingCartController = Get.put(ShoppingCartController());
-  final _pageController = PageController(initialPage: 0);
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_globalController.onWillJumpToCart.value) {
+        _pageController.jumpToPage(2);
+      } else {
+        _pageController.jumpToPage(0);
+      }
+    });
+    super.didChangeDependencies();
+  }
 
   // State
   bool isPlaying = false;
   int _pageCounter = 0;
-  @override
-  void initState() {
-    super.initState();
-    _fetchCartItems();
-
-    print("--- store.dart @initState() ---");
-    print("storeId : ${_globalController.storeId}");
-    print("storeName : ${_globalController.storeName}");
-    print("storeAddress : ${_globalController.storeAddress}");
-  }
-
-  Future _fetchCartItems() async {
-    var response = await _shoppingCartController.getShoppingCartItems(
-      customerId: _globalController.customerId,
-    );
-    // print(response);
-    // print(_globalController.customerId);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,20 +96,36 @@ class _ScreenStoreState extends State<ScreenStore> {
                     color: _pageCounter == 1 ? darkGray : darkGray.withOpacity(0.4),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() => _pageCounter = 2);
-                    _pageController.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
-                  },
-                  child: Badge(
-                    badgeColor: red,
-                    badgeContent: Text('2', style: _storeBadgeShoppingCartTextStyle),
-                    child: Icon(
-                      LineIcons.shoppingCart,
-                      color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
-                      size: 28,
-                    ),
-                  ),
+                Obx(
+                  () => _globalController.shoppingCartLength.value == 0
+                      ? GestureDetector(
+                          onTap: () => _globalController.customerId == null ? Get.toNamed("/login") : null,
+                          child: Icon(
+                            LineIcons.shoppingCart,
+                            color: _pageCounter == 1 ? darkGray : darkGray.withOpacity(0.4),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: () {
+                            if (_globalController.customerId == null) Get.toNamed("/login");
+                            setState(() => _pageCounter = 2);
+                            _pageController.animateToPage(2,
+                                duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                          },
+                          child: Badge(
+                            badgeColor: red,
+                            animationDuration: Duration(milliseconds: 500),
+                            badgeContent: Text(
+                              '${_globalController.shoppingCartLength.value}',
+                              style: _storeBadgeShoppingCartTextStyle,
+                            ),
+                            child: Icon(
+                              LineIcons.shoppingCart,
+                              color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
+                              size: 28,
+                            ),
+                          ),
+                        ),
                 ),
                 GestureDetector(
                   onTap: () {

@@ -9,5 +9,13 @@ class GlobalController extends GetxController {
   var storeName;
   var storeAddress;
 
+  RxBool onWillJumpToCart = false.obs;
+
+  RxInt shoppingCartLength = 0.obs;
+  setShoppingCartLength(value) {
+    shoppingCartLength.value = value;
+    shoppingCartLength.refresh();
+  }
+
   List<dynamic> locationCoordinates = [];
 }

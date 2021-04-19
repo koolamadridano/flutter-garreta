@@ -44,7 +44,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     _passwordFocusNode = FocusNode();
   }
 
-  void _dispatchLogin() async {
+  void _onLogin() async {
     final mobileNumber = "0" + _mobileNumberController.text.replaceAll(RegExp('[^0-9]'), '');
     final password = _passwordController.text;
 
@@ -58,13 +58,12 @@ class _ScreenLoginState extends State<ScreenLogin> {
           username: mobileNumber,
           password: password,
         );
-        print("@login $response");
         if (_loginControllerState.loginSuccess) {
           var decodedResponse = jsonDecode(response);
           _globalController.customerId = decodedResponse[0]['personalDetails']['cust_id'];
           if (_globalController.customerId != null) {
             setState(() => _stateSpinner = false);
-            Get.offAllNamed("/store-nearby-store");
+            Get.toNamed("/store-nearby-store");
           }
         }
         if (_loginControllerState.unauthorizedError) {
@@ -155,8 +154,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
                             value: _statePasswordVisibility,
                           ),
                           Spacer(flex: 8),
-                          _onLogin(
-                            action: () => _dispatchLogin(),
+                          _onLoginButton(
+                            action: () => _onLogin(),
                             toggleSpinner: _stateSpinner,
                           ),
                           SizedBox(height: 10),
@@ -175,7 +174,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     );
   }
 
-  SizedBox _onLogin({@required action, @required toggleSpinner}) {
+  SizedBox _onLoginButton({@required action, @required toggleSpinner}) {
     return SizedBox(
       height: 60,
       width: double.infinity,

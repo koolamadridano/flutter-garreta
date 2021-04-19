@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/global/globalController.dart';
+import 'package:garreta/controllers/store/shoppingcart/cartController.dart';
 import 'package:garreta/controllers/store/storecategory/categoryController.dart';
 import 'package:garreta/controllers/store/storeitems/storeitemsController.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:garreta/utils/enum/enum.dart';
+import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,30 +17,31 @@ class ScreenProductScreen extends StatefulWidget {
   _ScreenProductScreenState createState() => _ScreenProductScreenState();
 }
 
-class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTickerProviderStateMixin {
+class _ScreenProductScreenState extends State<ScreenProductScreen> {
   // Global state
   final _globalController = Get.put(GlobalController());
   final _storeCategoryController = Get.put(StoreCategoryController());
   final _storeItemsController = Get.put(StoreItemsController());
-
-  // Class
-  AnimationController _animationController;
-  bool isPlaying = false;
+  final _storeShoppingcartController = Get.put(ShoppingCartController());
+  final _shoppingCartController = Get.put(ShoppingCartController());
 
   // State
   int _itemCount = 1;
   bool _isGridLayout = true;
   List _storeItems = [];
+  bool _storeItemsIsFetching = false;
 
+  bool _addToCartLoader = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _fetchStoreItems();
-    _animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 450));
+    _onFetchCartItems();
   }
 
   Future _fetchStoreItems() async {
+    setState(() => _storeItemsIsFetching = true);
     var category = await _storeCategoryController.getStoreCategory(merchantId: _globalController.storeId);
     var decodedCategory = category == "0" ? null : jsonDecode(category);
     if (decodedCategory.runtimeType != int) {
@@ -53,9 +56,11 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
           var _valueB = double.parse(y["prod_sellingPrice"]);
           return _valueA.compareTo(_valueB);
         });
-        if (mounted) {
+
+        if (mounted && decodedStoreItems != null) {
           setState(() {
             _storeItems = decodedStoreItems;
+            _storeItemsIsFetching = false;
           });
         }
       }
@@ -65,22 +70,50 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
   void _onChangeStoreItemsLayout() {
     setState(() {
       _isGridLayout = !_isGridLayout;
-      isPlaying = !isPlaying;
-      isPlaying ? _animationController.forward() : _animationController.reverse();
     });
   }
 
   void _onAdjustQty({@required Qty type}) {
-    if (type == Qty.add) {
+    if (type == Qty.add && _itemCount <= 250) {
       setState(() => _itemCount += 1);
       print(_itemCount);
-    } else if (type == Qty.minus) {
+    }
+    if (type == Qty.minus && _itemCount != 1) {
       setState(() => _itemCount -= 1);
       print(_itemCount);
     }
   }
 
-  void _onSelectItem({@required productPrice, @required productName}) async {
+  Future _onFetchCartItems() async {
+    var response = await _shoppingCartController.getShoppingCartItems(
+      customerId: _globalController.customerId,
+    );
+    if (response != null) {
+      var decodedResponse = jsonDecode(response);
+      if (decodedResponse != 0) {
+        _globalController.setShoppingCartLength(decodedResponse.length);
+      }
+    }
+  }
+
+  Future _onAddToCart({@required itemId}) async {
+    if (_globalController.customerId == null) {
+      Get.offAllNamed("/login");
+    }
+    if (_globalController.customerId != null) {
+      setState(() => _addToCartLoader = true);
+      await _storeShoppingcartController.addToCart(
+        merchantId: _globalController.storeId,
+        itemId: itemId,
+        qty: _itemCount,
+        myid: _globalController.customerId,
+      );
+      _onFetchCartItems();
+      setState(() => _addToCartLoader = false);
+    }
+  }
+
+  void _onSelectItem({@required productPrice, @required productName, @required productId}) async {
     await showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -102,7 +135,10 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
                 children: [
                   Container(
                     height: 150,
-                    child: Image.network("https://bit.ly/3cN0Fl4"),
+                    child: FadeInImage.assetNetwork(
+                      placeholder: "images/alt/nearby_store_alt_250x250.png",
+                      image: "https://bit.ly/3cN0Fl4",
+                    ),
                   ),
                   SizedBox(width: 10),
                   Expanded(
@@ -165,7 +201,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
                           ],
                         ),
                         SizedBox(height: 10),
-                        _onAddToCart(),
+                        _buttonAddToCart(itemId: productId),
                       ],
                     ),
                   ),
@@ -227,25 +263,31 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
             ),
           ),
           actions: [
-            IconButton(
-              splashColor: darkGray,
-              icon: AnimatedIcon(
-                icon: AnimatedIcons.list_view,
-                progress: _animationController,
-                color: darkGray,
+            GestureDetector(
+              onTap: () => _onChangeStoreItemsLayout(),
+              child: Container(
+                margin: EdgeInsets.only(right: 15),
+                child: Icon(
+                  _isGridLayout ? LineIcons.thList : LineIcons.thLarge,
+                  color: darkGray,
+                ),
               ),
-              onPressed: () => _onChangeStoreItemsLayout(),
-            )
+            ),
           ],
         ),
-        body: GridView.count(
-          physics: BouncingScrollPhysics(),
-          crossAxisCount: _isGridLayout ? 2 : 1,
-          crossAxisSpacing: 5,
-          mainAxisSpacing: 5,
-          childAspectRatio: 0.8,
-          children: _mapStoreItems(data: _storeItems),
-        ),
+        body: _storeItemsIsFetching
+            ? SpinkitThreeBounce(
+                color: Colors.white,
+                size: 24,
+              )
+            : GridView.count(
+                physics: BouncingScrollPhysics(),
+                crossAxisCount: _isGridLayout ? 2 : 1,
+                crossAxisSpacing: 5,
+                mainAxisSpacing: 5,
+                childAspectRatio: 0.8,
+                children: _mapStoreItems(data: _storeItems),
+              ),
       ),
     );
   }
@@ -262,12 +304,14 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
           onTap: () => _onSelectItem(
             productName: data[i]['prod_name'],
             productPrice: data[i]['prod_sellingPrice'],
+            productId: data[i]['prod_id'],
           ),
           child: Stack(
             children: [
               Positioned.fill(
-                child: Image.network(
-                  "https://bit.ly/3cN0Fl4",
+                child: FadeInImage.assetNetwork(
+                  placeholder: "images/alt/nearby_store_alt_250x250.png",
+                  image: "https://bit.ly/3cN0Fl4",
                   fit: BoxFit.cover,
                 ),
               ),
@@ -328,21 +372,28 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
     return items;
   }
 
-  SizedBox _onAddToCart() {
+  SizedBox _buttonAddToCart({@required itemId}) {
     return SizedBox(
       height: 35,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
+          await _onAddToCart(itemId: itemId);
           Get.back(closeOverlays: true);
-          print(_globalController.customerId);
         },
-        child: Text("ADD TO CART",
-            style: GoogleFonts.roboto(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-            )),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("ADD TO CART",
+                style: GoogleFonts.roboto(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                )),
+            SizedBox(width: 2),
+            _addToCartLoader ? SpinkitCircle() : SizedBox(),
+          ],
+        ),
         style: ElevatedButton.styleFrom(
           primary: red,
           onPrimary: Colors.white,
@@ -356,7 +407,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with SingleTi
 
   @override
   void dispose() {
-    _animationController.dispose();
     super.dispose();
   }
 }

@@ -22,16 +22,16 @@ class ScreenNearbyStore extends StatefulWidget {
 
 class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   // Global state
-  final _globalControllerState = Get.put(GlobalController());
+  final _globalController = Get.put(GlobalController());
   final _nearbyStoreController = Get.put(NearbyStoreController());
   final _locationController = Get.put(LocationController());
 
   // State
+  List nearbyStoreData = [];
+  String location = "Getting location..";
+
   bool _stateFetchingNearbyStore = false;
 
-  List nearbyStoreData = [];
-
-  String location = "Getting location..";
   @override
   void initState() {
     super.initState();
@@ -125,14 +125,10 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                 onPressed: () {
                                   if (storeId != null && storeName != null && storeAddress != null) {
                                     // Assign store id to global state
-                                    _globalControllerState.storeId = storeId;
-                                    _globalControllerState.storeName = storeName;
-                                    _globalControllerState.storeAddress = storeAddress;
-
-                                    print("--- nearby.dart @onSelectStore before ROUTE '/store' ---");
-                                    print("storeId : ${_globalControllerState.storeId}");
-                                    print("storeName : ${_globalControllerState.storeName}");
-                                    print("storeAddress : ${_globalControllerState.storeAddress}");
+                                    _globalController.storeId = storeId;
+                                    _globalController.storeName = storeName;
+                                    _globalController.storeAddress = storeAddress;
+                                    _globalController.onWillJumpToCart.value = false;
                                     Get.back(closeOverlays: true);
                                     Get.toNamed("/store");
                                   }
@@ -172,8 +168,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   }
 
   void _onLogout() {
-    _globalControllerState.customerId = null;
-    if (_globalControllerState.customerId == null) {
+    _globalController.customerId = null;
+    if (_globalController.customerId == null) {
       Get.offAllNamed("/login");
     }
   }
@@ -233,7 +229,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   }
 
   bool _onExitApp() {
-    if (_globalControllerState.customerId == null) {
+    if (_globalController.customerId == null) {
       return true;
     } else {
       showModalBottomSheet(
@@ -323,8 +319,10 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             children: [
               FadeInImage.assetNetwork(
                 placeholder: "images/alt/nearby_store_alt_250x250.png",
-                image: "https://bit.ly/2RGBc4I",
+                image: "https://bit.ly/3tA2hoo",
                 height: 100,
+                width: 100,
+                fit: BoxFit.cover,
               ),
               SizedBox(width: 10),
               Expanded(
@@ -412,6 +410,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
 
   @override
   Widget build(BuildContext context) {
+    final _globalController = Get.put(GlobalController());
+
     // Global state
     return SafeArea(
       child: WillPopScope(
@@ -434,15 +434,46 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
               ],
             ),
             actions: [
-              _globalControllerState.customerId != null
+              _globalController.customerId != null
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Badge(
-                          badgeColor: red,
-                          badgeContent: Text('99', style: _storeBadgeShoppingCartTextStyle),
-                          child: Icon(LineIcons.shoppingCart, color: darkGray, size: 26),
+                        Obx(
+                          () => _globalController.shoppingCartLength.value == 0
+                              ? GestureDetector(
+                                  onTap: () {
+                                    if (_globalController.customerId == null) {
+                                      Get.toNamed("/login");
+                                      return;
+                                    } else {
+                                      _globalController.onWillJumpToCart.value = true;
+                                      Get.toNamed("/store");
+                                    }
+                                  },
+                                  child: Icon(LineIcons.shoppingCart, color: darkGray),
+                                )
+                              : GestureDetector(
+                                  onTap: () {
+                                    if (_globalController.customerId == null) {
+                                      Get.toNamed("/login");
+                                      return;
+                                    } else {
+                                      _globalController.onWillJumpToCart.value = true;
+                                      Get.toNamed("/store");
+                                    }
+                                  },
+                                  child: Badge(
+                                    padding: EdgeInsets.all(5.0),
+                                    badgeColor: red,
+                                    animationDuration: Duration(milliseconds: 500),
+                                    badgeContent: Text(
+                                      '${_globalController.shoppingCartLength.value}',
+                                      style: _storeBadgeShoppingCartTextStyle,
+                                    ),
+                                    child: Icon(LineIcons.shoppingCart, color: darkGray),
+                                  ),
+                                ),
                         ),
                         SizedBox(width: 15),
                         GestureDetector(
@@ -513,19 +544,18 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                           ),
                         ],
                       ),
-                      GestureDetector(
+                      InkWell(
                         onTap: () => _onToggleAlert(),
                         child: Container(
                           padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                              color: green,
                               borderRadius: BorderRadius.all(
-                                Radius.circular(50),
-                              )),
+                            Radius.circular(50),
+                          )),
                           child: Row(
                             children: [
                               Text("Change", style: _storeBadgeChangeLocationTextStyle),
-                              Icon(LineIcons.mapMarker, color: Colors.white, size: 10),
+                              Icon(LineIcons.mapMarker, color: darkGray, size: 12),
                             ],
                           ),
                         ),
@@ -585,7 +615,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   );
   final TextStyle _storeBadgeChangeLocationTextStyle = GoogleFonts.roboto(
     fontSize: 10,
-    color: Colors.white,
+    fontWeight: FontWeight.w600,
+    color: darkGray,
   );
   final TextStyle _storeBadgeShoppingCartTextStyle = GoogleFonts.roboto(
     fontSize: 8,
@@ -620,7 +651,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   );
   final TextStyle _storeNameTextStyle = GoogleFonts.roboto(
     fontSize: 14,
-    fontWeight: FontWeight.w300,
+    fontWeight: FontWeight.w400,
     color: darkGray,
   );
   final TextStyle _storeBizHrsTextStyle = GoogleFonts.roboto(
