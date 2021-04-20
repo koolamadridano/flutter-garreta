@@ -13,7 +13,7 @@ class ScreenOtpVerification extends StatefulWidget {
 }
 
 class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
-  final _otpController = Get.find<OtpController>();
+  final _otpController = Get.put(OtpController());
 
   TextEditingController _pinPutController = TextEditingController();
   FocusNode _pinPutFocusNode;
@@ -35,9 +35,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
     if (int.parse(typedPin) == int.parse(_otpController.generatedPin)) {
       if (_pinPutFocusNode.hasFocus) {
         _pinPutFocusNode.unfocus();
-        setState(() {
-          _validated = true;
-        });
+        setState(() => _validated = true);
         Get.toNamed('/registration-phase-2');
       }
       print("PINCODE MATCHED!");

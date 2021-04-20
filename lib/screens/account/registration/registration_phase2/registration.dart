@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/registration/registrationController.dart';
+import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/birthday/birthday.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/gender/gender.dart';
-import 'package:garreta/utils/colors/colors.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
-import 'package:line_icons/line_icons.dart';
+import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
 
 class ScreenRegistrationPhase2 extends StatefulWidget {
@@ -16,14 +16,14 @@ class ScreenRegistrationPhase2 extends StatefulWidget {
 }
 
 class _ScreenRegistrationPhase2State extends State<ScreenRegistrationPhase2> {
-  final _registrationController = Get.find<RegistrationController>();
-
+  // Global state
+  final _garretaApiService = Get.put(GarretaApiServiceController());
   // State
   bool _stateHasScreenFocus = false;
 
   _onProceed() {
-    final gender = _registrationController.customerGender;
-    final birthday = _registrationController.customerBirthday;
+    final gender = _garretaApiService.customerGender;
+    final birthday = _garretaApiService.customerBirthday;
     if (!(gender == null) && !(birthday == null)) {
       Get.toNamed("/registration-phase-3");
     }

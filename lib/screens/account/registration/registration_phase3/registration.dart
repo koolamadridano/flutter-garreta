@@ -1,15 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/global/globalController.dart';
-import 'package:garreta/controllers/registration/registrationController.dart';
 import 'package:garreta/screens/account/registration/registration_phase3/confirmPassword/confirmPassword.dart';
-import 'package:garreta/screens/account/registration/registration_phase3/email/email.dart';
+import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/screens/account/registration/registration_phase3/password/password.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/screens/account/registration/registration_phase3/email/email.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
-import 'package:line_icons/line_icons.dart';
+import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
 
 class ScreenRegistrationPhase3 extends StatefulWidget {
@@ -21,9 +19,7 @@ class ScreenRegistrationPhase3 extends StatefulWidget {
 
 class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
   // Global state
-  final _registrationController = Get.put(RegistrationController());
-  final _registrationControllerState = Get.find<RegistrationController>();
-  final _globalController = Get.put(GlobalController());
+  final _garretaApiService = Get.put(GarretaApiServiceController());
 
   // TextController
   final _emailController = TextEditingController();
@@ -36,8 +32,10 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
   FocusNode _confirmPasswordFocusNode;
 
   // State
-  bool _stateToggleOnCreateAccountLoader = false;
   bool _statePasswordVisibility = false;
+
+  bool _isLoading = false;
+  bool _isLoginRequestOnGoing = false;
 
   @override
   void initState() {
@@ -47,44 +45,58 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     _confirmPasswordFocusNode = FocusNode();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _emailFocusNode.dispose();
-    _passwordFocusNode.dispose();
-    _confirmPasswordFocusNode.dispose();
-  }
-
   // State
   bool _stateHasScreenFocus = false;
-  _onCreateAccount() async {
-    _registrationController.customerEmail = _emailController.text;
-    _registrationController.customerPassword = _passwordController.text;
-
+  Future _onCreateAccount() async {
     final email = _emailController.text;
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
+    _garretaApiService.customerEmail = email;
+    _garretaApiService.customerPassword = password;
+
     if (email.isNotEmpty && password.isNotEmpty && confirmPassword.isNotEmpty) {
       if (password == confirmPassword) {
         try {
-          setState(() => _stateToggleOnCreateAccountLoader = true);
-          var response = await _registrationController.onCreateAccount(
-            customerName: _registrationControllerState.customerName,
-            customerMobileNumber: _registrationControllerState.customerMobileNumber,
-            customerEmail: _registrationControllerState.customerEmail,
-            customerAddress: _registrationControllerState.customerAddress,
-            customerBirthday: _registrationControllerState.customerBirthday,
-            customerGender: _getGender(),
-            customerPassword: _registrationControllerState.customerPassword,
+          setState(() {
+            _isLoading = true;
+            _isLoginRequestOnGoing = true;
+          });
+          var getResponse = await _garretaApiService.register(
+            name: _garretaApiService.customerName,
+            number: _garretaApiService.customerMobileNumber,
+            email: _garretaApiService.customerEmail,
+            address: _garretaApiService.customerAddress,
+            birthday: _garretaApiService.customerBirthday,
+            gender: _getGender(),
+            password: _garretaApiService.customerPassword,
           );
-          var decodedResponse = jsonDecode(response);
-          _globalController.customerId = decodedResponse[0]['new_Id'];
-          print(_globalController.customerId);
-          setState(() => _stateToggleOnCreateAccountLoader = false);
+          if (getResponse == 200) {
+            setState(() {
+              _isLoading = false;
+              _isLoginRequestOnGoing = false;
+            });
+            Get.toNamed("/store-nearby-store");
+          }
+          if (getResponse == 400) {
+            setState(() {
+              _isLoading = false;
+              _isLoginRequestOnGoing = false;
+            });
+          }
+          print("Global customerName: ${_garretaApiService.customerName}");
+          print("Global customerMobileNumber: ${_garretaApiService.customerMobileNumber}");
+          print("Global customerEmail: ${_garretaApiService.customerEmail}");
+          print("Global customerAddress: ${_garretaApiService.customerAddress}");
+          print("Global customerBirthday: ${_garretaApiService.customerBirthday}");
+          print("Global customerGender: ${_garretaApiService.customerGender}");
+          print("Global customerPassword: ${_garretaApiService.customerPassword}");
         } catch (e) {
           print("Cannot create account");
-          setState(() => _stateToggleOnCreateAccountLoader = false);
+          setState(() {
+            _isLoading = false;
+            _isLoginRequestOnGoing = false;
+          });
         }
       } else {
         _confirmPasswordFocusNode.requestFocus();
@@ -96,14 +108,6 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     } else if (confirmPassword.isEmpty) {
       _confirmPasswordFocusNode.requestFocus();
     }
-
-    print("@registration.dart : Name - ${_registrationController.customerName}");
-    print("@registration.dart : Number - ${_registrationController.customerMobileNumber}");
-    print("@registration.dart : Address - ${_registrationController.customerAddress}");
-    print("@registration.dart : Birthday - ${_registrationController.customerBirthday}");
-    print("@registration.dart : Gender - ${_registrationController.customerGender}");
-    print("@registration.dart : Email - ${_registrationController.customerEmail}");
-    print("@registration.dart : Password - ${_registrationController.customerPassword}");
   }
 
   @override
@@ -189,7 +193,8 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
                           SizedBox(height: 5),
                           Spacer(flex: 8),
                           _buttonContinue(
-                            loaderState: _stateToggleOnCreateAccountLoader,
+                            loaderState: _isLoading,
+                            action: () => _isLoginRequestOnGoing ? {} : _onCreateAccount(),
                           ),
                           SizedBox(height: 30),
                         ],
@@ -205,12 +210,12 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     );
   }
 
-  SizedBox _buttonContinue({@required loaderState}) {
+  SizedBox _buttonContinue({@required loaderState, @required action}) {
     return SizedBox(
       height: 60,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () => _onCreateAccount(),
+        onPressed: action,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -257,10 +262,18 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     color: darkGray.withOpacity(0.9),
   );
   _getGender() {
-    if (_registrationControllerState.customerGender == "Rather not to say") {
+    if (_garretaApiService.customerGender == "Rather not to say") {
       return "Secret";
     } else {
-      return _registrationControllerState.customerGender;
+      return _garretaApiService.customerGender;
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
   }
 }

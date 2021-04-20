@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:garreta/controllers/registration/registrationController.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:get/get.dart';
 import 'package:jiffy/jiffy.dart';
+import 'package:get/get.dart';
 
 class SelectBirthday extends StatefulWidget {
   const SelectBirthday({Key key}) : super(key: key);
@@ -16,7 +16,7 @@ class SelectBirthday extends StatefulWidget {
 
 class _SelectBirthdayState extends State<SelectBirthday> {
   // Global state
-  final _registrationController = Get.put(RegistrationController());
+  final _garretaApiService = Get.put(GarretaApiServiceController());
 
   // State
   var selectedDateToString = "Select birthday";
@@ -24,21 +24,18 @@ class _SelectBirthdayState extends State<SelectBirthday> {
   @override
   void initState() {
     super.initState();
-    // @desc - validate if birthday existed in memory
-    if (_registrationController.customerBirthday != null) {
-      setState(() {
-        selectedDateToString = _registrationController.labelBirthday;
-      });
+    // Validate if birthday existed in memory
+    if (_garretaApiService.customerBirthday != null) {
+      setState(() => selectedDateToString = _garretaApiService.customerBirthdayInString);
     }
   }
 
   _onSelectBirthdate({@required year, @required month, @required day}) {
-    //(NOTE: format is YYYY-MM-DD)
-    _registrationController.customerBirthday = "$year-$month-$day";
-    _registrationController.labelBirthday = Jiffy([year, month, day]).yMMMMd;
-    setState(() {
-      selectedDateToString = Jiffy([year, month, day]).yMMMMd;
-    });
+    // Date format  YYYY-MM-DD
+    _garretaApiService.customerBirthday = "$year-$month-$day";
+    _garretaApiService.customerBirthdayInString = Jiffy([year, month, day]).yMMMMd;
+
+    setState(() => selectedDateToString = Jiffy([year, month, day]).yMMMMd);
     // January 19, 2021
   }
 

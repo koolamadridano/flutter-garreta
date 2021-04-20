@@ -72,7 +72,7 @@ class _ScreenStoreState extends State<ScreenStore> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => Get.offNamed("/store-nearby-store"),
                   child: Icon(LineIcons.arrowLeft, color: darkGray.withOpacity(0.4)),
                 ),
                 GestureDetector(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/registration/registrationController.dart';
+import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:get/get.dart';
 
@@ -12,25 +12,22 @@ List<String> keys = <String>[
 
 class SelectGender extends StatefulWidget {
   const SelectGender({Key key}) : super(key: key);
-
   @override
   _SelectGenderState createState() => _SelectGenderState();
 }
 
 class _SelectGenderState extends State<SelectGender> {
-  final _registrationController = Get.put(RegistrationController());
-  final _registrationControllerState = Get.find<RegistrationController>();
+  // Global state
+  final _garretaApiService = Get.put(GarretaApiServiceController());
 
-  _onSelectGender(String value) {
+  void _onSelectGender(String value) {
     setState(() => selectedKey = value);
-    _registrationController.customerGender = value;
+    _garretaApiService.customerGender = value;
   }
 
   @override
   Widget build(BuildContext context) {
-    String selectedKey =
-        _registrationControllerState.customerGender != null ? _registrationControllerState.customerGender : "Gender";
-
+    String selectedKey = _garretaApiService.customerGender != null ? _garretaApiService.customerGender : "Gender";
     final Widget normalChildButton = SizedBox(
       width: double.infinity,
       height: 40,
@@ -66,9 +63,7 @@ class _SelectGenderState extends State<SelectGender> {
         child: normalChildButton,
       ),
       onItemSelected: (String value) => _onSelectGender(value),
-      onMenuButtonToggle: (bool isToggle) {
-        // print(isToggle);
-      },
+      onMenuButtonToggle: (bool isToggle) {},
     );
   }
 }

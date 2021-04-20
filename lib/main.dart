@@ -13,11 +13,11 @@ import 'package:get/get.dart';
 void main() {
   runApp(
     GetMaterialApp(
-      home: ScreenApplication(),
       initialRoute: "/home",
       getPages: [
-        // # HOME ROUTE
+        // # DEFAULT ROUTE
         GetPage(name: "/home", page: () => ScreenApplication()),
+
         // # ACCOUNT REGISTRATION/LOGIN ROUTES
         GetPage(name: "/login", page: () => ScreenLogin()),
         GetPage(name: "/registration", page: () => ScreenRegistrationPhase1()),
@@ -29,6 +29,7 @@ void main() {
 
         GetPage(name: "/store-nearby-store", page: () => ScreenNearbyStore()),
         GetPage(name: "/store-product-screen", page: () => ScreenProductScreen()),
+
         // # OTP ROUTES
         GetPage(name: "/otp-verification", page: () => ScreenOtpVerification()),
         //GetPage(name: "/playground", page: () => ScreenPlayground()),

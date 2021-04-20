@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/global/globalController.dart';
-import 'package:garreta/controllers/store/shoppingcart/cartController.dart';
+import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/storecategory/categoryController.dart';
 import 'package:garreta/controllers/store/storeitems/storeitemsController.dart';
-import 'package:garreta/utils/colors/colors.dart';
-import 'package:garreta/utils/enum/enum.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
-import 'package:get/get.dart';
-import 'package:line_icons/line_icons.dart';
+import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:garreta/utils/enum/enum.dart';
+import 'package:line_icons/line_icons.dart';
+import 'package:get/get.dart';
 
 class ScreenProductScreen extends StatefulWidget {
   ScreenProductScreen({Key key}) : super(key: key);
@@ -19,11 +18,7 @@ class ScreenProductScreen extends StatefulWidget {
 
 class _ScreenProductScreenState extends State<ScreenProductScreen> {
   // Global state
-  final _globalController = Get.put(GlobalController());
-  final _storeCategoryController = Get.put(StoreCategoryController());
-  final _storeItemsController = Get.put(StoreItemsController());
-  final _storeShoppingcartController = Get.put(ShoppingCartController());
-  final _shoppingCartController = Get.put(ShoppingCartController());
+  final _garretaApiService = Get.put(GarretaApiServiceController());
 
   // State
   int _itemCount = 1;
@@ -42,13 +37,16 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
 
   Future _fetchStoreItems() async {
     setState(() => _storeItemsIsFetching = true);
-    var category = await _storeCategoryController.getStoreCategory(merchantId: _globalController.storeId);
+    var category = await _garretaApiService.fetchStoreCategory();
     var decodedCategory = category == "0" ? null : jsonDecode(category);
     if (decodedCategory.runtimeType != int) {
-      var storeItems = await _storeItemsController.getStoreItems(
-        merchantId: _globalController.storeId,
-        categoryId: decodedCategory[0]['cat_id'],
-      );
+      var storeItems = await _garretaApiService.fetchStoreItems();
+      if (storeItems.toString().trim() == "0") {
+        setState(() {
+          _storeItemsIsFetching = false;
+        });
+        return;
+      }
       var decodedStoreItems = jsonDecode(storeItems);
       if (decodedStoreItems.runtimeType != int) {
         decodedStoreItems.sort((x, y) {
@@ -85,32 +83,24 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   }
 
   Future _onFetchCartItems() async {
-    var response = await _shoppingCartController.getShoppingCartItems(
-      customerId: _globalController.customerId,
-    );
+    var response = await _garretaApiService.fetchShoppingCartItems();
     if (response != null) {
       var decodedResponse = jsonDecode(response);
       if (decodedResponse != 0) {
-        _globalController.setShoppingCartLength(decodedResponse.length);
+        _garretaApiService.shoppingCartLength.value = decodedResponse.length;
       }
     }
   }
 
   Future _onAddToCart({@required itemId}) async {
-    if (_globalController.customerId == null) {
+    if (!_garretaApiService.isAuthenticated()) {
       Get.offAllNamed("/login");
+      return;
     }
-    if (_globalController.customerId != null) {
-      setState(() => _addToCartLoader = true);
-      await _storeShoppingcartController.addToCart(
-        merchantId: _globalController.storeId,
-        itemId: itemId,
-        qty: _itemCount,
-        myid: _globalController.customerId,
-      );
-      _onFetchCartItems();
-      setState(() => _addToCartLoader = false);
-    }
+    setState(() => _addToCartLoader = true);
+    await _garretaApiService.postAddToCart(itemId: itemId, qty: _itemCount);
+    _onFetchCartItems();
+    setState(() => _addToCartLoader = false);
   }
 
   void _onSelectItem({@required productPrice, @required productName, @required productId}) async {
@@ -239,7 +229,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "${_globalController.storeName}",
+                        "${_garretaApiService.merchantName}",
                         style: GoogleFonts.roboto(
                           color: darkGray,
                           fontSize: 16,
@@ -247,7 +237,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                         ),
                       ),
                       Text(
-                        "${_globalController.storeAddress}",
+                        "${_garretaApiService.merchantAddress}",
                         style: GoogleFonts.roboto(
                           color: darkGray,
                           fontSize: 11,
