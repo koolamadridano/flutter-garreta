@@ -29,8 +29,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
   FocusNode _passwordFocusNode;
 
   bool _statePasswordVisibility = false;
+  bool _stateHasError = false;
   bool _isLoading = false;
-
   bool _isLoginRequestOnGoing = false;
 
   @override
@@ -40,9 +40,17 @@ class _ScreenLoginState extends State<ScreenLogin> {
     _passwordFocusNode = FocusNode();
   }
 
-  Future _onLogin() async {
+  Future<void> _onLogin() async {
     final mobileNumber = "0" + _mobileNumberController.text.replaceAll(RegExp('[^0-9]'), '');
     final password = _passwordController.text;
+
+    // CHECK IF NOT EMPTY
+    if (_mobileNumberController.text.isEmpty) {
+      _mobileNumberFocusNode.requestFocus();
+    } else if (_passwordController.text.isEmpty) {
+      _passwordFocusNode.requestFocus();
+    }
+
     if (mobileNumber.isNotEmpty && password.isNotEmpty && mobileNumber.length == 11) {
       setState(() {
         _isLoading = true;
@@ -56,15 +64,19 @@ class _ScreenLoginState extends State<ScreenLogin> {
         setState(() {
           _isLoading = false;
           _isLoginRequestOnGoing = false;
+          _stateHasError = false;
         });
-        Get.toNamed("/store-nearby-store");
+        if (_garretaApiService.isAuthenticated()) {
+          Get.toNamed("/store-nearby-store");
+        }
       }
       if (getResponse == 401) {
         setState(() {
           _isLoading = false;
           _isLoginRequestOnGoing = false;
+          _stateHasError = true;
         });
-        loginWidget.toggleLoginErrorAlert(context: context);
+        _mobileNumberFocusNode.requestFocus();
       }
       if (getResponse == 400) {
         setState(() {
@@ -73,12 +85,11 @@ class _ScreenLoginState extends State<ScreenLogin> {
         });
         loginWidget.toggleNetworkErrorAlert(context: context);
       }
-    } else if (_mobileNumberController.text.isEmpty) {
-      _mobileNumberFocusNode.requestFocus();
-    } else if (_passwordController.text.isEmpty) {
-      _passwordFocusNode.requestFocus();
     }
   }
+
+  // Extra
+  void _onReturn() => Get.offAllNamed("/home");
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +125,14 @@ class _ScreenLoginState extends State<ScreenLogin> {
                                 ),
                               ),
                               // Close icon
-                              _onReturnIcon()
+                              GestureDetector(
+                                onTap: () => _onReturn(),
+                                child: Icon(
+                                  LineIcons.arrowLeft,
+                                  size: 24,
+                                  color: darkGray.withOpacity(0.1),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -122,13 +140,24 @@ class _ScreenLoginState extends State<ScreenLogin> {
                         textFieldUsername(
                           textFieldController: _mobileNumberController,
                           textFieldFocusNode: _mobileNumberFocusNode,
+                          hasError: _stateHasError,
                         ),
                         SizedBox(height: 10),
                         textFieldPassword(
                           isVisible: _statePasswordVisibility,
                           textFieldController: _passwordController,
                           textFieldFocusNode: _passwordFocusNode,
+                          hasError: _stateHasError,
                         ),
+                        _stateHasError
+                            ? Container(
+                                margin: EdgeInsets.only(top: 10, bottom: 20),
+                                child: Text(
+                                  "Mobile number and/or Password is invalid",
+                                  style: _displayErrorTextStyle,
+                                ),
+                              )
+                            : SizedBox(),
                         CheckboxListTile(
                           onChanged: (state) => setState(() => _statePasswordVisibility = state),
                           title: Text("Show password", style: _checkBoxTogglePasswordTextStyle),
@@ -148,12 +177,12 @@ class _ScreenLoginState extends State<ScreenLogin> {
                           value: _statePasswordVisibility,
                         ),
                         Spacer(flex: 8),
-                        _onLoginButton(
+                        _buttonLogin(
                           action: () => _isLoginRequestOnGoing ? {} : _onLogin(),
                           toggleSpinner: _isLoading,
                         ),
                         SizedBox(height: 10),
-                        _onCreateAccount(),
+                        _buttonCreateAccount(),
                         SizedBox(height: 30),
                       ],
                     ),
@@ -167,7 +196,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     );
   }
 
-  SizedBox _onLoginButton({@required action, @required toggleSpinner}) {
+  SizedBox _buttonLogin({@required action, @required toggleSpinner}) {
     return SizedBox(
       height: 60,
       width: double.infinity,
@@ -197,7 +226,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
     );
   }
 
-  SizedBox _onCreateAccount() {
+  SizedBox _buttonCreateAccount() {
     return SizedBox(
       height: 60,
       width: double.infinity,
@@ -219,17 +248,11 @@ class _ScreenLoginState extends State<ScreenLogin> {
     );
   }
 
-  GestureDetector _onReturnIcon() {
-    return GestureDetector(
-      onTap: () => Get.offAllNamed("/home"),
-      child: Icon(
-        LineIcons.arrowLeft,
-        size: 24,
-        color: darkGray.withOpacity(0.1),
-      ),
-    );
-  }
-
+  TextStyle _displayErrorTextStyle = GoogleFonts.roboto(
+    color: red,
+    fontSize: 14,
+    fontWeight: FontWeight.w300,
+  );
   TextStyle _checkBoxTogglePasswordTextStyle = GoogleFonts.roboto(
     fontSize: 15,
     fontWeight: FontWeight.w300,
@@ -252,10 +275,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   @override
   void dispose() {
-    _mobileNumberFocusNode.dispose();
-    _passwordFocusNode.dispose();
     _mobileNumberController.dispose();
     _passwordController.dispose();
+    _passwordFocusNode.dispose();
+    _mobileNumberFocusNode.dispose();
     super.dispose();
   }
 }

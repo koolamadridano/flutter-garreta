@@ -3,15 +3,15 @@ import 'package:garreta/controllers/garretaApiServiceController/garretaApiServic
 import 'package:garreta/screens/account/registration/registration_phase1/username/username.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/address/address.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/name/name.dart';
+import 'package:garreta/services/locationService/locationCoordinates.dart';
+import 'package:garreta/services/locationService/locationTitle.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
-import 'package:garreta/controllers/services/locationController.dart';
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:garreta/controllers/otp/otpController.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
 class ScreenRegistrationPhase1 extends StatefulWidget {
@@ -25,19 +25,23 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
   // Global state
   final _otpController = Get.put(OtpController());
   final _garretaApiService = Get.put(GarretaApiServiceController());
-  final _locationApiService = Get.put(LocationApiServiceController());
+
   // TextController
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _mobileNumberController = MaskedTextController(mask: '000-000-0000');
+
   // FocusNode
   FocusNode _nameFocusNode;
   FocusNode _addressFocusNode;
   FocusNode _mobileNumberFocusNode;
+
   // State
   bool _stateToggleClearAddress = false;
   bool _stateToggleGetAddressLoader = false;
   bool _stateToggleOnValidateLoader = false;
+
+  bool _stateHasError = false;
 
   @override
   void initState() {
@@ -55,10 +59,20 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     });
   }
 
-  Future _onValidate() async {
+  Future<void> _onValidate() async {
     final mobileNumber = "0" + _mobileNumberController.text.replaceAll(RegExp('[^0-9]'), '');
     final name = _nameController.text;
     final address = _addressController.text;
+
+    // CHECK IF NOT EMPTY
+    if (_nameController.text.isEmpty) {
+      _nameFocusNode.requestFocus();
+    } else if (_addressController.text.isEmpty) {
+      _addressFocusNode.requestFocus();
+    } else if (_mobileNumberController.text.isEmpty) {
+      _mobileNumberFocusNode.requestFocus();
+    }
+
     if (mobileNumber.isNotEmpty && name.isNotEmpty && address.isNotEmpty) {
       // ASSIGN TO GLOBAL STATE
       _garretaApiService.customerName = name;
@@ -68,24 +82,55 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
         setState(() => _stateToggleOnValidateLoader = true);
         var result = await _otpController.validate(number: mobileNumber);
         if (result.runtimeType == int) {
-          setState(() => _stateToggleOnValidateLoader = false);
+          setState(() {
+            _stateToggleOnValidateLoader = false;
+            _stateHasError = false;
+          });
           Get.toNamed('/otp-verification');
-          //Get.toNamed('/registration-phase-2');
+        } else if (result.runtimeType == String) {
+          setState(() {
+            _stateToggleOnValidateLoader = false;
+            _stateHasError = true;
+          });
+          _mobileNumberFocusNode.requestFocus();
         } else {
-          setState(() => _stateToggleOnValidateLoader = false);
-          print(result);
+          setState(() {
+            _stateToggleOnValidateLoader = false;
+            _stateHasError = true;
+          });
         }
       } catch (e) {
-        setState(() => _stateToggleOnValidateLoader = false);
+        setState(() {
+          _stateToggleOnValidateLoader = false;
+          _stateHasError = true;
+        });
         print("Network error");
       }
     }
   }
 
+  Future<void> _onGetLocation() async {
+    setState(() => _stateToggleGetAddressLoader = true);
+    try {
+      var currentCoord = await locationCoordinates();
+      var location = await locationTitle(
+        latitude: currentCoord.latitude,
+        longitude: currentCoord.longitude,
+      );
+      _addressController.text = location;
+      setState(() => _stateToggleGetAddressLoader = false);
+    } catch (e) {
+      setState(() => _stateToggleGetAddressLoader = false);
+    }
+  }
+
+  // Extra
+  void _onClearAddress() => _addressController.text = "";
+  void _onReturn() => Get.offAllNamed("/home");
+  void _onNavigateToLogin() => Get.offAllNamed("/login");
+
   @override
   Widget build(BuildContext context) {
-    final _screenWidth = MediaQuery.of(context).size.width;
-
     return SafeArea(
       child: GestureDetector(
         onTap: () => destroyTextFieldFocus(context),
@@ -99,7 +144,7 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
               children: [
                 Expanded(
                   child: Container(
-                    width: _screenWidth * 0.8,
+                    width: Get.width * 0.8,
                     child: Column(
                       children: [
                         Spacer(),
@@ -116,7 +161,14 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                                   ],
                                 ),
                               ),
-                              _onReturnIcon(),
+                              GestureDetector(
+                                onTap: () => _onReturn(),
+                                child: Icon(
+                                  LineIcons.arrowLeft,
+                                  size: 24,
+                                  color: darkGray.withOpacity(0.1),
+                                ),
+                              ),
                               // Close icon
                             ],
                           ),
@@ -153,11 +205,21 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                         textFieldUsername(
                           textFieldController: _mobileNumberController,
                           textFieldFocusNode: _mobileNumberFocusNode,
+                          hasError: _stateHasError,
                         ),
+                        _stateHasError
+                            ? Container(
+                                margin: EdgeInsets.only(top: 10),
+                                child: Text(
+                                  "Mobile number is already registered",
+                                  style: _displayErrorTextStyle,
+                                ),
+                              )
+                            : SizedBox(),
                         Spacer(flex: 8),
                         _buttonGetOtp(loaderState: _stateToggleOnValidateLoader),
                         Spacer(),
-                        _onLogin(),
+                        _buttonLogin(),
                         SizedBox(height: 30),
                       ],
                     ),
@@ -169,25 +231,6 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
         ),
       ),
     );
-  }
-
-  Future _onGetLocation() async {
-    setState(() => _stateToggleGetAddressLoader = true);
-    try {
-      Position position = await _locationApiService.getPosition();
-      var location = await _locationApiService.getLocation(
-        latitude: position.latitude,
-        longitude: position.longitude,
-      );
-      _addressController.text = location;
-      setState(() => _stateToggleGetAddressLoader = false);
-    } catch (e) {
-      setState(() => _stateToggleGetAddressLoader = false);
-    }
-  }
-
-  _onClearAddress() {
-    _addressController.text = "";
   }
 
   SizedBox _buttonGetOtp({@required loaderState}) {
@@ -215,12 +258,12 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     );
   }
 
-  SizedBox _onLogin() {
+  SizedBox _buttonLogin() {
     return SizedBox(
       height: 60,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () => Get.offAllNamed("/login"),
+        onPressed: () => _onNavigateToLogin(),
         child: Text(
           "Already have an account?",
           style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300),
@@ -237,17 +280,11 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     );
   }
 
-  GestureDetector _onReturnIcon() {
-    return GestureDetector(
-      onTap: () => Get.offAllNamed("/home"),
-      child: Icon(
-        LineIcons.arrowLeft,
-        size: 24,
-        color: darkGray.withOpacity(0.1),
-      ),
-    );
-  }
-
+  TextStyle _displayErrorTextStyle = GoogleFonts.roboto(
+    color: red,
+    fontSize: 14,
+    fontWeight: FontWeight.w300,
+  );
   TextStyle _titleStyle = GoogleFonts.roboto(
     fontSize: 32,
     fontWeight: FontWeight.w700,

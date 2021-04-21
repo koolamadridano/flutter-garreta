@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:garreta/services/locationService/locationCoordinates.dart';
+import 'package:garreta/services/locationService/locationTitle.dart';
 import 'package:garreta/utils/enum/enum.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoder/geocoder.dart';
@@ -13,46 +15,6 @@ final _fetchStoreCategoryBaseUrl = "http://shareatext.com/garreta/webservices/v2
 final _fetchStoreItemsBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getItemsbyCategVendor&";
 final _fetchNearbyStoreBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getNearbyVendor&";
 final _fetchShoppingCartBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
-
-Future<Position> getPosition() async {
-  LocationPermission permission;
-  permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      return Future.error('Location permissions are denied');
-    }
-  }
-  if (permission == LocationPermission.deniedForever) {
-    return Future.error('Location permissions are permanently denied, we cannot request permissions.');
-  }
-  return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-}
-
-Future getLocation({@required latitude, @required longitude, @required Location type}) async {
-  final coordinates = new Coordinates(latitude, longitude);
-  final addressesData = await Geocoder.local.findAddressesFromCoordinates(coordinates);
-  final address = addressesData.first;
-  print("address.locality : ${address.locality}");
-  if (type == Location.adminArea) {
-    return address.adminArea;
-  } else if (type == Location.addressLine) {
-    return address.adminArea;
-  } else if (type == Location.featureName) {
-    return address.featureName;
-  } else if (type == Location.locality) {
-    return address.locality;
-  } else if (type == Location.subLocality) {
-    return address.subLocality;
-  } else if (type == Location.thoroughfare) {
-    return address.thoroughfare;
-  } else if (type == Location.featureNameAndLocality) {
-    return "${address.featureName}, ${address.locality}";
-  } else if (type == Location.featureNameAndSubLocality) {
-    return "${address.featureName}, ${address.subLocality}";
-  }
-  return address.addressLine;
-}
 
 // Class
 class GarretaApiServiceController extends GetxController {
@@ -79,20 +41,14 @@ class GarretaApiServiceController extends GetxController {
   var onWillJumpToCart = false.obs;
   var shoppingCartLength = 0.obs;
 
-  bool isAuthenticated() {
-    if (userId != null)
-      return true;
-    else
-      return false;
-  }
-
   // Account methods
-  Future<int> login({@required username, @required password}) async {
+  Future<int> login({username, password}) async {
     try {
       var result = await http.post(Uri.parse("${_loginBaseUrl}contactNumber=$username&password=$password"));
       if (result.body.isNotEmpty) {
         var response = jsonDecode(result.body);
         userId = response[0]["personalDetails"]["cust_id"];
+        print(userId);
         return 200;
       } else {
         return 401;
@@ -102,14 +58,7 @@ class GarretaApiServiceController extends GetxController {
     }
   }
 
-  Future<int> register(
-      {@required name,
-      @required number,
-      @required email,
-      @required address,
-      @required birthday,
-      @required gender,
-      @required password}) async {
+  Future<int> register({name, number, email, address, birthday, gender, password}) async {
     try {
       var result = await http.post(Uri.parse(
           "${_registrationBaseUrl}name=$name&contactNumber=$number&email=$email&address=$address&birthDate=$birthday&gender=$gender&password=$password"));
@@ -125,24 +74,41 @@ class GarretaApiServiceController extends GetxController {
     }
   }
 
+  bool isAuthenticated() {
+    if (userId != null)
+      return true;
+    else
+      return false;
+  }
+
   // Store methods
   Future fetchNearbyStores() async {
-    Position currentPosition = await getPosition();
-    var currentLocation = await getLocation(
-      latitude: currentPosition.latitude,
-      longitude: currentPosition.longitude,
+    Position currentCoord = await locationCoordinates();
+    var coordTitle = await locationTitle(
+      latitude: currentCoord.latitude,
+      longitude: currentCoord.longitude,
       type: Location.featureNameAndLocality,
     );
-    userLocation = currentLocation;
+    userLocation = coordTitle;
     var result = await http.get(Uri.parse(
-      "${_fetchNearbyStoreBaseUrl}lat=${currentPosition.latitude}&lng=${currentPosition.longitude}",
+      "${_fetchNearbyStoreBaseUrl}lat=${currentCoord.latitude}&lng=${currentCoord.longitude}",
     ));
     return result.body;
   }
 
-  Future fetchShoppingCartItems() async {
+  Future<dynamic> fetchShoppingCartItems() async {
     var result = await http.get(Uri.parse("${_fetchShoppingCartBaseUrl}myid=$userId"));
-    return result.body;
+    try {
+      if (result != null) {
+        var decodedResponse = jsonDecode(result.body);
+        if (decodedResponse != 0) {
+          shoppingCartLength.value = decodedResponse.length;
+        }
+      }
+      return result.body;
+    } catch (e) {
+      return 400;
+    }
   }
 
   Future fetchStoreCategory() async {
@@ -158,7 +124,7 @@ class GarretaApiServiceController extends GetxController {
     return result.body;
   }
 
-  Future postAddToCart({@required itemId, @required qty}) async {
+  Future<int> postAddToCart({@required itemId, @required qty}) async {
     var request = http.MultipartRequest("POST", Uri.parse(_postShoppingCartBaseUrl));
     request.fields['rtr'] = "addtoCart";
     request.fields['merid'] = merchantId.toString();
@@ -166,14 +132,11 @@ class GarretaApiServiceController extends GetxController {
     request.fields['qty'] = qty.toString();
     request.fields['myid'] = userId.toString();
     try {
-      // SEND REQUEST
       var streamedResponse = await request.send();
-      // An HTTP response where the entire response body is known in advance
       var response = await http.Response.fromStream(streamedResponse);
-      return response.body;
+      return 200;
     } catch (e) {
-      // RETURN ERROR MSG IF ERROR
-      return "Something went wrong while adding to cart";
+      return 400;
     }
   }
 }

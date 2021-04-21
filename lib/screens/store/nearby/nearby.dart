@@ -108,6 +108,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                 _garretaApiService.merchantName = storeName;
                                 _garretaApiService.merchantAddress = storeAddress;
                                 _garretaApiService.onWillJumpToCart.value = false;
+                                Get.back();
                                 Get.toNamed("/store");
                               }
                             },
@@ -146,13 +147,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         ),
       ),
     );
-  }
-
-  void _onLogout() {
-    _garretaApiService.userId = null;
-    if (_garretaApiService.userId == null) {
-      Get.offAllNamed("/login");
-    }
   }
 
   void _onToggleAlert() {
@@ -205,10 +199,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     );
   }
 
-  void _onBackToHome() {
-    Get.offAllNamed("/home");
-  }
-
   dynamic _onExitApp() {
     showModalBottomSheet(
       context: context,
@@ -242,6 +232,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   Future _onFetchNearbyStore() async {
     try {
       setState(() => _stateFetchingNearbyStore = true);
+      await _garretaApiService.fetchShoppingCartItems();
       var nearbyStore = await _garretaApiService.fetchNearbyStores();
       var decodedNearbyStore = jsonDecode(nearbyStore);
       decodedNearbyStore.sort((x, y) => double.parse(x["distance"]).compareTo(double.parse(y["distance"])));
@@ -365,6 +356,15 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     return items;
   }
 
+  // Extra
+  void _onBackToHome() => Get.offAllNamed("/home");
+  void _onLogout() {
+    _garretaApiService.userId = null;
+    if (!_garretaApiService.isAuthenticated()) {
+      Get.offAllNamed("/login");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Global state
@@ -396,24 +396,24 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                         () => _garretaApiService.shoppingCartLength.value == 0
                             ? GestureDetector(
                                 onTap: () {
-                                  if (_garretaApiService.userId == null) {
-                                    Get.toNamed("/login");
-                                    return;
-                                  } else {
+                                  if (_garretaApiService.isAuthenticated()) {
                                     _garretaApiService.onWillJumpToCart.value = true;
                                     Get.toNamed("/store");
+                                    return;
+                                  } else {
+                                    Get.offAllNamed("/login");
                                   }
                                 },
                                 child: Icon(LineIcons.shoppingCart, color: darkGray),
                               )
                             : GestureDetector(
                                 onTap: () {
-                                  if (_garretaApiService.userId == null) {
-                                    Get.toNamed("/login");
-                                    return;
-                                  } else {
+                                  if (_garretaApiService.isAuthenticated()) {
                                     _garretaApiService.onWillJumpToCart.value = true;
                                     Get.toNamed("/store");
+                                    return;
+                                  } else {
+                                    Get.offAllNamed("/login");
                                   }
                                 },
                                 child: Badge(

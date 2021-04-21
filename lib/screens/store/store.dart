@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/global/globalController.dart';
+import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/search/search.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
@@ -18,8 +18,9 @@ class ScreenStore extends StatefulWidget {
 }
 
 class _ScreenStoreState extends State<ScreenStore> {
+  // Global state
+  final _garretaApiService = Get.put(GarretaApiServiceController());
   PageController _pageController = PageController();
-  final _globalController = Get.put(GlobalController());
 
   // State
   int _pageCounter = 0;
@@ -33,7 +34,7 @@ class _ScreenStoreState extends State<ScreenStore> {
   @override
   void didChangeDependencies() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_globalController.onWillJumpToCart.value) {
+      if (_garretaApiService.onWillJumpToCart.value) {
         _pageController.jumpToPage(2);
         setState(() {
           _pageCounter = 2;
@@ -77,7 +78,7 @@ class _ScreenStoreState extends State<ScreenStore> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    if (_globalController.storeId == null) {
+                    if (_garretaApiService.merchantId == null) {
                       Get.toNamed('/store-nearby-store');
                       return;
                     } else {
@@ -101,9 +102,13 @@ class _ScreenStoreState extends State<ScreenStore> {
                   ),
                 ),
                 Obx(
-                  () => _globalController.shoppingCartLength.value == 0
+                  () => _garretaApiService.shoppingCartLength.value == 0
                       ? GestureDetector(
-                          onTap: () => _globalController.customerId == null ? Get.toNamed("/login") : null,
+                          onTap: () {
+                            if (!_garretaApiService.isAuthenticated()) {
+                              Get.offAllNamed("/login");
+                            }
+                          },
                           child: Icon(
                             LineIcons.shoppingCart,
                             color: _pageCounter == 1 ? darkGray : darkGray.withOpacity(0.4),
@@ -111,7 +116,9 @@ class _ScreenStoreState extends State<ScreenStore> {
                         )
                       : GestureDetector(
                           onTap: () {
-                            if (_globalController.customerId == null) Get.toNamed("/login");
+                            if (!_garretaApiService.isAuthenticated()) {
+                              Get.offAllNamed("/login");
+                            }
                             setState(() => _pageCounter = 2);
                             _pageController.animateToPage(2,
                                 duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
@@ -120,7 +127,7 @@ class _ScreenStoreState extends State<ScreenStore> {
                             badgeColor: red,
                             animationDuration: Duration(milliseconds: 500),
                             badgeContent: Text(
-                              '${_globalController.shoppingCartLength.value}',
+                              '${_garretaApiService.shoppingCartLength.value}',
                               style: _storeBadgeShoppingCartTextStyle,
                             ),
                             child: Icon(

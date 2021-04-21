@@ -5,7 +5,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-Alert toggleLoginErrorAlert({context}) {
+dynamic toggleLoginErrorAlert({context}) {
   Alert(
     context: context,
     title: "Mobile number and/or password is incorrect.",

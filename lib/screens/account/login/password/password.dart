@@ -8,7 +8,43 @@ Container textFieldPassword({
   bool isVisible,
   @required TextEditingController textFieldController,
   @required FocusNode textFieldFocusNode,
+  @required bool hasError,
 }) {
+  OutlineInputBorder _fieldEnabledBorderStyle = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(0.0),
+    borderSide: BorderSide(
+      color: hasError ? red : darkGray,
+      width: 0.1,
+    ),
+  );
+  OutlineInputBorder _fieldFocusedBorderStyle = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(0.0),
+    borderSide: BorderSide(
+      color: hasError ? red : darkGray,
+      width: 0.1,
+    ),
+  );
+  TextStyle _fieldTextStyle = GoogleFonts.roboto(
+    fontWeight: FontWeight.w300,
+    color: hasError ? red : darkGray,
+    fontSize: 16.0,
+  );
+  TextStyle _fieldHintTextStyle = GoogleFonts.roboto(
+    fontWeight: FontWeight.w300,
+    color: hasError ? red : darkGray,
+    fontSize: 15.0,
+  );
+  TextStyle _fieldLabelStyle = GoogleFonts.roboto(
+    fontWeight: FontWeight.w300,
+    color: hasError ? red : darkGray,
+    fontSize: 15.0,
+  );
+  Icon _fieldMobileNumberPrefixIconStyle = Icon(
+    LineIcons.lock,
+    color: hasError ? red : darkGray,
+    size: 22,
+  );
+
   return Container(
     color: Colors.white,
     width: double.infinity,
@@ -34,38 +70,3 @@ Container textFieldPassword({
     ),
   );
 }
-
-OutlineInputBorder _fieldEnabledBorderStyle = OutlineInputBorder(
-  borderRadius: BorderRadius.circular(0.0),
-  borderSide: BorderSide(
-    color: darkGray,
-    width: 0.1,
-  ),
-);
-OutlineInputBorder _fieldFocusedBorderStyle = OutlineInputBorder(
-  borderRadius: BorderRadius.circular(0.0),
-  borderSide: BorderSide(
-    color: darkGray,
-    width: 0.1,
-  ),
-);
-TextStyle _fieldTextStyle = GoogleFonts.roboto(
-  fontWeight: FontWeight.w300,
-  color: darkGray,
-  fontSize: 16.0,
-);
-TextStyle _fieldHintTextStyle = GoogleFonts.roboto(
-  fontWeight: FontWeight.w300,
-  color: darkGray,
-  fontSize: 15.0,
-);
-TextStyle _fieldLabelStyle = GoogleFonts.roboto(
-  fontWeight: FontWeight.w300,
-  color: darkGray,
-  fontSize: 15.0,
-);
-Icon _fieldMobileNumberPrefixIconStyle = Icon(
-  LineIcons.lock,
-  color: darkGray,
-  size: 22,
-);

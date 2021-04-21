@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
-import 'package:garreta/controllers/store/storecategory/categoryController.dart';
-import 'package:garreta/controllers/store/storeitems/storeitemsController.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,6 +25,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   bool _storeItemsIsFetching = false;
 
   bool _addToCartLoader = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -35,7 +34,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     _onFetchCartItems();
   }
 
-  Future _fetchStoreItems() async {
+  Future<void> _fetchStoreItems() async {
     setState(() => _storeItemsIsFetching = true);
     var category = await _garretaApiService.fetchStoreCategory();
     var decodedCategory = category == "0" ? null : jsonDecode(category);
@@ -65,42 +64,95 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     }
   }
 
-  void _onChangeStoreItemsLayout() {
-    setState(() {
-      _isGridLayout = !_isGridLayout;
-    });
+  Future<void> _onFetchCartItems() async {
+    await _garretaApiService.fetchShoppingCartItems();
   }
 
-  void _onAdjustQty({@required Qty type}) {
-    if (type == Qty.add && _itemCount <= 250) {
-      setState(() => _itemCount += 1);
-      print(_itemCount);
-    }
-    if (type == Qty.minus && _itemCount != 1) {
-      setState(() => _itemCount -= 1);
-      print(_itemCount);
-    }
-  }
-
-  Future _onFetchCartItems() async {
-    var response = await _garretaApiService.fetchShoppingCartItems();
-    if (response != null) {
-      var decodedResponse = jsonDecode(response);
-      if (decodedResponse != 0) {
-        _garretaApiService.shoppingCartLength.value = decodedResponse.length;
-      }
-    }
-  }
-
-  Future _onAddToCart({@required itemId}) async {
-    if (!_garretaApiService.isAuthenticated()) {
+  Future<void> _onAddToCart({@required itemId}) async {
+    if (_garretaApiService.isAuthenticated()) {
+      await _garretaApiService.postAddToCart(itemId: itemId, qty: _itemCount);
+      await _garretaApiService.fetchShoppingCartItems();
+    } else if (!_garretaApiService.isAuthenticated()) {
       Get.offAllNamed("/login");
-      return;
     }
-    setState(() => _addToCartLoader = true);
-    await _garretaApiService.postAddToCart(itemId: itemId, qty: _itemCount);
-    _onFetchCartItems();
-    setState(() => _addToCartLoader = false);
+  }
+
+  void _onSelectItemx({@required productPrice, @required productName, @required productId}) {
+    var _givenPrice = productPrice.toString();
+    var _translatedPrice = _givenPrice.contains('.') ? "₱" + _givenPrice : "₱" + _givenPrice + ".00";
+
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: fadeWhite,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Container(
+          width: Get.width,
+          height: Get.height * 0.4,
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 100,
+                    width: Get.width * 0.4,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FadeInImage.assetNetwork(
+                        placeholder: "images/alt/nearby_store_alt_250x250.png",
+                        image: "https://bit.ly/3cN0Fl4",
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: Get.width * 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: Text(
+                            "$productName - lorem ipsum dolor sit amet",
+                            style: GoogleFonts.roboto(
+                              color: darkGray,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: 10),
+                          child: Text(
+                            "$_translatedPrice",
+                            style: GoogleFonts.roboto(
+                              color: darkGray,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(top: 10),
+                          child: _buttonAddToCart(itemId: productId),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _onSelectItem({@required productPrice, @required productName, @required productId}) async {
@@ -207,6 +259,20 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     });
   }
 
+  // Extra
+  void _onChangeStoreItemsLayout() => setState(() => _isGridLayout = !_isGridLayout);
+
+  void _onAdjustQty({@required Qty type}) {
+    if (type == Qty.add && _itemCount <= 250) {
+      setState(() => _itemCount += 1);
+      print(_itemCount);
+    }
+    if (type == Qty.minus && _itemCount != 1) {
+      setState(() => _itemCount -= 1);
+      print(_itemCount);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -214,40 +280,32 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
         backgroundColor: fadeWhite,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          toolbarHeight: 60,
+          toolbarHeight: 58,
           leading: SizedBox(),
           leadingWidth: 0,
           elevation: 5,
           title: Container(
-            width: MediaQuery.of(context).size.width * 0.6,
-            child: Row(
+            width: Get.width * 0.5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(LineIcons.store, color: darkGray, size: 34),
-                SizedBox(width: 2),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${_garretaApiService.merchantName}",
-                        style: GoogleFonts.roboto(
-                          color: darkGray,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        "${_garretaApiService.merchantAddress}",
-                        style: GoogleFonts.roboto(
-                          color: darkGray,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ],
+                Text(
+                  "${_garretaApiService.merchantName}",
+                  style: GoogleFonts.roboto(
+                    color: darkGray,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
+                ),
+                Text(
+                  "${_garretaApiService.merchantAddress}",
+                  style: GoogleFonts.roboto(
+                    color: darkGray,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ],
             ),
@@ -270,13 +328,16 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                 color: Colors.white,
                 size: 24,
               )
-            : GridView.count(
-                physics: BouncingScrollPhysics(),
-                crossAxisCount: _isGridLayout ? 2 : 1,
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-                childAspectRatio: 0.8,
-                children: _mapStoreItems(data: _storeItems),
+            : Container(
+                margin: EdgeInsets.symmetric(horizontal: 5),
+                child: GridView.count(
+                  physics: BouncingScrollPhysics(),
+                  crossAxisCount: _isGridLayout ? 2 : 1,
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                  childAspectRatio: 0.8,
+                  children: _mapStoreItems(data: _storeItems),
+                ),
               ),
       ),
     );
@@ -291,65 +352,82 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
       var widget = Container(
         color: fadeWhite,
         child: GestureDetector(
-          onTap: () => _onSelectItem(
-            productName: data[i]['prod_name'],
-            productPrice: data[i]['prod_sellingPrice'],
-            productId: data[i]['prod_id'],
-          ),
+          onTap: () {
+            _onSelectItemx(
+              productName: data[i]['prod_name'],
+              productPrice: data[i]['prod_sellingPrice'],
+              productId: data[i]['prod_id'],
+            );
+            // _onSelectItem(
+            //   productName: data[i]['prod_name'],
+            //   productPrice: data[i]['prod_sellingPrice'],
+            //   productId: data[i]['prod_id'],
+            // );
+          },
           child: Stack(
             children: [
               Positioned.fill(
-                child: FadeInImage.assetNetwork(
-                  placeholder: "images/alt/nearby_store_alt_250x250.png",
-                  image: "https://bit.ly/3cN0Fl4",
-                  fit: BoxFit.cover,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(10),
+                  ),
+                  child: FadeInImage.assetNetwork(
+                    placeholder: "images/alt/nearby_store_alt_250x250.png",
+                    image: "https://bit.ly/3cN0Fl4",
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 7),
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${data[i]['prod_name']} - lorem ipsum dolor sit amet",
-                        style: GoogleFonts.roboto(
-                          color: darkGray,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      SizedBox(height: 2),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("₱$_itemPrice",
-                              style: GoogleFonts.roboto(
-                                color: red,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              )),
-                          Row(
-                            children: [
-                              Icon(LineIcons.box, color: darkGray, size: 14),
-                              Text("${data[i]['prod_qtyOnHand']}",
-                                  style: GoogleFonts.roboto(
-                                    color: darkGray,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                            ],
+              ClipRRect(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    width: double.infinity,
+                    color: Colors.white,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${data[i]['prod_name']} - lorem ipsum dolor sit amet",
+                          style: GoogleFonts.roboto(
+                            color: darkGray,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
                           ),
-                        ],
-                      ),
-                    ],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                        SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("₱$_itemPrice",
+                                style: GoogleFonts.roboto(
+                                  color: red,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                )),
+                            Row(
+                              children: [
+                                Icon(LineIcons.box, color: darkGray, size: 14),
+                                Text("${data[i]['prod_qtyOnHand']}",
+                                    style: GoogleFonts.roboto(
+                                      color: darkGray,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -362,41 +440,29 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     return items;
   }
 
-  SizedBox _buttonAddToCart({@required itemId}) {
-    return SizedBox(
-      height: 35,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () async {
-          await _onAddToCart(itemId: itemId);
-          Get.back(closeOverlays: true);
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("ADD TO CART",
-                style: GoogleFonts.roboto(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                )),
-            SizedBox(width: 2),
-            _addToCartLoader ? SpinkitCircle() : SizedBox(),
-          ],
-        ),
-        style: ElevatedButton.styleFrom(
-          primary: red,
-          onPrimary: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+  TextButton _buttonAddToCart({@required itemId}) {
+    return TextButton(
+      style: ButtonStyle(
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            side: BorderSide(
+              color: darkBlue,
+              width: 1,
+            ),
           ),
         ),
       ),
+      onPressed: () {
+        _onAddToCart(itemId: itemId);
+        Get.back();
+      },
+      child: Text("ADD TO CART",
+          style: GoogleFonts.roboto(
+            color: darkBlue,
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+          )),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
