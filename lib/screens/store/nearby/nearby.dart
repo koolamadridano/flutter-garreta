@@ -229,7 +229,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     );
   }
 
-  Future _onFetchNearbyStore() async {
+  Future<void> _onFetchNearbyStore() async {
     try {
       setState(() => _stateFetchingNearbyStore = true);
       await _garretaApiService.fetchShoppingCartItems();
@@ -241,7 +241,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         _stateFetchingNearbyStore = false;
       });
     } catch (e) {
-      print(e);
       print("Turn on GPS to see nearby store");
       setState(() => _stateFetchingNearbyStore = false);
     }
@@ -358,12 +357,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
 
   // Extra
   void _onBackToHome() => Get.offAllNamed("/home");
-  void _onLogout() {
-    _garretaApiService.userId = null;
-    if (!_garretaApiService.isAuthenticated()) {
-      Get.offAllNamed("/login");
-    }
-  }
+  void _onLogout() => _garretaApiService.logout();
 
   @override
   Widget build(BuildContext context) {

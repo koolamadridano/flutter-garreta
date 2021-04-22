@@ -77,10 +77,9 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     }
   }
 
-  void _onSelectItemx({@required productPrice, @required productName, @required productId}) {
+  void _onSelectItem({@required productPrice, @required productName, @required productId}) {
     var _givenPrice = productPrice.toString();
     var _translatedPrice = _givenPrice.contains('.') ? "₱" + _givenPrice : "₱" + _givenPrice + ".00";
-
     Get.bottomSheet(
       Container(
         decoration: BoxDecoration(
@@ -155,123 +154,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     );
   }
 
-  void _onSelectItem({@required productPrice, @required productName, @required productId}) async {
-    await showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(30.0),
-        topRight: Radius.circular(30.0),
-      )),
-      builder: (context) {
-        return StatefulBuilder(builder: (BuildContext context, StateSetter cartState) {
-          return ClipRRect(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30.0),
-              topRight: Radius.circular(30.0),
-            ),
-            child: Container(
-              padding: EdgeInsets.all(20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 150,
-                    child: FadeInImage.assetNetwork(
-                      placeholder: "images/alt/nearby_store_alt_250x250.png",
-                      image: "https://bit.ly/3cN0Fl4",
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "$productName  - lorem ipsum dolor sit amet",
-                          style: GoogleFonts.roboto(
-                            color: darkGray,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                        ),
-                        SizedBox(height: 10),
-                        Text("₱${double.parse(productPrice) * _itemCount}",
-                            style: GoogleFonts.roboto(
-                              color: red,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            )),
-                        SizedBox(height: 10),
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                cartState(() {
-                                  _onAdjustQty(type: Qty.minus);
-                                });
-                              },
-                              child: Container(
-                                color: fadeWhite,
-                                padding: EdgeInsets.all(10),
-                                child: Icon(LineIcons.minus),
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Text("$_itemCount",
-                                style: GoogleFonts.roboto(
-                                  color: darkGray,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w300,
-                                )),
-                            SizedBox(width: 10),
-                            GestureDetector(
-                              onTap: () {
-                                cartState(() {
-                                  _onAdjustQty(type: Qty.add);
-                                });
-                              },
-                              child: Container(
-                                color: fadeWhite,
-                                padding: EdgeInsets.all(10),
-                                child: Icon(LineIcons.plus),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        _buttonAddToCart(itemId: productId),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-      },
-    ).whenComplete(() {
-      setState(() => _itemCount = 1);
-      print("showModalBottomSheet was closed");
-    });
-  }
-
   // Extra
   void _onChangeStoreItemsLayout() => setState(() => _isGridLayout = !_isGridLayout);
-
-  void _onAdjustQty({@required Qty type}) {
-    if (type == Qty.add && _itemCount <= 250) {
-      setState(() => _itemCount += 1);
-      print(_itemCount);
-    }
-    if (type == Qty.minus && _itemCount != 1) {
-      setState(() => _itemCount -= 1);
-      print(_itemCount);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,9 +167,9 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
           toolbarHeight: 58,
           leading: SizedBox(),
           leadingWidth: 0,
-          elevation: 5,
+          elevation: 2,
           title: Container(
-            width: Get.width * 0.5,
+            width: Get.width * 0.6,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -293,7 +177,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                   "${_garretaApiService.merchantName}",
                   style: GoogleFonts.roboto(
                     color: darkGray,
-                    fontSize: 16,
+                    fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -301,11 +185,11 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                   "${_garretaApiService.merchantAddress}",
                   style: GoogleFonts.roboto(
                     color: darkGray,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w300,
                   ),
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                  maxLines: 1,
                 ),
               ],
             ),
@@ -353,16 +237,11 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
         color: fadeWhite,
         child: GestureDetector(
           onTap: () {
-            _onSelectItemx(
+            _onSelectItem(
               productName: data[i]['prod_name'],
               productPrice: data[i]['prod_sellingPrice'],
               productId: data[i]['prod_id'],
             );
-            // _onSelectItem(
-            //   productName: data[i]['prod_name'],
-            //   productPrice: data[i]['prod_sellingPrice'],
-            //   productId: data[i]['prod_id'],
-            // );
           },
           child: Stack(
             children: [

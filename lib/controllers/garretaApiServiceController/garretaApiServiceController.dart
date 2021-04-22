@@ -15,13 +15,13 @@ final _fetchStoreCategoryBaseUrl = "http://shareatext.com/garreta/webservices/v2
 final _fetchStoreItemsBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getItemsbyCategVendor&";
 final _fetchNearbyStoreBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getNearbyVendor&";
 final _fetchShoppingCartBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
+final _postShoppingCartUpdateBaseUrl = "http://shareatext.com/garreta/webservices/v2/posting.php";
 
 // Class
 class GarretaApiServiceController extends GetxController {
   // User
   var userId;
   var userLocation;
-
   // Registration fields
   var customerName;
   var customerMobileNumber;
@@ -30,7 +30,6 @@ class GarretaApiServiceController extends GetxController {
   var customerBirthday;
   var customerGender;
   var customerPassword;
-
   // Merchant
   var merchantId;
   var merchantAddress;
@@ -41,6 +40,8 @@ class GarretaApiServiceController extends GetxController {
   var onWillJumpToCart = false.obs;
   var shoppingCartLength = 0.obs;
 
+  RxDouble shoppingCartTotal = 0.0.obs;
+
   // Account methods
   Future<int> login({username, password}) async {
     try {
@@ -48,7 +49,6 @@ class GarretaApiServiceController extends GetxController {
       if (result.body.isNotEmpty) {
         var response = jsonDecode(result.body);
         userId = response[0]["personalDetails"]["cust_id"];
-        print(userId);
         return 200;
       } else {
         return 401;
@@ -74,15 +74,8 @@ class GarretaApiServiceController extends GetxController {
     }
   }
 
-  bool isAuthenticated() {
-    if (userId != null)
-      return true;
-    else
-      return false;
-  }
-
   // Store methods
-  Future fetchNearbyStores() async {
+  Future<dynamic> fetchNearbyStores() async {
     Position currentCoord = await locationCoordinates();
     var coordTitle = await locationTitle(
       latitude: currentCoord.latitude,
@@ -103,22 +96,41 @@ class GarretaApiServiceController extends GetxController {
         var decodedResponse = jsonDecode(result.body);
         if (decodedResponse != 0) {
           shoppingCartLength.value = decodedResponse.length;
+        } else if (decodedResponse == 0) {
+          shoppingCartLength.value = 0;
         }
+        double _total() {
+          double _totalValue = 0.0;
+          for (int i = 0; i < decodedResponse.length; i++) {
+            var price = double.parse(decodedResponse[i]['price']);
+            var qty = double.parse(decodedResponse[i]['qty']);
+            var sum = (price * qty).toDouble();
+            _totalValue += sum;
+          }
+          return _totalValue;
+        }
+
+        shoppingCartTotal.value = _total();
+        return result.body;
       }
-      return result.body;
     } catch (e) {
+      print(e);
       return 400;
     }
   }
 
-  Future fetchStoreCategory() async {
-    var result = await http.get(Uri.parse("${_fetchStoreCategoryBaseUrl}merid=$merchantId"));
-    var decodedResult = jsonDecode(result.body);
-    merchantStoreCategoryId = decodedResult[0]['cat_id'];
-    return result.body;
+  Future<dynamic> fetchStoreCategory() async {
+    try {
+      var result = await http.get(Uri.parse("${_fetchStoreCategoryBaseUrl}merid=$merchantId"));
+      var decodedResult = jsonDecode(result.body);
+      merchantStoreCategoryId = decodedResult[0]['cat_id'];
+      return result.body;
+    } catch (e) {
+      print(e);
+    }
   }
 
-  Future fetchStoreItems() async {
+  Future<dynamic> fetchStoreItems() async {
     var result =
         await http.get(Uri.parse("${_fetchStoreItemsBaseUrl}merid=$merchantId&categid=$merchantStoreCategoryId"));
     return result.body;
@@ -133,10 +145,42 @@ class GarretaApiServiceController extends GetxController {
     request.fields['myid'] = userId.toString();
     try {
       var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
+      await http.Response.fromStream(streamedResponse);
       return 200;
     } catch (e) {
       return 400;
     }
+  }
+
+  Future<int> postCartUpdate({@required itemid, @required qty}) async {
+    var request = http.MultipartRequest("POST", Uri.parse(_postShoppingCartUpdateBaseUrl));
+    request.fields['rtr'] = "editItemCart";
+    request.fields['myid'] = userId.toString();
+    request.fields['merid'] = merchantId.toString();
+    request.fields['itemid'] = itemid.toString();
+    request.fields['qty'] = qty.toString();
+    try {
+      var streamedResponse = await request.send();
+      await http.Response.fromStream(streamedResponse);
+      //Print payload
+      print("@postCartUpdate <itemId $itemid> <qty $qty> <merchantId $merchantId>");
+      return 200;
+    } catch (e) {
+      return 400;
+    }
+  }
+
+// Extra
+  bool isAuthenticated() {
+    if (userId != null)
+      return true;
+    else
+      return false;
+  }
+
+  void logout() {
+    userId = null;
+    userLocation = null;
+    Get.offAndToNamed("/login");
   }
 }
