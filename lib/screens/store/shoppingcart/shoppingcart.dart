@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
-import 'package:garreta/screens/ui/overlay/default_overlay.dart';
+import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
+
+import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:get/get.dart';
@@ -17,106 +19,114 @@ class ScreenShoppingCart extends StatefulWidget {
 }
 
 class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
+  String logTitle = "@ScreenShoppingCart - ";
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _cartController = Get.put(CartController());
+
   List<bool> _selectedStoreItems = [];
-  List<double> _selectedStoreItemPrice = [];
+
   List<int> _selectedStoreItemId = [];
 
   bool _selectAllItems = false;
-  double _totalOfSelectedItems = 0;
 
   //
   List _cartItems = [];
   bool _isLoading = false;
   bool _cartIsEmpty = false;
-  bool _requestIsOngoing = false;
 
   @override
   void initState() {
     super.initState();
     _fetchShoppingCartItems();
+    _fetchCartItems();
+  }
+
+  Future<void> _fetchCartItems() async {
+    await _cartController.getShoppingCartItems(userId: _garretaApiService.userId);
+  }
+
+  void _selectItem({@required String type, @required itemId}) {
+    if (type == "add") {
+      _cartController.addToSelectedItem(itemID: itemId);
+    } else if (type == "remove") {
+      _cartController.removeToSelectedItem(itemID: itemId);
+    }
   }
 
   Future<void> _fetchShoppingCartItems() async {
+    setState(() => _isLoading = true);
     try {
-      //Show overlay
       var result = await _garretaApiService.fetchShoppingCartItems();
-      var decodedResult = jsonDecode(result);
-      if (decodedResult == 0) {
+      if (result.runtimeType == String) {
+        var decodedResult = jsonDecode(result);
+        if (decodedResult.length >= 1) {
+          setState(() {
+            _cartItems = decodedResult;
+            _isLoading = false;
+          });
+        }
+      } else {
         setState(() {
-          _cartItems = [];
-          _isLoading = false;
           _cartIsEmpty = true;
-        });
-        Get.back();
-      }
-      if (decodedResult.length != 0) {
-        setState(() {
-          _cartItems = decodedResult;
+          _cartItems = [];
           _isLoading = false;
         });
       }
     } catch (e) {
+      print("@exception [_fetchShoppingCartItems] $e");
       setState(() {
         _cartItems = [];
         _isLoading = false;
-        _cartIsEmpty = true;
       });
     }
   }
 
-  Future<void> _postCartUpdate({@required itemId, @required int qty, String hasType}) async {
-    toggleOverlay(context: context);
+  Future<void> _postCartUpdate({
+    @required itemId,
+    @required merchantId,
+    @required int qty,
+    @required int itemIndex,
+    String hasType,
+  }) async {
+    widgetOverlay.toggleOverlay(context: context);
     if (hasType == "increment") qty += 1;
     if (hasType == "decrement") qty -= 1;
-    var result = await _garretaApiService.postCartUpdate(itemid: itemId, qty: qty);
-    if (result == 200) {
-      await _fetchShoppingCartItems();
-      Get.back();
-      setState(() => _totalOfSelectedItems = _garretaApiService.shoppingCartTotal.value);
-    }
-  }
-
-  Future<void> _selectAll({bool selectAll, @required data}) async {
-    if (selectAll) {
-      for (var i = 0; i < _selectedStoreItems.length; i++) {
-        setState(() => _selectedStoreItems[i] = true);
+    Future.delayed(Duration.zero, () async {
+      await _cartController.updateSelectedItem(
+        itemid: itemId,
+        merchantId: merchantId,
+        qty: qty,
+        userId: _garretaApiService.userId,
+      );
+      return true;
+    }).then((value) {
+      if (value == true) {
+        Get.back();
       }
-      for (int i = 0; i < data.length; i++) {
-        if (_selectedStoreItemId.contains(int.parse(data[i]['itemID'])) == false) {
-          _selectedStoreItemId.add(int.parse(data[i]['itemID']));
-        }
-      }
-      await _garretaApiService.fetchShoppingCartItems();
-      setState(() => _totalOfSelectedItems = _garretaApiService.shoppingCartTotal.value);
-    }
-    if (!selectAll) {
-      for (var i = 0; i < _selectedStoreItems.length; i++) {
-        setState(() => _selectedStoreItems[i] = false);
-      }
-      setState(() {
-        _totalOfSelectedItems = 0;
-        _selectedStoreItemId = [];
-      });
-    }
-    print(_selectedStoreItemId);
+    });
   }
 
   Future<void> _dispatchDeleteSelected() async {
     try {
-      Get.back();
-      toggleOverlay(context: context);
-      for (var i = 0; i < _selectedStoreItemId.length; i++) {
-        await _garretaApiService.postCartUpdate(itemid: _selectedStoreItemId[i], qty: 0);
-      }
-      for (var i = 0; i < _selectedStoreItems.length; i++) {
-        _selectedStoreItems[i] = false;
-      }
-      await _fetchShoppingCartItems();
-      Get.back();
-    } catch (e) {
-      print(e);
+      Get.back(); // pop bottomsheet
+      widgetOverlay.toggleOverlay(context: context); // toggle overlay
+      Future.delayed(Duration.zero, () async {
+        for (var i = 0; i < _selectedStoreItemId.length; i++) {
+          await _garretaApiService.postCartUpdate(itemid: _selectedStoreItemId[i], qty: 0);
+        }
+        for (var i = 0; i < _selectedStoreItems.length; i++) {
+          _selectedStoreItems[i] = false;
+        }
+        return true;
+      }).then((value) async {
+        if (value == true) {
+          await _fetchShoppingCartItems();
+          Get.back(); // pop overlay
+        }
+      });
+    } on Exception catch (e) {
+      print("Cannot delete an item please check your internet connection");
     }
   }
 
@@ -188,10 +198,9 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     for (int i = 0; i < data.length; i++) {
       var _givenPrice = (double.parse(data[i]['price']) * int.parse(data[i]['qty'])).toString();
       var _translatedPrice = _givenPrice.contains('.') ? "₱" + _givenPrice : "₱" + _givenPrice + ".00";
-      if (data.length != _selectedStoreItems.length) {
-        _selectedStoreItems.add(false);
-        _selectedStoreItemPrice.add(double.parse(_givenPrice));
-      }
+
+      // Initialize checkbox per list
+      _cartController.initializeItemCheckbox();
       var widget = Container(
         child: Slidable(
           actionPane: SlidableDrawerActionPane(),
@@ -209,27 +218,21 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                     SizedBox(
                       height: 25.0,
                       width: 25.0,
-                      child: Checkbox(
-                        value: _selectedStoreItems[i],
-                        onChanged: (isChecked) {
-                          setState(() => _selectedStoreItems[i] = isChecked);
-                          if (isChecked) {
-                            _selectedStoreItemId.add(int.parse(data[i]['itemID']));
-                            setState(() {
-                              _totalOfSelectedItems += (double.parse(data[i]['price']) * int.parse(data[i]['qty']));
-                            });
-
-                            print(_selectedStoreItemId);
-                          } else if (!isChecked) {
-                            setState(() {
-                              _totalOfSelectedItems -= (double.parse(data[i]['price']) * int.parse(data[i]['qty']));
-                            });
-                            _selectedStoreItemId.remove(int.parse(data[i]['itemID']));
-                            // print(_selectedStoreItems);
-                            print(_selectedStoreItemId);
-                          }
-                        },
-                      ),
+                      child: Obx(() => Checkbox(
+                            value: _cartController.cartItemIsSelected[i],
+                            onChanged: (isChecked) {
+                              if (isChecked) {
+                                _selectItem(itemId: data[i]['itemID'], type: "add");
+                                _cartController.cartItemIsSelected[i] = true;
+                                print(logTitle + "Item of <${data[i]['itemID']}> checked");
+                              }
+                              if (!isChecked) {
+                                _selectItem(itemId: data[i]['itemID'], type: "remove");
+                                _cartController.cartItemIsSelected[i] = false;
+                                print(logTitle + "Item of <${data[i]['itemID']}> unchecked");
+                              }
+                            },
+                          )),
                     ),
                     SizedBox(width: 2),
                     FadeInImage.assetNetwork(
@@ -285,8 +288,10 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                           GestureDetector(
                             onTap: () {
                               _postCartUpdate(
+                                  itemIndex: i,
                                   hasType: "decrement",
                                   itemId: data[i]['itemID'],
+                                  merchantId: data[i]['merchantID'],
                                   qty: int.parse(
                                     data[i]['qty'],
                                   ));
@@ -301,8 +306,10 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                           GestureDetector(
                             onTap: () {
                               _postCartUpdate(
+                                  itemIndex: i,
                                   hasType: "increment",
                                   itemId: data[i]['itemID'],
+                                  merchantId: data[i]['merchantID'],
                                   qty: int.parse(
                                     data[i]['qty'],
                                   ));
@@ -365,25 +372,15 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
         leadingWidth: 0,
         elevation: 5,
         title: Container(
-          width: Get.width * 0.5,
-          child: _selectedStoreItemId.length >= 1
-              ? Text(
-                  "Selected items (${_selectedStoreItemId.length})",
+            width: Get.width * 0.5,
+            child: Obx(() => Text(
+                  "Selected items (${_cartController.cartSelectedItems.length})",
                   style: GoogleFonts.roboto(
                     color: darkGray,
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
                   ),
-                )
-              : Text(
-                  "My basket (${_garretaApiService.shoppingCartLength})",
-                  style: GoogleFonts.roboto(
-                    color: darkGray,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-        ),
+                ))),
         actions: [
           GestureDetector(
             onTap: () => _selectedStoreItemId.length >= 1 ? _deleteSelected() : {print("No item selected")},
@@ -416,11 +413,11 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                             value: _selectAllItems,
                             onChanged: (isChecked) {
                               if (isChecked) {
-                                _selectAll(selectAll: isChecked, data: _cartItems);
-                                setState(() => _selectAllItems = isChecked);
+                                setState(() => _selectAllItems = true);
+                                _cartController.selectAllItems(type: "selectAll");
                               } else if (!isChecked) {
-                                _selectAll(selectAll: isChecked, data: _cartItems);
-                                setState(() => _selectAllItems = isChecked);
+                                setState(() => _selectAllItems = false);
+                                _cartController.selectAllItems(type: "deselectAll");
                               }
                             },
                           ),
@@ -440,12 +437,12 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                               fontWeight: FontWeight.w400,
                             )),
                         SizedBox(width: 2),
-                        Text(_selectAllItems ? "₱$_totalOfSelectedItems" : "₱$_totalOfSelectedItems",
+                        Obx(() => Text("₱${_cartController.cartTotalPrice.value}",
                             style: GoogleFonts.roboto(
                               fontSize: 20,
                               color: red,
                               fontWeight: FontWeight.w400,
-                            )),
+                            ))),
                       ],
                     ),
                     _buttonCheckout(),
@@ -488,34 +485,16 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                 ),
               ),
               _isLoading
-                  ? Expanded(
-                      child: Center(
-                        child: SpinkitThreeBounce(color: fadeWhite, size: 24),
-                      ),
-                    )
+                  ? _widgetLoader
                   : _cartIsEmpty
-                      ? Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(LineIcons.shoppingBasket, size: 85, color: darkGray.withOpacity(0.1)),
-                              Text("Basket is empty",
-                                  style: GoogleFonts.roboto(
-                                    color: darkGray.withOpacity(0.1),
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12,
-                                  )),
-                            ],
-                          ),
-                        )
+                      ? _widgetCartIsEmpty
                       : Expanded(
                           child: Container(
                             width: Get.width * 0.95,
-                            child: ListView(
-                              physics: BouncingScrollPhysics(),
-                              children: _mapShoppingCartItems(data: _cartItems),
-                            ),
+                            child: Obx(() => ListView(
+                                  physics: BouncingScrollPhysics(),
+                                  children: _mapShoppingCartItems(data: _cartController.cartItems),
+                                )),
                           ),
                         ),
             ],
@@ -525,6 +504,27 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     );
   }
 }
+
+Expanded _widgetLoader = Expanded(
+  child: Center(
+    child: SpinkitThreeBounce(color: fadeWhite, size: 24),
+  ),
+);
+Expanded _widgetCartIsEmpty = Expanded(
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(LineIcons.shoppingBasket, size: 85, color: darkGray.withOpacity(0.1)),
+      Text("Basket is empty",
+          style: GoogleFonts.roboto(
+            color: darkGray.withOpacity(0.1),
+            fontWeight: FontWeight.w400,
+            fontSize: 12,
+          )),
+    ],
+  ),
+);
 
 TextButton _buttonCheckout() {
   return TextButton(

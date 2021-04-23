@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+
+import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:garreta/utils/enum/enum.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
 
@@ -28,7 +29,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchStoreItems();
     _onFetchCartItems();
@@ -69,11 +69,21 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   }
 
   Future<void> _onAddToCart({@required itemId}) async {
+    Get.back(); // pop bottomsheet
     if (_garretaApiService.isAuthenticated()) {
-      await _garretaApiService.postAddToCart(itemId: itemId, qty: _itemCount);
-      await _garretaApiService.fetchShoppingCartItems();
+      try {
+        widgetOverlay.toggleOverlay(context: context);
+        await Future<bool>.delayed(Duration.zero, () async {
+          await _garretaApiService.postAddToCart(itemId: itemId, qty: _itemCount);
+          await _garretaApiService.fetchShoppingCartItems();
+          return true;
+        }).then((value) => value ? Get.back() : null); // pop overlay);
+      } on Exception catch (e) {
+        Get.back();
+        print("Cannot add to cart please check your internet connection");
+      }
     } else if (!_garretaApiService.isAuthenticated()) {
-      Get.offAllNamed("/login");
+      Get.offAllNamed("/login"); // back to login screen
     }
   }
 
@@ -334,7 +344,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
       ),
       onPressed: () {
         _onAddToCart(itemId: itemId);
-        Get.back();
       },
       child: Text("ADD TO CART",
           style: GoogleFonts.roboto(

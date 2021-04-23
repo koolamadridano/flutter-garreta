@@ -13,6 +13,10 @@ import 'package:get/get.dart';
 void main() {
   runApp(
     GetMaterialApp(
+      title: 'Garreta',
+      enableLog: true,
+      defaultTransition: Transition.fade,
+      transitionDuration: Duration(milliseconds: 500),
       initialRoute: "/home",
       getPages: [
         // # DEFAULT ROUTE
