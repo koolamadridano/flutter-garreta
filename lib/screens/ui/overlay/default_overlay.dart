@@ -10,6 +10,7 @@ void toggleOverlay({BuildContext context}) {
     buttons: [],
     content: SizedBox(child: SpinkitThreeBounce(color: Colors.white, size: 18)),
     style: AlertStyle(
+      isOverlayTapDismiss: false,
       titleStyle: TextStyle(height: 0),
       isCloseButton: false,
       backgroundColor: Colors.transparent,
