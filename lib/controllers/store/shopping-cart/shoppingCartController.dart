@@ -39,8 +39,11 @@ class CartController extends GetxController {
   // `cartItemIsSelected` = ALL if assigned to `true`
   RxBool selectAllItemsInCart = false.obs;
 
-  // ignore: unused_field
-  var _userId;
+  @override
+  void onInit() {
+    super.onInit();
+    fetchShoppingCartItems(userId: _global.userId);
+  }
 
   void initializeItemCheckbox() {
     if (cartItemSelectState.length != cartItems.length) {
@@ -61,10 +64,15 @@ class CartController extends GetxController {
         cartItems.value = [];
       }
 
+      //  `stop loading` if `future is completed`
+      isLoading.value = false;
+
       // Refresh `RxList<String> cartItems,  cartSelectedItems`
       cartItems.refresh();
       cartSelectedItems.refresh();
     } catch (e) {
+      //  `stop loading` if `future is completed`
+      isLoading.value = false;
       print("@fetchShoppingCartItems $fetchShoppingCartItems");
     }
   }
@@ -95,7 +103,7 @@ class CartController extends GetxController {
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
-      await fetchShoppingCartItems(userId: _userId);
+      await fetchShoppingCartItems(userId: _global.userId);
     } catch (e) {
       print("@updateSelectedItem $fetchShoppingCartItems");
     }
@@ -111,7 +119,7 @@ class CartController extends GetxController {
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
-      await fetchShoppingCartItems(userId: _userId);
+      await fetchShoppingCartItems(userId: _global.userId);
     } catch (e) {
       print("@removeSelectedItem $e");
     }
@@ -120,7 +128,7 @@ class CartController extends GetxController {
   Future<void> addToSelectedItem({@required itemID}) async {
     if (!cartSelectedItems.contains(itemID)) {
       // Fetch `getShoppingCartItems` to pull the new array
-      await fetchShoppingCartItems(userId: _userId);
+      await fetchShoppingCartItems(userId: _global.userId);
       // Find item in `cartItems`
       var selectedItem =
           cartItems.where((element) => element['itemID'] == itemID);
@@ -144,7 +152,7 @@ class CartController extends GetxController {
   Future<void> removeToSelectedItem({@required itemID}) async {
     if (cartSelectedItems.contains(itemID)) {
       // Fetch `getShoppingCartItems` to pull the new array
-      await fetchShoppingCartItems(userId: _userId);
+      await fetchShoppingCartItems(userId: _global.userId);
       // Find item in `cartItems`
       var selectedItem =
           cartItems.where((element) => element['itemID'] == itemID);
@@ -182,19 +190,16 @@ class CartController extends GetxController {
   Future<void> selectAllItems({@required String type}) async {
     if (type == "selectAll") {
       selectAllItemsInCart.value = true;
-
       cartSelectedItems.removeRange(0, cartSelectedItems.length);
       cartSelectedItemsStack.removeRange(0, cartSelectedItemsStack.length);
-
       // Loop through `cartItemSelectState` and assign `true` (selected)
       if (cartItemSelectState.length != cartSelectedItems.length) {
         for (var i = 0; i < cartItemSelectState.length; i++) {
           cartItemSelectState[i] = true;
         }
       }
-
       // Fetch `getShoppingCartItems` to pull the new array
-      await fetchShoppingCartItems(userId: _userId);
+      await fetchShoppingCartItems(userId: _global.userId);
       // Reset previous value
       if (cartTotalPrice.value > 0) cartTotalPrice.value = 0;
       // Loop to a new value

@@ -52,54 +52,53 @@ class ScreenApplication extends StatelessWidget {
     }
 
     final _screenWidth = MediaQuery.of(context).size.width;
-    return SafeArea(
-      child: WillPopScope(
-        onWillPop: () async => _onExitApp(),
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          body: Container(
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Container(
-                    width: _screenWidth * 0.8,
-                    child: Column(
-                      children: [
-                        Spacer(),
-                        Container(
-                          width: double.infinity,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Garreta', style: _titleStyle),
-                              Row(
-                                children: [
-                                  SizedBox(width: 5),
-                                  Text('Near your area', style: _titleAltStyle),
-                                  Icon(LineIcons.mapMarker, color: darkGray, size: 18),
-                                ],
-                              ),
-                            ],
-                          ),
+    return WillPopScope(
+      onWillPop: () async => _onExitApp(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Container(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Container(
+                  width: _screenWidth * 0.8,
+                  child: Column(
+                    children: [
+                      Spacer(),
+                      Container(
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Garreta', style: _titleStyle),
+                            Row(
+                              children: [
+                                SizedBox(width: 5),
+                                Text('Near your area', style: _titleAltStyle),
+                                Icon(LineIcons.mapMarker,
+                                    color: darkGray, size: 18),
+                              ],
+                            ),
+                          ],
                         ),
-                        Spacer(flex: 2),
-                        // Login button
-                        _onLogin(),
-                        SizedBox(height: 5),
-                        // Register button
-                        _onRegister(),
-                        SizedBox(height: 30),
-                        // Skip button
-                        _onSkip(),
-                        SizedBox(height: 30),
-                      ],
-                    ),
+                      ),
+                      Spacer(flex: 2),
+                      // Login button
+                      _onLogin(),
+                      SizedBox(height: 5),
+                      // Register button
+                      _onRegister(),
+                      SizedBox(height: 30),
+                      // Skip button
+                      _onSkip(),
+                      SizedBox(height: 30),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -130,7 +129,8 @@ class ScreenApplication extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton(
         onPressed: () => Get.toNamed("/registration"),
-        child: Text("I want to create an account", style: TextStyle(color: darkGray)),
+        child: Text("I want to create an account",
+            style: TextStyle(color: darkGray)),
         style: ElevatedButton.styleFrom(
           elevation: 0,
           onPrimary: Colors.white,

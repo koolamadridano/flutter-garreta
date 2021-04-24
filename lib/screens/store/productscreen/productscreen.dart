@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/store/product-screen/productController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
+import 'package:garreta/controllers/store/store-global/storeController.dart';
 
 import 'package:garreta/screens/ui/overlay/default_overlay.dart'
     as widgetOverlay;
-import 'package:garreta/widgets/spinner/spinner.dart';
+
+import 'package:shimmer/shimmer.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -21,54 +24,16 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
   final _cartController = Get.put(CartController());
+  final _productController = Get.put(ProductController());
+  final _storeController = Get.put(StoreController());
 
   // State
   int _itemCount = 1;
   bool _isGridLayout = true;
-  List _storeItems = [];
-  bool _storeItemsIsFetching = false;
-
-  bool _addToCartLoader = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchStoreItems();
-    _onFetchCartItems();
-  }
-
-  Future<void> _fetchStoreItems() async {
-    setState(() => _storeItemsIsFetching = true);
-    var category = await _garretaApiService.fetchStoreCategory();
-    var decodedCategory = category == "0" ? null : jsonDecode(category);
-    if (decodedCategory.runtimeType != int) {
-      var storeItems = await _garretaApiService.fetchStoreItems();
-      if (storeItems.toString().trim() == "0") {
-        setState(() {
-          _storeItemsIsFetching = false;
-        });
-        return;
-      }
-      var decodedStoreItems = jsonDecode(storeItems);
-      if (decodedStoreItems.runtimeType != int) {
-        decodedStoreItems.sort((x, y) {
-          var _valueA = double.parse(x["prod_sellingPrice"]);
-          var _valueB = double.parse(y["prod_sellingPrice"]);
-          return _valueA.compareTo(_valueB);
-        });
-
-        if (mounted && decodedStoreItems != null) {
-          setState(() {
-            _storeItems = decodedStoreItems;
-            _storeItemsIsFetching = false;
-          });
-        }
-      }
-    }
-  }
-
-  Future<void> _onFetchCartItems() async {
-    await _garretaApiService.fetchShoppingCartItems();
   }
 
   Future<void> _onAddToCart({@required itemId}) async {
@@ -89,8 +54,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     }
   }
 
-  void _onSelectItem(
-      {@required productPrice, @required productName, @required productId}) {
+  void _onSelectItem({productPrice, productName, productId}) {
     var _givenPrice = productPrice.toString();
     var _translatedPrice = _givenPrice.contains('.')
         ? "₱" + _givenPrice
@@ -106,7 +70,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
         ),
         child: Container(
           width: Get.width,
-          height: Get.height * 0.4,
           padding: EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -173,24 +136,55 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   void _onChangeStoreItemsLayout() =>
       setState(() => _isGridLayout = !_isGridLayout);
 
+  // `Grid loader`
+  SliverPadding _loader = SliverPadding(
+    padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
+    sliver: SliverGrid.count(
+      crossAxisCount: 2,
+      childAspectRatio: 0.8,
+      crossAxisSpacing: 5,
+      mainAxisSpacing: 5,
+      children: [
+        for (var i = 0; i < 5; i++)
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            width: 200.0,
+            height: 200.0,
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300],
+              highlightColor: Colors.grey[100],
+              child: Container(
+                color: Colors.white,
+                height: 100,
+                width: 100,
+              ),
+            ),
+          ),
+      ],
+      // Use a delegate to build items as they're scrolled on screen.
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: fadeWhite,
+        backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
           toolbarHeight: 58,
           leading: SizedBox(),
           leadingWidth: 0,
-          elevation: 2,
+          elevation: 5,
           title: Container(
             width: Get.width * 0.6,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${_garretaApiService.merchantName}",
+                  "${_storeController.merchantName.value}",
                   style: GoogleFonts.roboto(
                     color: darkGray,
                     fontSize: 17,
@@ -198,7 +192,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                   ),
                 ),
                 Text(
-                  "${_garretaApiService.merchantAddress}",
+                  "${_storeController.merchantAddress.value}",
                   style: GoogleFonts.roboto(
                     color: darkGray,
                     fontSize: 12,
@@ -212,7 +206,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
           ),
           actions: [
             GestureDetector(
-              onTap: () => _onChangeStoreItemsLayout(),
+              onTap: () => setState(() => _isGridLayout = !_isGridLayout),
               child: Container(
                 margin: EdgeInsets.only(right: 15),
                 child: Icon(
@@ -223,112 +217,169 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
             ),
           ],
         ),
-        body: _storeItemsIsFetching
-            ? SpinkitThreeBounce(
-                color: Colors.white,
-                size: 24,
-              )
-            : Container(
-                margin: EdgeInsets.symmetric(horizontal: 5),
-                child: GridView.count(
-                  physics: BouncingScrollPhysics(),
-                  crossAxisCount: _isGridLayout ? 2 : 1,
-                  crossAxisSpacing: 5,
-                  mainAxisSpacing: 5,
-                  childAspectRatio: 0.8,
-                  children: _mapStoreItems(data: _storeItems),
+        body: CustomScrollView(
+          physics: BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              backgroundColor: Colors.white,
+              leading: SizedBox(),
+              leadingWidth: 0.0,
+              //snap: true,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Obx(() => Text(
+                      "${_storeController.merchantName.value} - Lorem ipsum dolor sit amet",
+                      style: GoogleFonts.roboto(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w300),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    )),
+                titlePadding: EdgeInsets.all(30),
+                centerTitle: true,
+                stretchModes: [
+                  StretchMode.zoomBackground,
+                  StretchMode.fadeTitle,
+                ],
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network("https://bit.ly/3tA2hoo", fit: BoxFit.cover),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.8),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              expandedHeight: 180,
+              stretch: true,
+              iconTheme: IconThemeData(color: darkGray),
+              stretchTriggerOffset: 150,
+            ),
+            Obx(
+              () => _productController.isLoading.value
+                  ? _loader
+                  : SliverPadding(
+                      padding:
+                          EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
+                      sliver: SliverGrid.count(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.8,
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 5,
+                        children: _mapStoreItems(
+                          data: _productController.storeProductsData,
+                        ),
+                        // Use a delegate to build items as they're scrolled on screen.
+                      )),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  List<Container> _mapStoreItems({@required data}) {
-    List<Container> items = [];
+  List<Material> _mapStoreItems({@required data}) {
+    List<Material> items = [];
     for (int i = 0; i < data.length; i++) {
       var _givenPrice = data[i]['prod_sellingPrice'];
       var _itemPrice = _givenPrice.toString().contains('.')
           ? _givenPrice
           : _givenPrice.toString() + ".00";
 
-      var widget = Container(
-        color: fadeWhite,
-        child: GestureDetector(
-          onTap: () {
-            _onSelectItem(
-              productName: data[i]['prod_name'],
-              productPrice: data[i]['prod_sellingPrice'],
-              productId: data[i]['prod_id'],
-            );
-          },
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(10),
-                  ),
-                  child: FadeInImage.assetNetwork(
-                    placeholder: "images/alt/nearby_store_alt_250x250.png",
-                    image: "https://bit.ly/3cN0Fl4",
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              ClipRRect(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(10),
-                ),
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                    width: double.infinity,
-                    color: Colors.white,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${data[i]['prod_name']} - lorem ipsum dolor sit amet",
-                          style: GoogleFonts.roboto(
-                            color: darkGray,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                        ),
-                        SizedBox(height: 2),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("₱$_itemPrice",
-                                style: GoogleFonts.roboto(
-                                  color: red,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                            Row(
-                              children: [
-                                Icon(LineIcons.box, color: darkGray, size: 14),
-                                Text("${data[i]['prod_qtyOnHand']}",
-                                    style: GoogleFonts.roboto(
-                                      color: darkGray,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    )),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+      var widget = Material(
+        borderRadius: BorderRadius.circular(10),
+        elevation: 3,
+        shadowColor: Colors.black.withOpacity(0.6),
+        child: Container(
+          child: GestureDetector(
+            onTap: () {
+              _onSelectItem(
+                productName: data[i]['prod_name'],
+                productPrice: data[i]['prod_sellingPrice'],
+                productId: data[i]['prod_id'],
+              );
+            },
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
+                    child: FadeInImage.assetNetwork(
+                      placeholder: "images/alt/nearby_store_alt_250x250.png",
+                      image: "https://bit.ly/3cN0Fl4",
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-              ),
-            ],
+                ClipRRect(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(10),
+                  ),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                      width: double.infinity,
+                      color: Colors.white,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${data[i]['prod_name']} - lorem ipsum dolor sit amet",
+                            style: GoogleFonts.roboto(
+                              color: darkGray,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                          SizedBox(height: 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("₱$_itemPrice",
+                                  style: GoogleFonts.roboto(
+                                    color: red,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                              Row(
+                                children: [
+                                  Icon(LineIcons.box,
+                                      color: darkGray, size: 14),
+                                  Text("${data[i]['prod_qtyOnHand']}",
+                                      style: GoogleFonts.roboto(
+                                        color: darkGray,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

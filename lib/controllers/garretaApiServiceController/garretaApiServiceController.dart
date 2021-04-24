@@ -3,19 +3,26 @@ import 'package:garreta/services/locationService/locationCoordinates.dart';
 import 'package:garreta/services/locationService/locationTitle.dart';
 import 'package:garreta/utils/enum/enum.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import 'dart:convert';
 
-final _loginBaseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
-final _registrationBaseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php?operation=addNew&";
-final _postShoppingCartBaseUrl = "http://shareatext.com/garreta/webservices/v2/posting.php";
-final _fetchStoreCategoryBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getCategorybyVendor&";
-final _fetchStoreItemsBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getItemsbyCategVendor&";
-final _fetchNearbyStoreBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getNearbyVendor&";
-final _fetchShoppingCartBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
-final _postShoppingCartUpdateBaseUrl = "http://shareatext.com/garreta/webservices/v2/posting.php";
+final _loginBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
+final _registrationBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/customers.php?operation=addNew&";
+final _postShoppingCartBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/posting.php";
+final _fetchStoreCategoryBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getCategorybyVendor&";
+final _fetchStoreItemsBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getItemsbyCategVendor&";
+final _fetchNearbyStoreBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getNearbyVendor&";
+final _fetchShoppingCartBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
+final _postShoppingCartUpdateBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/posting.php";
 
 // Class
 class GarretaApiServiceController extends GetxController {
@@ -45,7 +52,8 @@ class GarretaApiServiceController extends GetxController {
   // Account methods
   Future<int> login({username, password}) async {
     try {
-      var result = await http.post(Uri.parse("${_loginBaseUrl}contactNumber=$username&password=$password"));
+      var result = await http.post(Uri.parse(
+          "${_loginBaseUrl}contactNumber=$username&password=$password"));
       if (result.body.isNotEmpty) {
         var response = jsonDecode(result.body);
         userId = response[0]["personalDetails"]["cust_id"];
@@ -58,7 +66,8 @@ class GarretaApiServiceController extends GetxController {
     }
   }
 
-  Future<int> register({name, number, email, address, birthday, gender, password}) async {
+  Future<int> register(
+      {name, number, email, address, birthday, gender, password}) async {
     try {
       var result = await http.post(Uri.parse(
           "${_registrationBaseUrl}name=$name&contactNumber=$number&email=$email&address=$address&birthDate=$birthday&gender=$gender&password=$password"));
@@ -90,7 +99,8 @@ class GarretaApiServiceController extends GetxController {
   }
 
   Future<dynamic> fetchShoppingCartItems() async {
-    var result = await http.get(Uri.parse("${_fetchShoppingCartBaseUrl}myid=$userId"));
+    var result =
+        await http.get(Uri.parse("${_fetchShoppingCartBaseUrl}myid=$userId"));
     try {
       if (result != null) {
         var decodedResponse = jsonDecode(result.body);
@@ -121,7 +131,8 @@ class GarretaApiServiceController extends GetxController {
 
   Future<dynamic> fetchStoreCategory() async {
     try {
-      var result = await http.get(Uri.parse("${_fetchStoreCategoryBaseUrl}merid=$merchantId"));
+      var result = await http
+          .get(Uri.parse("${_fetchStoreCategoryBaseUrl}merid=$merchantId"));
       var decodedResult = jsonDecode(result.body);
       merchantStoreCategoryId = decodedResult[0]['cat_id'];
       return result.body;
@@ -131,13 +142,14 @@ class GarretaApiServiceController extends GetxController {
   }
 
   Future<dynamic> fetchStoreItems() async {
-    var result =
-        await http.get(Uri.parse("${_fetchStoreItemsBaseUrl}merid=$merchantId&categid=$merchantStoreCategoryId"));
+    var result = await http.get(
+        Uri.parse("${_fetchStoreItemsBaseUrl}merid=$merchantId&categid=0"));
     return result.body;
   }
 
   Future<int> postAddToCart({@required itemId, @required qty}) async {
-    var request = http.MultipartRequest("POST", Uri.parse(_postShoppingCartBaseUrl));
+    var request =
+        http.MultipartRequest("POST", Uri.parse(_postShoppingCartBaseUrl));
     request.fields['rtr'] = "addtoCart";
     request.fields['merid'] = merchantId.toString();
     request.fields['itemid'] = itemId.toString();
@@ -153,7 +165,8 @@ class GarretaApiServiceController extends GetxController {
   }
 
   Future<int> postCartUpdate({@required itemid, @required qty}) async {
-    var request = http.MultipartRequest("POST", Uri.parse(_postShoppingCartUpdateBaseUrl));
+    var request = http.MultipartRequest(
+        "POST", Uri.parse(_postShoppingCartUpdateBaseUrl));
     request.fields['rtr'] = "editItemCart";
     request.fields['myid'] = userId.toString();
     request.fields['merid'] = merchantId.toString();
@@ -163,7 +176,8 @@ class GarretaApiServiceController extends GetxController {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
       //Print payload
-      print("@postCartUpdate <itemId $itemid> <qty $qty> <merchantId $merchantId>");
+      print(
+          "@postCartUpdate <itemId $itemid> <qty $qty> <merchantId $merchantId>");
       return 200;
     } catch (e) {
       return 400;

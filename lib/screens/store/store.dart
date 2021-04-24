@@ -64,7 +64,7 @@ class _ScreenStoreState extends State<ScreenStore> {
           ),
         ),
         bottomNavigationBar: BottomAppBar(
-          elevation: 0,
+          elevation: 5,
           child: Container(
             color: Colors.white,
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -72,110 +72,114 @@ class _ScreenStoreState extends State<ScreenStore> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                GestureDetector(
-                  onTap: () => Get.offNamed("/store-nearby-store"),
-                  child: Icon(LineIcons.mapMarker,
-                      color: darkGray.withOpacity(0.4)),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if (_garretaApiService.merchantId == null) {
-                      Get.toNamed('/store-nearby-store');
-                      return;
-                    } else {
-                      setState(() => _pageCounter = 0);
-                      _pageController.animateToPage(0,
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.easeInOut);
-                    }
-                  },
-                  child: Icon(
-                    LineIcons.store,
-                    color: _pageCounter == 0
-                        ? darkGray
-                        : darkGray.withOpacity(0.4),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() => _pageCounter = 1);
-                    _pageController.animateToPage(1,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
-                  },
-                  child: Icon(
-                    LineIcons.search,
-                    color: _pageCounter == 1
-                        ? darkGray
-                        : darkGray.withOpacity(0.4),
-                  ),
-                ),
-                Obx(
-                  () => _cartController.cartItems.length == 0
-                      ? GestureDetector(
-                          onTap: () {
-                            if (!_garretaApiService.isAuthenticated())
-                              Get.offAndToNamed("/login");
-                            setState(() => _pageCounter = 2);
-                            _pageController.animateToPage(2,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut);
-                          },
-                          child: Icon(
-                            LineIcons.shoppingBasket,
-                            size: 28,
-                            color: _pageCounter == 2
-                                ? darkGray
-                                : darkGray.withOpacity(0.4),
-                          ),
-                        )
-                      : GestureDetector(
-                          onTap: () {
-                            if (!_garretaApiService.isAuthenticated()) {
-                              Get.offAllNamed("/login");
-                            }
-                            setState(() => _pageCounter = 2);
-                            _pageController.animateToPage(2,
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut);
-                          },
-                          child: Badge(
-                            badgeColor: red,
-                            animationDuration: Duration(milliseconds: 500),
-                            badgeContent: Text(
-                              '${_cartController.cartItems.length}',
-                              style: _storeBadgeShoppingCartTextStyle,
-                            ),
-                            child: Icon(
-                              LineIcons.shoppingBasket,
-                              color: _pageCounter == 2
-                                  ? darkGray
-                                  : darkGray.withOpacity(0.4),
-                              size: 28,
-                            ),
-                          ),
-                        ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() => _pageCounter = 3);
-                    _pageController.animateToPage(3,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.easeInOut);
-                  },
-                  child: Icon(
-                    LineIcons.horizontalSliders,
-                    color: _pageCounter == 3
-                        ? darkGray
-                        : darkGray.withOpacity(0.4),
-                  ),
-                ),
+                _buttonNearbyStore(),
+                _buttonStore(),
+                _buttonSearch(),
+                _buttonBasket(),
+                _buttonSettings(),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  GestureDetector _buttonNearbyStore() {
+    return GestureDetector(
+      onTap: () => Get.offNamed("/store-nearby-store"),
+      child: Icon(LineIcons.mapMarker, color: darkGray.withOpacity(0.4)),
+    );
+  }
+
+  GestureDetector _buttonStore() {
+    return GestureDetector(
+      onTap: () {
+        if (_garretaApiService.merchantId == null) {
+          Get.toNamed('/store-nearby-store');
+          return;
+        } else {
+          setState(() => _pageCounter = 0);
+          _pageController.animateToPage(0,
+              duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+        }
+      },
+      child: Icon(
+        LineIcons.store,
+        color: _pageCounter == 0 ? darkGray : darkGray.withOpacity(0.4),
+      ),
+    );
+  }
+
+  GestureDetector _buttonSearch() {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _pageCounter = 1);
+        _pageController.animateToPage(1,
+            duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      },
+      child: Icon(
+        LineIcons.search,
+        color: _pageCounter == 1 ? darkGray : darkGray.withOpacity(0.4),
+      ),
+    );
+  }
+
+  GestureDetector _buttonSettings() {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _pageCounter = 3);
+        _pageController.animateToPage(3,
+            duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      },
+      child: Icon(
+        LineIcons.horizontalSliders,
+        color: _pageCounter == 3 ? darkGray : darkGray.withOpacity(0.4),
+      ),
+    );
+  }
+
+  Obx _buttonBasket() {
+    return Obx(() => _cartController.cartItems.length == 0
+        ? GestureDetector(
+            onTap: () {
+              if (!_garretaApiService.isAuthenticated())
+                Get.offAndToNamed("/login");
+              setState(() => _pageCounter = 2);
+              _pageController.animateToPage(2,
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeInOut);
+            },
+            child: Icon(
+              LineIcons.shoppingBasket,
+              size: 28,
+              color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
+            ),
+          )
+        : GestureDetector(
+            onTap: () {
+              if (!_garretaApiService.isAuthenticated()) {
+                Get.offAllNamed("/login");
+              }
+              setState(() => _pageCounter = 2);
+              _pageController.animateToPage(2,
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeInOut);
+            },
+            child: Badge(
+              badgeColor: red,
+              animationDuration: Duration(milliseconds: 500),
+              badgeContent: Text(
+                '${_cartController.cartItems.length}',
+                style: _storeBadgeShoppingCartTextStyle,
+              ),
+              child: Icon(
+                LineIcons.shoppingBasket,
+                color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
+                size: 28,
+              ),
+            ),
+          ));
   }
 
   @override

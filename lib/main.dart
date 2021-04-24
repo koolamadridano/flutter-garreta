@@ -16,26 +16,60 @@ void main() {
       title: 'Garreta',
       enableLog: true,
       defaultTransition: Transition.fade,
-      transitionDuration: Duration(milliseconds: 500),
+      transitionDuration: Duration(milliseconds: 600),
       initialRoute: "/home",
       getPages: [
         // # DEFAULT ROUTE
-        GetPage(name: "/home", page: () => ScreenApplication()),
-
+        GetPage(
+          title: 'Home screen',
+          name: "/home",
+          page: () => ScreenApplication(),
+        ),
         // # ACCOUNT REGISTRATION/LOGIN ROUTES
-        GetPage(name: "/login", page: () => ScreenLogin()),
-        GetPage(name: "/registration", page: () => ScreenRegistrationPhase1()),
-        GetPage(name: "/registration-phase-2", page: () => ScreenRegistrationPhase2()),
-        GetPage(name: "/registration-phase-3", page: () => ScreenRegistrationPhase3()),
-
+        GetPage(
+          title: 'Login screen',
+          name: "/login",
+          page: () => ScreenLogin(),
+        ),
+        GetPage(
+          title: 'Registration screen',
+          name: "/registration",
+          page: () => ScreenRegistrationPhase1(),
+        ),
+        GetPage(
+          title: 'Registration-2 screen',
+          name: "/registration-phase-2",
+          page: () => ScreenRegistrationPhase2(),
+        ),
+        GetPage(
+          title: 'Registration-3 screen',
+          name: "/registration-phase-3",
+          page: () => ScreenRegistrationPhase3(),
+        ),
         // # STORE ROUTES
-        GetPage(name: "/store", page: () => ScreenStore()),
+        GetPage(
+          title: 'Store screen',
+          name: "/store",
+          page: () => ScreenStore(),
+        ),
 
-        GetPage(name: "/store-nearby-store", page: () => ScreenNearbyStore()),
-        GetPage(name: "/store-product-screen", page: () => ScreenProductScreen()),
+        GetPage(
+          title: 'Nearby store screen',
+          name: "/store-nearby-store",
+          page: () => ScreenNearbyStore(),
+        ),
+        GetPage(
+          title: 'Product screen',
+          name: "/store-product-screen",
+          page: () => ScreenProductScreen(),
+        ),
 
         // # OTP ROUTES
-        GetPage(name: "/otp-verification", page: () => ScreenOtpVerification()),
+        GetPage(
+          title: 'OTP screen',
+          name: "/otp-verification",
+          page: () => ScreenOtpVerification(),
+        ),
         //GetPage(name: "/playground", page: () => ScreenPlayground()),
       ],
     ),
