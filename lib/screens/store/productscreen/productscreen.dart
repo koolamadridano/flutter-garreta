@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 
-import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
+import 'package:garreta/screens/ui/overlay/default_overlay.dart'
+    as widgetOverlay;
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +20,7 @@ class ScreenProductScreen extends StatefulWidget {
 class _ScreenProductScreenState extends State<ScreenProductScreen> {
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _cartController = Get.put(CartController());
 
   // State
   int _itemCount = 1;
@@ -73,9 +76,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     if (_garretaApiService.isAuthenticated()) {
       try {
         widgetOverlay.toggleOverlay(context: context);
-        await Future<bool>.delayed(Duration.zero, () async {
-          await _garretaApiService.postAddToCart(itemId: itemId, qty: _itemCount);
-          await _garretaApiService.fetchShoppingCartItems();
+        Future<bool>.delayed(Duration.zero, () async {
+          await _cartController.addToCart(itemId: itemId, qty: _itemCount);
           return true;
         }).then((value) => value ? Get.back() : null); // pop overlay);
       } on Exception catch (e) {
@@ -87,9 +89,12 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     }
   }
 
-  void _onSelectItem({@required productPrice, @required productName, @required productId}) {
+  void _onSelectItem(
+      {@required productPrice, @required productName, @required productId}) {
     var _givenPrice = productPrice.toString();
-    var _translatedPrice = _givenPrice.contains('.') ? "₱" + _givenPrice : "₱" + _givenPrice + ".00";
+    var _translatedPrice = _givenPrice.contains('.')
+        ? "₱" + _givenPrice
+        : "₱" + _givenPrice + ".00";
     Get.bottomSheet(
       Container(
         decoration: BoxDecoration(
@@ -165,7 +170,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   }
 
   // Extra
-  void _onChangeStoreItemsLayout() => setState(() => _isGridLayout = !_isGridLayout);
+  void _onChangeStoreItemsLayout() =>
+      setState(() => _isGridLayout = !_isGridLayout);
 
   @override
   Widget build(BuildContext context) {
@@ -241,7 +247,9 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     List<Container> items = [];
     for (int i = 0; i < data.length; i++) {
       var _givenPrice = data[i]['prod_sellingPrice'];
-      var _itemPrice = _givenPrice.toString().contains('.') ? _givenPrice : _givenPrice.toString() + ".00";
+      var _itemPrice = _givenPrice.toString().contains('.')
+          ? _givenPrice
+          : _givenPrice.toString() + ".00";
 
       var widget = Container(
         color: fadeWhite,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
+
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/search/search.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
@@ -20,6 +22,8 @@ class ScreenStore extends StatefulWidget {
 class _ScreenStoreState extends State<ScreenStore> {
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _cartController = Get.put(CartController());
+
   PageController _pageController = PageController();
 
   // State
@@ -70,7 +74,8 @@ class _ScreenStoreState extends State<ScreenStore> {
               children: [
                 GestureDetector(
                   onTap: () => Get.offNamed("/store-nearby-store"),
-                  child: Icon(LineIcons.mapMarker, color: darkGray.withOpacity(0.4)),
+                  child: Icon(LineIcons.mapMarker,
+                      color: darkGray.withOpacity(0.4)),
                 ),
                 GestureDetector(
                   onTap: () {
@@ -79,37 +84,49 @@ class _ScreenStoreState extends State<ScreenStore> {
                       return;
                     } else {
                       setState(() => _pageCounter = 0);
-                      _pageController.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      _pageController.animateToPage(0,
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeInOut);
                     }
                   },
                   child: Icon(
                     LineIcons.store,
-                    color: _pageCounter == 0 ? darkGray : darkGray.withOpacity(0.4),
+                    color: _pageCounter == 0
+                        ? darkGray
+                        : darkGray.withOpacity(0.4),
                   ),
                 ),
                 GestureDetector(
                   onTap: () {
                     setState(() => _pageCounter = 1);
-                    _pageController.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    _pageController.animateToPage(1,
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.easeInOut);
                   },
                   child: Icon(
                     LineIcons.search,
-                    color: _pageCounter == 1 ? darkGray : darkGray.withOpacity(0.4),
+                    color: _pageCounter == 1
+                        ? darkGray
+                        : darkGray.withOpacity(0.4),
                   ),
                 ),
                 Obx(
-                  () => _garretaApiService.shoppingCartLength.value == 0
+                  () => _cartController.cartItems.length == 0
                       ? GestureDetector(
                           onTap: () {
-                            if (!_garretaApiService.isAuthenticated()) Get.offAndToNamed("/login");
+                            if (!_garretaApiService.isAuthenticated())
+                              Get.offAndToNamed("/login");
                             setState(() => _pageCounter = 2);
                             _pageController.animateToPage(2,
-                                duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut);
                           },
                           child: Icon(
                             LineIcons.shoppingBasket,
                             size: 28,
-                            color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
+                            color: _pageCounter == 2
+                                ? darkGray
+                                : darkGray.withOpacity(0.4),
                           ),
                         )
                       : GestureDetector(
@@ -119,18 +136,21 @@ class _ScreenStoreState extends State<ScreenStore> {
                             }
                             setState(() => _pageCounter = 2);
                             _pageController.animateToPage(2,
-                                duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut);
                           },
                           child: Badge(
                             badgeColor: red,
                             animationDuration: Duration(milliseconds: 500),
                             badgeContent: Text(
-                              '${_garretaApiService.shoppingCartLength.value}',
+                              '${_cartController.cartItems.length}',
                               style: _storeBadgeShoppingCartTextStyle,
                             ),
                             child: Icon(
                               LineIcons.shoppingBasket,
-                              color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
+                              color: _pageCounter == 2
+                                  ? darkGray
+                                  : darkGray.withOpacity(0.4),
                               size: 28,
                             ),
                           ),
@@ -139,11 +159,15 @@ class _ScreenStoreState extends State<ScreenStore> {
                 GestureDetector(
                   onTap: () {
                     setState(() => _pageCounter = 3);
-                    _pageController.animateToPage(3, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    _pageController.animateToPage(3,
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.easeInOut);
                   },
                   child: Icon(
                     LineIcons.horizontalSliders,
-                    color: _pageCounter == 3 ? darkGray : darkGray.withOpacity(0.4),
+                    color: _pageCounter == 3
+                        ? darkGray
+                        : darkGray.withOpacity(0.4),
                   ),
                 ),
               ],

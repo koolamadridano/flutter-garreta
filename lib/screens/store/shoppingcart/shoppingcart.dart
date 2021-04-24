@@ -72,23 +72,20 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _fetchCartItems() async {
-    await _cartController.getShoppingCartItems(
+    await _cartController.fetchShoppingCartItems(
         userId: _garretaApiService.userId);
   }
 
   Future<void> _fetchShoppingCartItems() async {
     setState(() => _isLoading = true);
     try {
-      var result = await _garretaApiService.fetchShoppingCartItems();
-      if (result.runtimeType == String) {
-        var decodedResult = jsonDecode(result);
-        if (decodedResult.length >= 1) {
-          setState(() {
-            _cartItems = decodedResult;
-            _isLoading = false;
-          });
-        }
-      } else {
+      if (_cartController.cartItems.length >= 1) {
+        setState(() {
+          _cartItems = _cartController.cartItems;
+          _isLoading = false;
+        });
+      }
+      if (_cartController.cartItems.length == 0) {
         setState(() {
           _cartIsEmpty = true;
           _cartItems = [];
@@ -120,7 +117,6 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
       Future.delayed(Duration.zero, () async {
         await _cartController.updateSelectedItem(
           itemid: itemId,
-          merchantId: merchantId,
           qty: qty,
         );
         return true;
@@ -134,7 +130,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
 
   Future<void> _dispatchDeleteSelected() async {
     try {
-      await _cartController.getShoppingCartItems(
+      await _cartController.fetchShoppingCartItems(
           userId: _garretaApiService.userId);
     } on Exception catch (e) {
       Get.back();
@@ -216,11 +212,11 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
       var _translatedPrice = _givenPrice.contains('.')
           ? "₱" + _givenPrice
           : "₱" + _givenPrice + ".00";
-
       // Initialize checkbox `state` per `item`
       _cartController.initializeItemCheckbox();
-
       var widget = Container(
+        margin: EdgeInsets.only(top: 20),
+        color: Colors.white,
         child: AnimatedOpacity(
           duration: Duration(milliseconds: 500),
           opacity: _cartController.cartItemSelectState[i] ? 1 : 0.7,
@@ -331,52 +327,76 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                               color: red,
                               fontWeight: FontWeight.bold,
                             )),
-                        Row(
+                        Stack(
                           children: [
-                            GestureDetector(
-                              onTap: () {
-                                _postCartUpdate(
-                                    itemIndex: i,
-                                    hasType: "decrement",
-                                    itemId: data[i]['itemID'],
-                                    merchantId: data[i]['merchantID'],
-                                    qty: int.parse(
-                                      data[i]['qty'],
-                                    ));
-                              },
-                              child: AnimatedOpacity(
-                                duration: Duration(milliseconds: 500),
-                                opacity: _cartController.cartItemSelectState[i]
-                                    ? 0
-                                    : 1,
-                                child: Container(
-                                  color: fadeWhite,
-                                  padding: EdgeInsets.all(10),
-                                  child: Icon(LineIcons.minus, size: 16),
+                            Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    _postCartUpdate(
+                                        itemIndex: i,
+                                        hasType: "decrement",
+                                        itemId: data[i]['itemID'],
+                                        merchantId: data[i]['merchantID'],
+                                        qty: int.parse(
+                                          data[i]['qty'],
+                                        ));
+                                  },
+                                  child: AnimatedOpacity(
+                                    duration: Duration(milliseconds: 500),
+                                    opacity:
+                                        _cartController.cartItemSelectState[i]
+                                            ? 0
+                                            : 1,
+                                    child: Container(
+                                      color: fadeWhite,
+                                      padding: EdgeInsets.all(10),
+                                      child: Icon(LineIcons.minus, size: 16),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                SizedBox(width: 2),
+                                GestureDetector(
+                                  onTap: () {
+                                    _postCartUpdate(
+                                        itemIndex: i,
+                                        hasType: "increment",
+                                        itemId: data[i]['itemID'],
+                                        merchantId: data[i]['merchantID'],
+                                        qty: int.parse(
+                                          data[i]['qty'],
+                                        ));
+                                  },
+                                  child: AnimatedOpacity(
+                                    duration: Duration(milliseconds: 500),
+                                    opacity:
+                                        _cartController.cartItemSelectState[i]
+                                            ? 0
+                                            : 1,
+                                    child: Container(
+                                      color: fadeWhite,
+                                      padding: EdgeInsets.all(10),
+                                      child: Icon(LineIcons.plus, size: 16),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 2),
-                            GestureDetector(
-                              onTap: () {
-                                _postCartUpdate(
-                                    itemIndex: i,
-                                    hasType: "increment",
-                                    itemId: data[i]['itemID'],
-                                    merchantId: data[i]['merchantID'],
-                                    qty: int.parse(
-                                      data[i]['qty'],
-                                    ));
-                              },
-                              child: AnimatedOpacity(
-                                duration: Duration(milliseconds: 500),
-                                opacity: _cartController.cartItemSelectState[i]
-                                    ? 0
-                                    : 1,
-                                child: Container(
-                                  color: fadeWhite,
-                                  padding: EdgeInsets.all(10),
-                                  child: Icon(LineIcons.plus, size: 16),
+                            Positioned.fill(
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: AnimatedOpacity(
+                                  duration: Duration(milliseconds: 500),
+                                  opacity:
+                                      _cartController.cartItemSelectState[i]
+                                          ? 1
+                                          : 0,
+                                  child: Text("CONFIRMED",
+                                      style: GoogleFonts.roboto(
+                                        color: green,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      )),
                                 ),
                               ),
                             ),
@@ -411,7 +431,9 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                 foregroundColor: red,
                 caption: 'Delete',
                 icon: Icons.delete,
-                onTap: () => _postCartUpdate(itemId: data[i]['itemID'], qty: 0),
+                onTap: () async => await _cartController.removeSelectedItem(
+                  itemid: data[i]['itemID'],
+                ),
               ),
             ],
           ),
@@ -424,165 +446,167 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        toolbarHeight: 58,
-        leading: SizedBox(),
-        leadingWidth: 0,
-        elevation: 5,
-        title: Container(
-            width: Get.width * 0.5,
-            child: Obx(() => Text(
-                  "Selected items (${_cartController.cartSelectedItems.length})",
-                  style: GoogleFonts.roboto(
-                    color: darkGray,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ))),
-        actions: [
-          Obx(() => GestureDetector(
-                onTap: () => _cartController.cartSelectedItems.length >= 1
-                    ? _deleteSelected()
-                    : {print("No item selected")},
-                child: AnimatedOpacity(
-                  duration: Duration(milliseconds: 500),
-                  opacity:
-                      _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
-                  child: Container(
-                    margin: EdgeInsets.only(right: 10),
-                    child: Icon(LineIcons.trash, color: red),
-                  ),
-                ),
-              )),
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: _cartItems.length == 0
-            ? SizedBox()
-            : Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
+    return Obx(() => Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            toolbarHeight: 58,
+            leading: SizedBox(),
+            leadingWidth: 0,
+            elevation: 5,
+            title: Container(
+                width: Get.width * 0.5,
+                child: Obx(() => Text(
+                      "Selected items (${_cartController.cartSelectedItems.length})",
+                      style: GoogleFonts.roboto(
+                        color: darkGray,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ))),
+            actions: [
+              Obx(() => GestureDetector(
+                    onTap: () => _cartController.cartSelectedItems.length >= 1
+                        ? _cartController.removeSelectedInCart()
+                        : {print("No item selected")},
+                    child: AnimatedOpacity(
+                      duration: Duration(milliseconds: 500),
+                      opacity:
+                          _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
+                      child: Container(
+                        margin: EdgeInsets.only(right: 10),
+                        child: Icon(LineIcons.trash, color: red),
+                      ),
+                    ),
+                  )),
+            ],
+          ),
+          bottomNavigationBar: BottomAppBar(
+            child: _cartController.cartItems.length == 0
+                ? SizedBox()
+                : Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ClipRRect(
-                          clipBehavior: Clip.antiAlias,
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                          child: SizedBox(
-                            width: 22.0,
-                            height: 22.0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  width: 1,
-                                  color: darkGray,
+                        Row(
+                          children: [
+                            ClipRRect(
+                              clipBehavior: Clip.antiAlias,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20)),
+                              child: SizedBox(
+                                width: 22.0,
+                                height: 22.0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      width: 1,
+                                      color: darkGray,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Theme(
+                                    data: ThemeData(
+                                        unselectedWidgetColor:
+                                            Colors.transparent),
+                                    child: Obx(() => Checkbox(
+                                          value: _cartController
+                                              .selectAllItemsInCart.value,
+                                          onChanged: (isChecked) =>
+                                              _selectAll(state: isChecked),
+                                          activeColor: Colors.transparent,
+                                          checkColor: darkGray,
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.padded,
+                                        )),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Theme(
-                                data: ThemeData(
-                                    unselectedWidgetColor: Colors.transparent),
-                                child: Obx(() => Checkbox(
-                                      value: _cartController
-                                          .selectAllItemsInCart.value,
-                                      onChanged: (isChecked) =>
-                                          _selectAll(state: isChecked),
-                                      activeColor: Colors.transparent,
-                                      checkColor: darkGray,
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.padded,
-                                    )),
                               ),
                             ),
-                          ),
+                            SizedBox(width: 2),
+                            Text("All"),
+                          ],
                         ),
-                        SizedBox(width: 2),
-                        Text("All"),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text("Total",
-                            style: GoogleFonts.roboto(
-                              fontSize: 13,
-                              color: darkGray,
-                              fontWeight: FontWeight.w400,
-                            )),
-                        SizedBox(width: 2),
-                        Obx(() =>
-                            Text("₱${_cartController.cartTotalPrice.value}",
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("Total",
                                 style: GoogleFonts.roboto(
-                                  fontSize: 20,
-                                  color: red,
+                                  fontSize: 13,
+                                  color: darkGray,
                                   fontWeight: FontWeight.w400,
-                                ))),
+                                )),
+                            SizedBox(width: 2),
+                            Obx(() =>
+                                Text("₱${_cartController.cartTotalPrice.value}",
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 20,
+                                      color: red,
+                                      fontWeight: FontWeight.w400,
+                                    ))),
+                          ],
+                        ),
+                        _buttonCheckout(),
                       ],
                     ),
-                    _buttonCheckout(),
-                  ],
-                ),
-              ),
-      ),
-      body: Center(
-        child: Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(0),
-                  bottomRight: Radius.circular(0),
-                ),
-                child: Container(
-                  color: darkBlue,
-                  padding: EdgeInsets.all(15),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(LineIcons.truck, size: 15, color: Colors.white),
-                      SizedBox(width: 3),
-                      Expanded(
-                        child: Text(
-                          "Cagayan de Oro City, Upper Balulang Uptown  Cagayan de Oro City, Upper Balulang Uptown Cagayan de Oro City, Upper Balulang Uptown",
-                          style: GoogleFonts.roboto(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 12,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                        ),
-                      ),
-                    ],
                   ),
-                ),
-              ),
-              _isLoading
-                  ? _widgetLoader
-                  : _cartIsEmpty
-                      ? _widgetCartIsEmpty
-                      : Expanded(
-                          child: Container(
-                            width: Get.width * 0.95,
-                            child: Obx(() => ListView(
+          ),
+          body: Center(
+            child: Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                    ),
+                    child: Container(
+                      color: darkBlue,
+                      padding: EdgeInsets.all(15),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(LineIcons.truck, size: 15, color: Colors.white),
+                          SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              "Cagayan de Oro City, Upper Balulang Uptown  Cagayan de Oro City, Upper Balulang Uptown Cagayan de Oro City, Upper Balulang Uptown",
+                              style: GoogleFonts.roboto(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _isLoading
+                      ? _widgetLoader
+                      : _cartController.cartItems.length == 0
+                          ? _widgetCartIsEmpty
+                          : Expanded(
+                              child: Container(
+                                width: Get.width * 0.95,
+                                child: ListView(
                                   physics: BouncingScrollPhysics(),
                                   children: _mapShoppingCartItems(
                                       data: _cartController.cartItems),
-                                )),
-                          ),
-                        ),
-            ],
+                                ),
+                              ),
+                            ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }
 
