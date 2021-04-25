@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 
@@ -14,6 +15,7 @@ final _editCartBaseUrl =
 
 class CartController extends GetxController {
   final _global = Get.find<GarretaApiServiceController>();
+  final _storeController = Get.find<StoreController>();
 
   RxDouble cartTotalPrice = 0.0.obs;
 
@@ -42,7 +44,7 @@ class CartController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchShoppingCartItems(userId: _global.userId);
+    fetchShoppingCartItems();
   }
 
   void initializeItemCheckbox() {
@@ -52,24 +54,29 @@ class CartController extends GetxController {
     }
   }
 
-  Future<void> fetchShoppingCartItems({@required userId}) async {
+  Future<void> fetchShoppingCartItems() async {
     try {
       var result = await http.get(
         Uri.parse("${_baseUrl}myid=${_global.userId}"),
       );
       if (result.body.trim() != "0") {
         List decodedResult = jsonDecode(result.body);
-        cartItems.value = decodedResult.reversed.toList();
+
+        var filteredResult = decodedResult.where((element) {
+          return element['merchantID'] == _storeController.merchantId.value;
+        }).toList();
+
+        cartItems.value = filteredResult;
       } else if (result.body.trim() == "0") {
         cartItems.value = [];
       }
-
       //  `stop loading` if `future is completed`
       isLoading.value = false;
-
       // Refresh `RxList<String> cartItems,  cartSelectedItems`
+      cartItems.reversed;
       cartItems.refresh();
       cartSelectedItems.refresh();
+      print("@fetchShoppingCartItems is triggered");
     } catch (e) {
       //  `stop loading` if `future is completed`
       isLoading.value = false;
@@ -80,14 +87,14 @@ class CartController extends GetxController {
   Future<void> addToCart({@required itemId, @required qty}) async {
     var request = http.MultipartRequest("POST", Uri.parse(_postCartBaseUrl));
     request.fields['rtr'] = "addtoCart";
-    request.fields['merid'] = _global.merchantId.toString();
+    request.fields['merid'] = _storeController.merchantId.toString();
     request.fields['itemid'] = itemId.toString();
     request.fields['qty'] = qty.toString();
     request.fields['myid'] = _global.userId.toString();
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
-      await fetchShoppingCartItems(userId: _global.userId);
+      await fetchShoppingCartItems();
     } catch (e) {
       print("@addToCart $e");
     }
@@ -103,7 +110,7 @@ class CartController extends GetxController {
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
-      await fetchShoppingCartItems(userId: _global.userId);
+      await fetchShoppingCartItems();
     } catch (e) {
       print("@updateSelectedItem $fetchShoppingCartItems");
     }
@@ -113,13 +120,12 @@ class CartController extends GetxController {
     var request = http.MultipartRequest("POST", Uri.parse(_editCartBaseUrl));
     request.fields['rtr'] = "editItemCart";
     request.fields['myid'] = _global.userId.toString();
-    request.fields['merid'] = _global.merchantId.toString();
+    request.fields['merid'] = _storeController.merchantId.toString();
     request.fields['itemid'] = itemid.toString();
     request.fields['qty'] = 0.toString();
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
-      await fetchShoppingCartItems(userId: _global.userId);
     } catch (e) {
       print("@removeSelectedItem $e");
     }
@@ -128,7 +134,7 @@ class CartController extends GetxController {
   Future<void> addToSelectedItem({@required itemID}) async {
     if (!cartSelectedItems.contains(itemID)) {
       // Fetch `getShoppingCartItems` to pull the new array
-      await fetchShoppingCartItems(userId: _global.userId);
+      await fetchShoppingCartItems();
       // Find item in `cartItems`
       var selectedItem =
           cartItems.where((element) => element['itemID'] == itemID);
@@ -152,7 +158,7 @@ class CartController extends GetxController {
   Future<void> removeToSelectedItem({@required itemID}) async {
     if (cartSelectedItems.contains(itemID)) {
       // Fetch `getShoppingCartItems` to pull the new array
-      await fetchShoppingCartItems(userId: _global.userId);
+      await fetchShoppingCartItems();
       // Find item in `cartItems`
       var selectedItem =
           cartItems.where((element) => element['itemID'] == itemID);
@@ -174,17 +180,24 @@ class CartController extends GetxController {
   }
 
   Future<void> removeSelectedInCart() async {
-    print(cartItems.length);
-    for (var i = 0; i < cartSelectedItems.length; i++) {
-      await removeSelectedItem(itemid: cartSelectedItems[i]);
-      if (cartSelectedItems.contains(cartSelectedItems[i])) {
-        cartSelectedItems.remove(cartSelectedItems[i]);
-      }
+    do {
+      int index = 0;
+      await removeSelectedItem(itemid: cartSelectedItems[index]).then((value) {
+        print("index($index) #${cartSelectedItems[index]} was removed in cart");
+        if (cartSelectedItems.contains(cartSelectedItems[index])) {
+          cartSelectedItems.remove(cartSelectedItems[index]);
+          index += 1;
+        }
+      });
+    } while (cartSelectedItems.length != 0);
+    if (cartSelectedItems.length == 0) {
+      selectAllItems(type: "deselectAll");
+      await fetchShoppingCartItems();
+      // `Refresh array`
+      cartItems.refresh();
+      cartSelectedItems.refresh();
+      cartItemSelectState.refresh();
     }
-    if (cartSelectedItems.length == 0) selectAllItems(type: "deselectAll");
-    cartItems.refresh();
-    cartSelectedItems.refresh();
-    cartItemSelectState.refresh();
   }
 
   Future<void> selectAllItems({@required String type}) async {
@@ -199,7 +212,7 @@ class CartController extends GetxController {
         }
       }
       // Fetch `getShoppingCartItems` to pull the new array
-      await fetchShoppingCartItems(userId: _global.userId);
+      await fetchShoppingCartItems();
       // Reset previous value
       if (cartTotalPrice.value > 0) cartTotalPrice.value = 0;
       // Loop to a new value
@@ -216,14 +229,12 @@ class CartController extends GetxController {
       cartItemSelectState.refresh();
 
       // Fetch new value
-      await fetchShoppingCartItems(userId: _global.userId);
+      await fetchShoppingCartItems();
     }
     if (type == "deselectAll") {
       selectAllItemsInCart.value = false;
-
       // Reset previous value
       if (cartTotalPrice.value > 0) cartTotalPrice.value = 0;
-
       // Loop through `cartItemSelectState` and assign `false` (deselect)
       for (var i = 0; i < cartItemSelectState.length; i++) {
         cartItemSelectState[i] = false;
@@ -237,7 +248,7 @@ class CartController extends GetxController {
       cartItemSelectState.refresh();
 
       // Fetch new value
-      await fetchShoppingCartItems(userId: _global.userId);
+      await fetchShoppingCartItems();
     }
 
     print("Selected items: $cartSelectedItems");

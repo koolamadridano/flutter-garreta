@@ -381,7 +381,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                 foregroundColor: red,
                 caption: 'Delete',
                 icon: Icons.delete,
-                onTap: () async => await _cartController.removeSelectedItem(
+                onTap: () => _cartController.removeSelectedItem(
                   itemid: data[i]['itemID'],
                 ),
               ),

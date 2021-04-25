@@ -138,6 +138,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       ),
       onPressed: () {
         if (propsIsValid) {
+          print(props);
           _storeController.merchantId.value = id;
           _storeController.merchantName.value = name;
           _storeController.merchantAddress.value = address;

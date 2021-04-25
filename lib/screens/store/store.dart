@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
+import 'package:garreta/controllers/store/store-global/storeController.dart';
 
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/search/search.dart';
@@ -23,6 +24,7 @@ class _ScreenStoreState extends State<ScreenStore> {
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
   final _cartController = Get.put(CartController());
+  final _storeController = Get.put(StoreController());
 
   PageController _pageController = PageController();
 
@@ -87,7 +89,9 @@ class _ScreenStoreState extends State<ScreenStore> {
 
   GestureDetector _buttonNearbyStore() {
     return GestureDetector(
-      onTap: () => Get.offNamed("/store-nearby-store"),
+      onTap: () {
+        Get.offNamed("/store-nearby-store");
+      },
       child: Icon(LineIcons.mapMarker, color: darkGray.withOpacity(0.4)),
     );
   }
@@ -95,8 +99,8 @@ class _ScreenStoreState extends State<ScreenStore> {
   GestureDetector _buttonStore() {
     return GestureDetector(
       onTap: () {
-        if (_garretaApiService.merchantId == null) {
-          Get.toNamed('/store-nearby-store');
+        if (_storeController.merchantId == null) {
+          Get.offNamed('/store-nearby-store');
           return;
         } else {
           setState(() => _pageCounter = 0);

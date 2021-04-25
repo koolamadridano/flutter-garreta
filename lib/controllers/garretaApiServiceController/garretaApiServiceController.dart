@@ -13,12 +13,7 @@ final _registrationBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/customers.php?operation=addNew&";
 final _postShoppingCartBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/posting.php";
-final _fetchStoreCategoryBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getCategorybyVendor&";
-final _fetchStoreItemsBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getItemsbyCategVendor&";
-final _fetchNearbyStoreBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getNearbyVendor&";
+
 final _fetchShoppingCartBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
 final _postShoppingCartUpdateBaseUrl =
@@ -83,21 +78,6 @@ class GarretaApiServiceController extends GetxController {
     }
   }
 
-  // Store methods
-  Future<dynamic> fetchNearbyStores() async {
-    Position currentCoord = await locationCoordinates();
-    var coordTitle = await locationTitle(
-      latitude: currentCoord.latitude,
-      longitude: currentCoord.longitude,
-      type: Location.featureNameAndLocality,
-    );
-    userLocation = coordTitle;
-    var result = await http.get(Uri.parse(
-      "${_fetchNearbyStoreBaseUrl}lat=${currentCoord.latitude}&lng=${currentCoord.longitude}",
-    ));
-    return result.body;
-  }
-
   Future<dynamic> fetchShoppingCartItems() async {
     var result =
         await http.get(Uri.parse("${_fetchShoppingCartBaseUrl}myid=$userId"));
@@ -127,24 +107,6 @@ class GarretaApiServiceController extends GetxController {
       print(e);
       return 400;
     }
-  }
-
-  Future<dynamic> fetchStoreCategory() async {
-    try {
-      var result = await http
-          .get(Uri.parse("${_fetchStoreCategoryBaseUrl}merid=$merchantId"));
-      var decodedResult = jsonDecode(result.body);
-      merchantStoreCategoryId = decodedResult[0]['cat_id'];
-      return result.body;
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<dynamic> fetchStoreItems() async {
-    var result = await http.get(
-        Uri.parse("${_fetchStoreItemsBaseUrl}merid=$merchantId&categid=0"));
-    return result.body;
   }
 
   Future<int> postAddToCart({@required itemId, @required qty}) async {
@@ -184,7 +146,7 @@ class GarretaApiServiceController extends GetxController {
     }
   }
 
-// Extra
+  // Extra
   bool isAuthenticated() {
     if (userId != null)
       return true;

@@ -1,14 +1,17 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/product-screen/productController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
+import 'package:garreta/screens/store/productscreen/widgets/ui/productScreenUi.dart';
+import 'package:garreta/screens/store/productscreen/widgets/widget/productScreenWidgets.dart';
 
 import 'package:garreta/screens/ui/overlay/default_overlay.dart'
     as widgetOverlay;
+import 'package:garreta/screens/ui/search/search.dart';
+import 'package:garreta/helpers/textHelper.dart';
 
-import 'package:shimmer/shimmer.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -16,6 +19,7 @@ import 'package:get/get.dart';
 
 class ScreenProductScreen extends StatefulWidget {
   ScreenProductScreen({Key key}) : super(key: key);
+
   @override
   _ScreenProductScreenState createState() => _ScreenProductScreenState();
 }
@@ -27,145 +31,46 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   final _productController = Get.put(ProductController());
   final _storeController = Get.put(StoreController());
 
+  bool _animateFabBasket = false;
   // State
   int _itemCount = 1;
-  bool _isGridLayout = true;
 
   @override
   void initState() {
     super.initState();
+    _productController.fetchStoreProducts();
+    _productController.storeCategoryData();
+
+    // `On page completely loaded`
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _animateFabBasket = true;
+      });
+      print("page loaded");
+    });
   }
 
-  Future<void> _onAddToCart({@required itemId}) async {
-    Get.back(); // pop bottomsheet
+  @override
+  dispose() {
+    super.dispose();
+  }
+
+  Future<void> _handleAddToCart({@required itemId}) async {
+    Get.back();
     if (_garretaApiService.isAuthenticated()) {
-      try {
-        widgetOverlay.toggleOverlay(context: context);
-        Future<bool>.delayed(Duration.zero, () async {
-          await _cartController.addToCart(itemId: itemId, qty: _itemCount);
-          return true;
-        }).then((value) => value ? Get.back() : null); // pop overlay);
-      } on Exception catch (e) {
-        Get.back();
-        print("Cannot add to cart please check your internet connection");
-      }
+      widgetOverlay.toggleOverlay(context: context);
+      Future<bool>.delayed(Duration.zero, () async {
+        await _cartController.addToCart(itemId: itemId, qty: _itemCount);
+        return true;
+      }).then((value) {
+        if (value == true) {
+          Get.back();
+        }
+      });
     } else if (!_garretaApiService.isAuthenticated()) {
-      Get.offAllNamed("/login"); // back to login screen
+      Get.offAndToNamed("/login"); // back to login screen
     }
   }
-
-  void _onSelectItem({productPrice, productName, productId}) {
-    var _givenPrice = productPrice.toString();
-    var _translatedPrice = _givenPrice.contains('.')
-        ? "₱" + _givenPrice
-        : "₱" + _givenPrice + ".00";
-    Get.bottomSheet(
-      Container(
-        decoration: BoxDecoration(
-          color: fadeWhite,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-        child: Container(
-          width: Get.width,
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    height: 100,
-                    width: Get.width * 0.4,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: FadeInImage.assetNetwork(
-                        placeholder: "images/alt/nearby_store_alt_250x250.png",
-                        image: "https://bit.ly/3cN0Fl4",
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: Get.width * 0.4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          child: Text(
-                            "$productName - lorem ipsum dolor sit amet",
-                            style: GoogleFonts.roboto(
-                              color: darkGray,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(top: 10),
-                          child: Text(
-                            "$_translatedPrice",
-                            style: GoogleFonts.roboto(
-                              color: darkGray,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: double.infinity,
-                          margin: EdgeInsets.only(top: 10),
-                          child: _buttonAddToCart(itemId: productId),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Extra
-  void _onChangeStoreItemsLayout() =>
-      setState(() => _isGridLayout = !_isGridLayout);
-
-  // `Grid loader`
-  SliverPadding _loader = SliverPadding(
-    padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
-    sliver: SliverGrid.count(
-      crossAxisCount: 2,
-      childAspectRatio: 0.8,
-      crossAxisSpacing: 5,
-      mainAxisSpacing: 5,
-      children: [
-        for (var i = 0; i < 5; i++)
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            width: 200.0,
-            height: 200.0,
-            child: Shimmer.fromColors(
-              baseColor: Colors.grey[300],
-              highlightColor: Colors.grey[100],
-              child: Container(
-                color: Colors.white,
-                height: 100,
-                width: 100,
-              ),
-            ),
-          ),
-      ],
-      // Use a delegate to build items as they're scrolled on screen.
-    ),
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -180,37 +85,27 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
           elevation: 5,
           title: Container(
             width: Get.width * 0.6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "${_storeController.merchantName.value}",
+            child: Obx(() => Text(
+                  "${_storeController.merchantName.value.capitalizeFirstofEach}",
                   style: GoogleFonts.roboto(
                     color: darkGray,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
-                ),
-                Text(
-                  "${_storeController.merchantAddress.value}",
-                  style: GoogleFonts.roboto(
-                    color: darkGray,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w300,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ],
-            ),
+                )),
           ),
           actions: [
             GestureDetector(
-              onTap: () => setState(() => _isGridLayout = !_isGridLayout),
+              onTap: () {
+                showSearch(
+                  context: context,
+                  delegate: Search(data: _productController.storeProductsData),
+                );
+              },
               child: Container(
                 margin: EdgeInsets.only(right: 15),
                 child: Icon(
-                  _isGridLayout ? LineIcons.thList : LineIcons.thLarge,
+                  LineIcons.search,
                   color: darkGray,
                 ),
               ),
@@ -220,57 +115,206 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
         body: CustomScrollView(
           physics: BouncingScrollPhysics(),
           slivers: [
+            // `store` of SliverAppBar
             SliverAppBar(
+              elevation: 0,
               backgroundColor: Colors.white,
               leading: SizedBox(),
               leadingWidth: 0.0,
-              //snap: true,
+              expandedHeight: 200,
+              stretch: true,
+              iconTheme: IconThemeData(color: darkGray),
+              stretchTriggerOffset: 150,
+              onStretchTrigger: () async {
+                await _productController.fetchStoreProducts();
+              },
               flexibleSpace: FlexibleSpaceBar(
-                title: Obx(() => Text(
-                      "${_storeController.merchantName.value} - Lorem ipsum dolor sit amet",
-                      style: GoogleFonts.roboto(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w300),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    )),
+                collapseMode: CollapseMode.pin,
+                title: Obx(
+                  () => Container(
+                    margin: EdgeInsets.only(bottom: 20),
+                    width: Get.width * 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            "${_storeController.merchantName.value}",
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            "${_storeController.merchantAddress.value}",
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w300,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            "${double.parse(_storeController.merchantDistance.value).toStringAsFixed(2)}km",
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontSize: 6,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 titlePadding: EdgeInsets.all(30),
-                centerTitle: true,
                 stretchModes: [
                   StretchMode.zoomBackground,
                   StretchMode.fadeTitle,
                 ],
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network("https://bit.ly/3tA2hoo", fit: BoxFit.cover),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.8),
-                            Colors.transparent,
-                          ],
+                background: Container(
+                  color: Colors.white,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withOpacity(0.5),
+                          BlendMode.srcOver,
+                        ),
+                        child: Container(
+                          child: Image.asset(
+                            "images/store/vendor_banner.jpg",
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        child: Container(
+                          height: 30,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(50),
+                              ),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 0,
+                              )),
+                        ),
+                        bottom: -1,
+                        left: 0,
+                        right: 0,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 45,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(120),
+                          child: Container(
+                            color: darkBlue,
+                            width: 60,
+                            height: 60,
+                            child: Icon(
+                              LineIcons.shoppingBasket,
+                              size: 26,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              expandedHeight: 180,
-              stretch: true,
-              iconTheme: IconThemeData(color: darkGray),
-              stretchTriggerOffset: 150,
             ),
+
+            // `title` of category
+            SliverPadding(
+              padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  child: Text(
+                    "Category",
+                    style: GoogleFonts.roboto(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+
+            // `ListView.builder` of category
+            SliverPadding(
+              padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
+              sliver: SliverToBoxAdapter(
+                child: _mapStoreCategory(
+                  data: _productController.storeCategoryData,
+                ),
+              ),
+            ),
+
+            // `title` of Popular picks
+            SliverPadding(
+              padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 20.0),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  child: Text(
+                    "Popular picks",
+                    style: GoogleFonts.roboto(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+
+            // `ListView.builder` of popular picks
+            SliverPadding(
+              padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  height: 100.0,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    physics: BouncingScrollPhysics(),
+                    children: [
+                      for (var i = 0; i < 10; i++)
+                        Container(
+                          margin: EdgeInsets.only(right: 10),
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                            color: fadeWhite,
+                          ),
+                          child: Container(
+                            height: 100,
+                            width: 100,
+                          ),
+                        )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ` SliverGrid.count` of store items
             Obx(
               () => _productController.isLoading.value
-                  ? _loader
+                  ? gridLoading as Widget
                   : SliverPadding(
                       padding:
-                          EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
+                          EdgeInsets.only(right: 10.0, left: 10.0, top: 20.0),
                       sliver: SliverGrid.count(
                         crossAxisCount: 2,
                         childAspectRatio: 0.8,
@@ -288,6 +332,37 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     );
   }
 
+  Container _mapStoreCategory({@required data}) {
+    return Container(
+      height: 35.0,
+      child: Obx(() => ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: BouncingScrollPhysics(),
+          itemCount: data.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Container(
+              margin: EdgeInsets.only(right: 10),
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                color: fadeWhite,
+              ),
+              child: Center(
+                child: Text(
+                  "${data[index]['cat_name']}",
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            );
+          })),
+
+      // ListView(
+    );
+  }
+
   List<Material> _mapStoreItems({@required data}) {
     List<Material> items = [];
     for (int i = 0; i < data.length; i++) {
@@ -298,29 +373,27 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
 
       var widget = Material(
         borderRadius: BorderRadius.circular(10),
-        elevation: 3,
+        elevation: 0,
         shadowColor: Colors.black.withOpacity(0.6),
+        color: fadeWhite,
         child: Container(
           child: GestureDetector(
             onTap: () {
-              _onSelectItem(
+              toggleSelectItem(
                 productName: data[i]['prod_name'],
                 productPrice: data[i]['prod_sellingPrice'],
                 productId: data[i]['prod_id'],
+                action: () => _handleAddToCart(itemId: data[i]['prod_id']),
               );
             },
             child: Stack(
               children: [
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(10),
-                    ),
-                    child: FadeInImage.assetNetwork(
-                      placeholder: "images/alt/nearby_store_alt_250x250.png",
-                      image: "https://bit.ly/3cN0Fl4",
-                      fit: BoxFit.cover,
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  child: FadeInImage.assetNetwork(
+                    placeholder: "images/alt/nearby_store_alt_250x250.png",
+                    image: "https://bit.ly/3cN0Fl4",
+                    fit: BoxFit.cover,
                   ),
                 ),
                 ClipRRect(
@@ -333,7 +406,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                       padding:
                           EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                       width: double.infinity,
-                      color: Colors.white,
+                      color: fadeWhite,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -355,7 +428,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                             children: [
                               Text("₱$_itemPrice",
                                   style: GoogleFonts.roboto(
-                                    color: red,
+                                    color: darkGray,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   )),
@@ -386,30 +459,5 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
       items.add(widget);
     }
     return items;
-  }
-
-  TextButton _buttonAddToCart({@required itemId}) {
-    return TextButton(
-      style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            side: BorderSide(
-              color: darkBlue,
-              width: 1,
-            ),
-          ),
-        ),
-      ),
-      onPressed: () {
-        _onAddToCart(itemId: itemId);
-      },
-      child: Text("ADD TO CART",
-          style: GoogleFonts.roboto(
-            color: darkBlue,
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-          )),
-    );
   }
 }
