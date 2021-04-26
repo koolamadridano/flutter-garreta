@@ -58,6 +58,11 @@ final TextStyle storeNameTextStyle = GoogleFonts.roboto(
   fontSize: 16,
   fontWeight: FontWeight.w400,
 );
+final TextStyle storeNameTextStyle_2 = GoogleFonts.roboto(
+  color: darkGray,
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+);
 final TextStyle storeBizHrsTextStyle = GoogleFonts.roboto(
   fontSize: 12,
   fontWeight: FontWeight.w300,

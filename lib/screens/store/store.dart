@@ -46,7 +46,7 @@ class _ScreenStoreState extends State<ScreenStore> {
               ScreenProductScreen(),
               ScreenSearch(),
               ScreenShoppingCart(),
-              ScreenStoreSettings(),
+              ScreenStoreAccount(),
             ],
           ),
         ),
@@ -63,7 +63,7 @@ class _ScreenStoreState extends State<ScreenStore> {
                 _buttonStore(),
                 _buttonSearch(),
                 _buttonBasket(),
-                _buttonSettings(),
+                _buttonAccount(),
               ],
             ),
           ),
@@ -114,7 +114,7 @@ class _ScreenStoreState extends State<ScreenStore> {
     );
   }
 
-  GestureDetector _buttonSettings() {
+  GestureDetector _buttonAccount() {
     return GestureDetector(
       onTap: () {
         setState(() => _pageCounter = 3);
@@ -122,7 +122,7 @@ class _ScreenStoreState extends State<ScreenStore> {
             duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       },
       child: Icon(
-        LineIcons.horizontalSliders,
+        LineIcons.user,
         color: _pageCounter == 3 ? darkGray : darkGray.withOpacity(0.4),
       ),
     );

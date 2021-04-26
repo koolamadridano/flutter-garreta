@@ -5,27 +5,6 @@ import 'package:http/http.dart' as http;
 
 final _loginBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
-var user = [
-  {
-    "personalDetails": {
-      "cust_id": 11,
-      "cust_name": "x cnbxbbb",
-      "cust_email": "rurikk@jm.com",
-      "cust_contactNumber": "09999999999",
-      "cust_address":
-          "Clover Street, Cagayan de Oro, Misamis Oriental, Philippines",
-      "cust_birthDate": "2021-04-14",
-      "cust_registrationDate": "2021-04-16",
-      "cust_status": 1,
-      "cust_gender": "Secret",
-      "cust_reputation": 0,
-      "cust_numberOfOrders": 0,
-      "cust_numberOfCancelledOrders": 0,
-      "cust_password": "lgll"
-    }
-  },
-  {"deliveryAddress": ""}
-];
 
 class UserController extends GetxController {
   var id;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/product-screen/productController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
@@ -25,9 +24,7 @@ class ScreenProductScreen extends StatefulWidget {
 
 class _ScreenProductScreenState extends State<ScreenProductScreen> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
   final _userController = Get.put(UserController());
-
   final _cartController = Get.put(CartController());
   final _productController = Get.put(ProductController());
   final _storeController = Get.put(StoreController());
@@ -40,11 +37,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     super.initState();
     _productController.fetchStoreProducts();
     _productController.storeCategoryData();
-  }
-
-  @override
-  dispose() {
-    super.dispose();
   }
 
   Future<void> _handleAddToCart({@required itemId}) async {
@@ -132,7 +124,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                       children: [
                         Flexible(
                           child: Text(
-                            "${_storeController.merchantName.value}",
+                            "${_storeController.merchantName.value.capitalizeFirstofEach}",
                             style: GoogleFonts.roboto(
                               color: Colors.white,
                               fontSize: 10,

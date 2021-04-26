@@ -511,8 +511,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
               FadeInImage.assetNetwork(
                 placeholder: "images/alt/nearby_store_alt_250x250.png",
                 image: "https://bit.ly/3tA2hoo",
-                height: 100,
-                width: 100,
+                height: 70,
+                width: 70,
                 fit: BoxFit.cover,
               ),
               SizedBox(width: 10),
@@ -524,21 +524,21 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                     Container(
                       margin: EdgeInsets.only(bottom: 5),
                       child: Text(
-                        "${data[i]['mer_name']} lorem ipsum dolor sit amet",
-                        style: storeNameTextStyle,
+                        "${data[i]['mer_name'].toString().capitalizeFirstofEach} - Store",
+                        style: storeNameTextStyle_2,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                       ),
                     ),
-                    Container(
-                      margin: EdgeInsets.only(bottom: 5),
-                      child: Text(
-                        "${data[i]['mer_BusinessHours']}",
-                        style: storeBizHrsTextStyle,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
+                    // Container(
+                    //   margin: EdgeInsets.only(bottom: 5),
+                    //   child: Text(
+                    //     "${data[i]['mer_BusinessHours']}",
+                    //     style: storeBizHrsTextStyle,
+                    //     overflow: TextOverflow.ellipsis,
+                    //     maxLines: 1,
+                    //   ),
+                    // ),
                     Text(
                       "${data[i]['mer_address']}",
                       style: storeAddressTextStyle,
@@ -595,7 +595,21 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         ),
       );
       items.add(widget);
+      if (i == data.length - 1) {
+        items.add(Container(
+          margin: EdgeInsets.only(top: 40),
+          child: Text(
+            "End of result",
+            style: GoogleFonts.roboto(
+              color: darkGray.withOpacity(0.2),
+              fontWeight: FontWeight.w300,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ));
+      }
     }
+
     return items;
   }
 
@@ -737,9 +751,21 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                         ),
                       ),
                       SizedBox(height: 20),
+                      Container(
+                        width: Get.width * 0.8,
+                        child: Text(
+                          "Nearby stores",
+                          style: GoogleFonts.roboto(
+                            color: darkGray,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.0,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
                       Expanded(
                         child: Container(
-                          width: Get.width * 0.9,
+                          width: Get.width * 0.8,
                           child: ListView(
                             physics: BouncingScrollPhysics(),
                             children: _mapNearbyStore(
