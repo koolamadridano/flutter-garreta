@@ -1,12 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
-
 import 'package:garreta/screens/ui/overlay/default_overlay.dart'
     as widgetOverlay;
 import 'package:garreta/utils/colors/colors.dart';
-import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -59,8 +55,9 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _handleDelete({@required type}) async {
-    widgetOverlay.toggleOverlay(context: context);
+    Get.back();
     try {
+      widgetOverlay.toggleOverlay(context: context);
       if (type) {
         await _cartController.cleanCartItems().then((value) {
           Get.back();
@@ -111,13 +108,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   Future<void> _deleteSelected() async {
     if (_cartController.cartSelectedItems.length >= 1) {
       Get.bottomSheet(Container(
-        decoration: BoxDecoration(
-          color: fadeWhite,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
+        color: Colors.white,
         height: 80,
         padding: EdgeInsets.all(20),
         child: Row(
@@ -146,7 +137,8 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () => _handleDelete(
+                      type: _cartController.selectAllItemsInCart.value),
                   child: Text("Yes",
                       style: GoogleFonts.roboto(
                         fontWeight: FontWeight.w300,
@@ -439,9 +431,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
           Obx(
             () => GestureDetector(
               onTap: () => _cartController.cartSelectedItems.length >= 1
-                  ? _handleDelete(
-                      type: _cartController.selectAllItemsInCart.value,
-                    )
+                  ? _deleteSelected()
                   : {print("No item selected")},
               child: AnimatedOpacity(
                 duration: Duration(milliseconds: 500),
