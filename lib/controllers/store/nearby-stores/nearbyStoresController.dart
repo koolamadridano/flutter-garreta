@@ -6,8 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
-final _fetchNearbyStoreBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getNearbyVendor&";
+final _fetchNearbyStoreBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getNearbyVendor&";
 
 class NearbyStoreController extends GetxController {
   RxString locationName = "Obtaining location..".obs;
@@ -17,10 +16,10 @@ class NearbyStoreController extends GetxController {
   @override
   onInit() {
     super.onInit();
-    _fetchNearbyStore();
+    fetchNearbyStore();
   }
 
-  Future<void> _fetchNearbyStore() async {
+  Future<void> fetchNearbyStore() async {
     try {
       Position currentCoord = await locationCoordinates();
       var coordTitle = await locationTitle(
@@ -47,7 +46,7 @@ class NearbyStoreController extends GetxController {
       }
     } catch (e) {
       isLoading.value = false;
-      print("@_fetchNearbyStore $e");
+      print("@fetchNearbyStore $e");
     }
   }
 }

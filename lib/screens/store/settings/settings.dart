@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/screens/ui/overlay/default_overlay.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,12 +14,174 @@ class ScreenStoreAccount extends StatefulWidget {
 }
 
 class _ScreenStoreAccountState extends State<ScreenStoreAccount> {
-  final _userController = Get.put(UserController());
+  final _userController = Get.find<UserController>();
+  bool _clearInfo = false;
+  bool _logoutAndExitApp = false;
+
+  List<String> logoutTypes() {
+    List<String> types = [];
+    if (_clearInfo) {
+      types.add("clearCredentials");
+    }
+    if (_logoutAndExitApp) {
+      types.add("logoutAndExit");
+    }
+
+    return types;
+  }
+
+  void _toggleLogout() {
+    Get.bottomSheet(
+      StatefulBuilder(builder: (BuildContext context, StateSetter builderSetState) {
+        return Container(
+          height: Get.height * 0.8,
+          width: Get.width,
+          color: Colors.white,
+          padding: EdgeInsets.all(50),
+          child: Column(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          child: Text("Logout and clear my saved credentials",
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                              )),
+                        ),
+                      ),
+                      Container(
+                        width: 100,
+                        child: SwitchListTile(
+                            value: _clearInfo,
+                            activeColor: darkBlue,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            inactiveTrackColor: darkBlue.withOpacity(0.4),
+                            contentPadding: EdgeInsets.all(0),
+                            activeTrackColor: darkBlue.withOpacity(0.5),
+                            onChanged: (value) {
+                              builderSetState(() {
+                                _clearInfo = value;
+                              });
+                              if (_logoutAndExitApp) {
+                                builderSetState(() {
+                                  _logoutAndExitApp = false;
+                                });
+                              }
+                            }),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: 220,
+                    child: Text(
+                        "Username, passwords, and other information will be cleared and you will have to sign in again when you open the application",
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w300,
+                          color: darkGray.withOpacity(0.4),
+                        )),
+                  )
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          child: Text("Logout and exit application",
+                              style: GoogleFonts.roboto(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                              )),
+                        ),
+                      ),
+                      Container(
+                        width: 100,
+                        child: SwitchListTile(
+                            value: _logoutAndExitApp,
+                            activeColor: darkBlue,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            inactiveTrackColor: darkBlue.withOpacity(0.4),
+                            contentPadding: EdgeInsets.all(0),
+                            activeTrackColor: darkBlue.withOpacity(0.5),
+                            onChanged: (value) {
+                              builderSetState(() {
+                                _logoutAndExitApp = value;
+                              });
+                              if (_clearInfo) {
+                                builderSetState(() {
+                                  _clearInfo = false;
+                                });
+                              }
+                            }),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: 220,
+                    child: Text("The application will exit after signing out, Saved information will remain untouched",
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w300,
+                          color: darkGray.withOpacity(0.4),
+                        )),
+                  )
+                ],
+              ),
+              Spacer(),
+              SizedBox(
+                height: 50,
+                width: Get.width,
+                child: TextButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(darkBlue),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        side: BorderSide(
+                          color: darkBlue,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                  onPressed: () {
+                    toggleOverlayPumpingHeart(context: context);
+                    Future.delayed(Duration(seconds: 2), () {
+                      Get.back();
+                      _userController.logout(hasType: logoutTypes());
+                    });
+                  },
+                  child: Text("Logout",
+                      style: GoogleFonts.roboto(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                      )),
+                ),
+              )
+            ],
+          ),
+        );
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    print(_userController.name);
-
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -193,9 +356,7 @@ class _ScreenStoreAccountState extends State<ScreenStoreAccount> {
                         ),
                       ),
                       InkWell(
-                        onTap: () {
-                          print("Log out");
-                        },
+                        onTap: () => _toggleLogout(),
                         child: Container(
                           padding: EdgeInsets.all(20),
                           child: Row(
@@ -207,7 +368,7 @@ class _ScreenStoreAccountState extends State<ScreenStoreAccount> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Log out",
+                                    "Logout",
                                     style: GoogleFonts.roboto(
                                       fontSize: 16,
                                       color: darkGray,

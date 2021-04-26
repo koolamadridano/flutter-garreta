@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/store/product-screen/productController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/user/userController.dart';
@@ -7,6 +8,7 @@ import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/search/search.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
 import 'package:garreta/screens/store/shoppingcart/shoppingcart.dart';
+import 'package:garreta/screens/ui/search/search.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,6 +27,7 @@ class _ScreenStoreState extends State<ScreenStore> {
   final _cartController = Get.put(CartController());
   final _storeController = Get.put(StoreController());
   final _userController = Get.put(UserController());
+  final _productController = Get.put(ProductController());
 
   PageController _pageController = PageController();
 
@@ -44,7 +47,6 @@ class _ScreenStoreState extends State<ScreenStore> {
             scrollDirection: Axis.horizontal,
             children: [
               ScreenProductScreen(),
-              ScreenSearch(),
               ScreenShoppingCart(),
               ScreenStoreAccount(),
             ],
@@ -89,8 +91,7 @@ class _ScreenStoreState extends State<ScreenStore> {
           return;
         } else {
           setState(() => _pageCounter = 0);
-          _pageController.animateToPage(0,
-              duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+          _pageController.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
         }
       },
       child: Icon(
@@ -103,9 +104,10 @@ class _ScreenStoreState extends State<ScreenStore> {
   GestureDetector _buttonSearch() {
     return GestureDetector(
       onTap: () {
-        setState(() => _pageCounter = 1);
-        _pageController.animateToPage(1,
-            duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+        showSearch(
+          context: context,
+          delegate: Search(data: _productController.storeProductsData),
+        );
       },
       child: Icon(
         LineIcons.search,
@@ -117,13 +119,12 @@ class _ScreenStoreState extends State<ScreenStore> {
   GestureDetector _buttonAccount() {
     return GestureDetector(
       onTap: () {
-        setState(() => _pageCounter = 3);
-        _pageController.animateToPage(3,
-            duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+        setState(() => _pageCounter = 2);
+        _pageController.animateToPage(2, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       },
       child: Icon(
         LineIcons.user,
-        color: _pageCounter == 3 ? darkGray : darkGray.withOpacity(0.4),
+        color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
       ),
     );
   }
@@ -132,17 +133,14 @@ class _ScreenStoreState extends State<ScreenStore> {
     return Obx(() => _cartController.cartItems.length == 0
         ? GestureDetector(
             onTap: () {
-              if (!_userController.isAuthenticated())
-                Get.offAndToNamed("/login");
-              setState(() => _pageCounter = 2);
-              _pageController.animateToPage(2,
-                  duration: Duration(milliseconds: 300),
-                  curve: Curves.easeInOut);
+              if (!_userController.isAuthenticated()) Get.offAndToNamed("/login");
+              setState(() => _pageCounter = 1);
+              _pageController.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
             child: Icon(
               LineIcons.shoppingBasket,
               size: 28,
-              color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
+              color: _pageCounter == 1 ? darkGray : darkGray.withOpacity(0.4),
             ),
           )
         : GestureDetector(
@@ -150,10 +148,8 @@ class _ScreenStoreState extends State<ScreenStore> {
               if (!_userController.isAuthenticated()) {
                 Get.offAllNamed("/login");
               }
-              setState(() => _pageCounter = 2);
-              _pageController.animateToPage(2,
-                  duration: Duration(milliseconds: 300),
-                  curve: Curves.easeInOut);
+              setState(() => _pageCounter = 1);
+              _pageController.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
             child: Badge(
               badgeColor: red,
@@ -164,7 +160,7 @@ class _ScreenStoreState extends State<ScreenStore> {
               ),
               child: Icon(
                 LineIcons.shoppingBasket,
-                color: _pageCounter == 2 ? darkGray : darkGray.withOpacity(0.4),
+                color: _pageCounter == 1 ? darkGray : darkGray.withOpacity(0.4),
                 size: 28,
               ),
             ),

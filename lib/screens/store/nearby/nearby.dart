@@ -6,8 +6,11 @@ import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.d
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/store/nearby/widgets/style/nearbyStyles.dart';
 import 'package:garreta/screens/store/nearby/widgets/ui/nearbyUi.dart';
+import 'package:garreta/screens/store/nearby/widgets/widgets/nearbyWidgets.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart';
+import 'package:garreta/screens/ui/search/search.dart';
 import 'package:garreta/utils/defaults/default_alert.dart';
+import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:garreta/services/sharedPreferences.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,6 +19,7 @@ import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:get/get.dart';
 import 'package:garreta/helpers/textHelper.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ScreenNearbyStore extends StatefulWidget {
   const ScreenNearbyStore({Key key}) : super(key: key);
@@ -44,7 +48,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
 
   // `Request handlers`
   void _toggleLogout() {
-    print("@_handleLogout is triggered");
     // `Close bottomsheet`
     if (Get.isBottomSheetOpen) {
       Get.back();
@@ -61,11 +64,13 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             color: Colors.white,
             onPressed: () {
               Get.back();
-              toggleOverlay(context: context);
-              Future.delayed(Duration(seconds: 3), () {
-                Get.reset(clearFactory: true, clearRouteBindings: true);
-                _userController.logout();
-                Get.offAllNamed("/home");
+              Future.delayed(Duration(milliseconds: 200), () {
+                toggleOverlayPumpingHeart(context: context);
+                Future.delayed(Duration(seconds: 3), () {
+                  Get.reset(clearFactory: true, clearRouteBindings: true);
+                  _userController.logout(hasType: []);
+                  Get.offAllNamed("/home");
+                });
               });
             },
           ),
@@ -144,8 +149,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                           SizedBox(height: 15),
                           TextButton(
                             style: ButtonStyle(
-                              shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
+                              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0),
                                   side: BorderSide(
@@ -155,19 +159,25 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                               ),
                             ),
                             onPressed: () {
-                              if (propsIsValid) {
-                                print(props);
-                                _storeController.merchantId.value = id;
-                                _storeController.merchantName.value = name;
-                                _storeController.merchantAddress.value =
-                                    address;
-                                _storeController.merchantDistance.value =
-                                    distance;
-                                if (Get.isBottomSheetOpen) {
-                                  Get.back();
-                                }
-                                Get.toNamed("/store");
+                              if (Get.isBottomSheetOpen) {
+                                Get.back();
                               }
+                              toggleOverlayPumpingHeart(context: context);
+                              Future.delayed(Duration(milliseconds: 2000), () {
+                                Get.back();
+                                Future.delayed(Duration(milliseconds: 100), () {
+                                  if (propsIsValid) {
+                                    _storeController.merchantId.value = id;
+                                    _storeController.merchantName.value = name;
+                                    _storeController.merchantAddress.value = address;
+                                    _storeController.merchantDistance.value = distance;
+                                    if (Get.isBottomSheetOpen) {
+                                      Get.back();
+                                    }
+                                    Get.toNamed("/store");
+                                  }
+                                });
+                              });
                             },
                             child: Text("VISIT STORE",
                                 style: GoogleFonts.roboto(
@@ -240,8 +250,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           Spacer(),
           Row(
             children: [
-              Icon(LineIcons.shoppingBasket,
-                  color: darkGray.withOpacity(0.7), size: 22),
+              Icon(LineIcons.shoppingBasket, color: darkGray.withOpacity(0.7), size: 22),
               SizedBox(width: 2),
               Text(
                 "Basket (All)",
@@ -271,8 +280,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           SizedBox(height: 20),
           Row(
             children: [
-              Icon(LineIcons.questionCircle,
-                  color: darkGray.withOpacity(0.7), size: 22),
+              Icon(LineIcons.questionCircle, color: darkGray.withOpacity(0.7), size: 22),
               SizedBox(width: 2),
               Text(
                 "Help and support",
@@ -289,8 +297,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             onTap: () => _toggleLogout(),
             child: Row(
               children: [
-                Icon(LineIcons.alternateSignOut,
-                    color: darkGray.withOpacity(0.7), size: 22),
+                Icon(LineIcons.alternateSignOut, color: darkGray.withOpacity(0.7), size: 22),
                 SizedBox(width: 2),
                 Text(
                   "Sign out & Exit",
@@ -478,8 +485,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       onTap: () => _toggleChangeLocation(),
       child: Container(
         padding: EdgeInsets.all(10),
-        decoration:
-            BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(50))),
+        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(50))),
         child: Row(
           children: [
             Text("Change", style: storeBadgeChangeLocationTextStyle),
@@ -494,7 +500,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     List<Container> items = [];
     for (int i = 0; i < data.length; i++) {
       Container widget = Container(
-        margin: EdgeInsets.only(top: 20),
         child: GestureDetector(
           onTap: () {
             _toggleSelectStore(
@@ -555,16 +560,11 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                             SizedBox(width: 2),
                             Row(
                               children: [
-                                Icon(Ionicons.star,
-                                    size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star,
-                                    size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star,
-                                    size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star,
-                                    size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star_half,
-                                    size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star_half, size: 12, color: Colors.yellow[700]),
                               ],
                             ),
                           ],
@@ -595,6 +595,13 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         ),
       );
       items.add(widget);
+
+      if (i != data.length - 1) {
+        items.add(Container(
+          margin: EdgeInsets.symmetric(vertical: 15),
+          child: Divider(color: darkGray.withOpacity(0.1)),
+        ));
+      }
       if (i == data.length - 1) {
         items.add(Container(
           margin: EdgeInsets.only(top: 40),
@@ -621,29 +628,29 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       //print(await getSharedPrefKeyValue(key: 'saveLoginInfo'));
       if (_userController.isAuthenticated()) {
         // `SAVED LOGIN INFO`
-        var _loginSavedDetails =
-            await getSharedPrefKeyValue(key: 'saveLoginInfo');
-        var __loginSavedDetails = _loginSavedDetails.split(',');
+        var _loginSavedDetails = await getSharedPrefKeyValue(key: 'saveLoginInfo');
+
         // `NEW LOGIN INFO`
         var _loginDetails = await getSharedPrefKeyValue(key: 'loginDetails');
-        var __loginDetails = _loginDetails.split(',');
+        dynamic __loginDetails = _loginDetails == "Empty" ? _loginDetails : _loginDetails.split(',');
 
-        var currentNumber = __loginDetails[0]
-            .toString()
-            .trim()
-            .replaceAll(new RegExp(r'[^\w\s]+'), '');
+        var currentNumber = __loginDetails[0].toString().trim().replaceAll(new RegExp(r'[^\w\s]+'), '');
 
-        var savedNumber = __loginSavedDetails[0]
-            .toString()
-            .trim()
-            .replaceAll(new RegExp(r'[^\w\s]+'), '');
+        var __loginSavedDetails = _loginSavedDetails.split(',');
+        var savedNumber = __loginSavedDetails[0].toString().trim().replaceAll(new RegExp(r'[^\w\s]+'), '');
+
+        if (_loginSavedDetails != "Empty") {
+          if (int.parse(currentNumber) != int.parse(savedNumber)) {
+            _toggleSaveLogin();
+          }
+        }
+
+        if (_loginSavedDetails == "Empty") {
+          _toggleSaveLogin();
+        }
 
         print("new number - $currentNumber");
         print("saved number - $savedNumber");
-
-        if (int.parse(currentNumber) != int.parse(savedNumber)) {
-          _toggleSaveLogin();
-        }
         // if (await getSharedPrefKeyValue(key: 'saveLoginInfo') == "later") {
         //   _toggleSaveLogin();
         // }
@@ -654,130 +661,151 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   @override
   Widget build(BuildContext context) {
     final currentLocation = _nearbyController.locationName;
-    final locationAlt = "Current location";
+    final locationAlt = "Nearby stores";
     // Global state
     return WillPopScope(
       onWillPop: () async {
         _toggleExitApp();
         return;
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          toolbarHeight: 60,
-          leading: SizedBox(),
-          leadingWidth: 0,
-          elevation: 3,
-          backgroundColor: Colors.white,
-          title: Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("$currentLocation", style: storeLocationTitleTextStlye),
-                  Text("$locationAlt", style: storeAltLocationTitleTextStyle),
-                ],
-              )),
-          actions: [
-            _userController.isAuthenticated()
-                ? GestureDetector(
-                    onTap: () => _toggleSettings(),
-                    child: Container(
-                      margin: EdgeInsets.only(right: 15),
-                      child: Icon(LineIcons.cog, color: darkGray),
-                    ),
-                  )
-                : _buttonClose(),
-          ],
-        ),
-        body: Container(
-          width: double.infinity,
-          child: Obx(
-            () => _nearbyController.isLoading.value
-                ? loader
-                : Column(
-                    children: [
-                      SizedBox(height: 20),
-                      Container(
-                        width: Get.width * 0.8,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Obx(
+        () => _nearbyController.isLoading.value
+            ? Scaffold(
+                body: Center(
+                  child: SpinKitPumpingHeart(
+                    color: darkBlue,
+                    size: 40.0,
+                    duration: Duration(milliseconds: 800),
+                  ),
+                ),
+              )
+            : GestureDetector(
+                onTap: () => destroyTextFieldFocus(context),
+                child: Scaffold(
+                  backgroundColor: Colors.white,
+                  appBar: AppBar(
+                    toolbarHeight: 60,
+                    leading: SizedBox(),
+                    leadingWidth: 0,
+                    elevation: 3,
+                    backgroundColor: Colors.white,
+                    title: Obx(() => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            Text("$currentLocation", style: storeLocationTitleTextStlye),
+                            Text("$locationAlt", style: storeAltLocationTitleTextStyle),
+                          ],
+                        )),
+                    actions: [
+                      _userController.isAuthenticated()
+                          ? GestureDetector(
+                              onTap: () => _toggleSettings(),
+                              child: Container(
+                                margin: EdgeInsets.only(right: 15),
+                                child: Icon(LineIcons.cog, color: darkGray),
+                              ),
+                            )
+                          : _buttonClose(),
+                    ],
+                  ),
+                  body: Container(
+                    width: double.infinity,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () => showSearch(
+                            context: context,
+                            delegate: Search(data: []),
+                          ),
+                          child: Container(
+                            width: Get.width * 0.8,
+                            padding: EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: darkGray, width: 0.1),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Container(
-                                  padding: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: fadeWhite,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50)),
-                                  ),
-                                  child: Text(
-                                    "ratings",
-                                    style: storeBadgeRatingsTextStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                SizedBox(width: 2),
-                                Container(
-                                  padding: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: fadeWhite,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50)),
-                                  ),
-                                  child: Text(
-                                    "distance",
-                                    style: storeBadgeDistanceTextStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                SizedBox(width: 2),
-                                Container(
-                                  padding: EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: fadeWhite,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(50)),
-                                  ),
-                                  child: Text(
-                                    "recommended",
-                                    style: storeBadgeRecommendedTextStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
+                                Icon(LineIcons.search),
+                                SizedBox(width: 5),
+                                Text(
+                                  "Search items e.g grain, bleach etc..",
+                                  style: TextStyle(height: 1.1),
                                 ),
                               ],
                             ),
-                            _buttonChangeLocation(),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      Container(
-                        width: Get.width * 0.8,
-                        child: Text(
-                          "Nearby stores",
-                          style: GoogleFonts.roboto(
-                            color: darkGray,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16.0,
                           ),
-                          textAlign: TextAlign.left,
                         ),
-                      ),
-                      Expanded(
-                        child: Container(
+                        SizedBox(height: 20),
+                        Container(
                           width: Get.width * 0.8,
-                          child: ListView(
-                            physics: BouncingScrollPhysics(),
-                            children: _mapNearbyStore(
-                              data: _nearbyController.nearbyStoreData,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: fadeWhite,
+                                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                                    ),
+                                    child: Text(
+                                      "ratings",
+                                      style: storeBadgeRatingsTextStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  SizedBox(width: 2),
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: fadeWhite,
+                                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                                    ),
+                                    child: Text(
+                                      "distance",
+                                      style: storeBadgeDistanceTextStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  SizedBox(width: 2),
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: fadeWhite,
+                                      borderRadius: BorderRadius.all(Radius.circular(50)),
+                                    ),
+                                    child: Text(
+                                      "recommended",
+                                      style: storeBadgeRecommendedTextStyle,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              _buttonChangeLocation(),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 30),
+                        Expanded(
+                          child: Container(
+                            width: Get.width * 0.8,
+                            child: ListView(
+                              physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                              children: _mapNearbyStore(
+                                data: _nearbyController.nearbyStoreData,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-          ),
-        ),
+                ),
+              ),
       ),
     );
   }

@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:garreta/services/sharedPreferences.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-final _loginBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
+final _loginBaseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
 
 class UserController extends GetxController {
   var id;
@@ -32,7 +33,8 @@ class UserController extends GetxController {
     }
   }
 
-  void logout() {
+  void logout({List<String> hasType}) async {
+    isLoading.value = true;
     id = null;
     name = null;
     email = null;
@@ -46,14 +48,38 @@ class UserController extends GetxController {
     successfulOrders = null;
     cancelledOrders = null;
     password = null;
-    Get.offAllNamed("/home");
+    try {
+      print(hasType);
+      if (hasType.contains("clearCredentials")) {
+        print("typeof clearCredentials");
+        final prefs = await SharedPreferences.getInstance();
+        prefs.remove('saveLoginInfo');
+
+        // `Remove` in array
+        hasType.remove("clearCredentials");
+        Get.offAllNamed("/home");
+      }
+      if (hasType.contains("logoutAndExit")) {
+        print("typeof logoutAndExit");
+        // `Remove` in array
+        hasType.remove("logoutAndExit");
+        SystemNavigator.pop();
+      }
+      if (hasType.length == 0) {
+        print("typeof normal logout");
+        Get.offAllNamed("/home");
+      }
+    } catch (e) {
+      // `Stop loading`
+      isLoading.value = false;
+      print("@logout $e");
+    }
   }
 
   Future<int> login({username, password}) async {
     isLoading.value = true;
     try {
-      var loginUrl = Uri.parse(
-          "${_loginBaseUrl}contactNumber=$username&password=$password");
+      var loginUrl = Uri.parse("${_loginBaseUrl}contactNumber=$username&password=$password");
       var response = await http.post(loginUrl);
       if (response.body.isNotEmpty) {
         var result = jsonDecode(response.body);
@@ -69,8 +95,7 @@ class UserController extends GetxController {
         reputation = result[0]["personalDetails"]["cust_reputation"];
         password = result[0]["personalDetails"]["cust_password"];
         successfulOrders = result[0]["personalDetails"]["cust_numberOfOrders"];
-        cancelledOrders =
-            result[0]["personalDetails"]["cust_numberOfCancelledOrders"];
+        cancelledOrders = result[0]["personalDetails"]["cust_numberOfCancelledOrders"];
 
         //`Save locally`
         await setSharedPrefKeyValue(

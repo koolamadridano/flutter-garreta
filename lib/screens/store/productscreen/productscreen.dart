@@ -6,8 +6,7 @@ import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/store/productscreen/widgets/ui/productScreenUi.dart';
 import 'package:garreta/screens/store/productscreen/widgets/widget/productScreenWidgets.dart';
-import 'package:garreta/screens/ui/overlay/default_overlay.dart'
-    as widgetOverlay;
+import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:garreta/screens/ui/search/search.dart';
 import 'package:garreta/helpers/textHelper.dart';
 import 'package:garreta/utils/colors/colors.dart';
@@ -42,14 +41,9 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
   Future<void> _handleAddToCart({@required itemId}) async {
     Get.back();
     if (_userController.isAuthenticated()) {
-      widgetOverlay.toggleOverlay(context: context);
-      Future<bool>.delayed(Duration.zero, () async {
-        await _cartController.addToCart(itemId: itemId, qty: _itemCount);
-        return true;
-      }).then((value) {
-        if (value == true) {
-          Get.back();
-        }
+      widgetOverlay.toggleOverlayPumpingHeart(context: context);
+      await _cartController.addToCart(itemId: itemId, qty: _itemCount).then((value) {
+        Get.back();
       });
     } else if (!_userController.isAuthenticated()) {
       Get.offAndToNamed("/login"); // back to login screen
@@ -232,8 +226,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                 child: Container(
                   child: Text(
                     "Category",
-                    style: GoogleFonts.roboto(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -256,8 +249,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                 child: Container(
                   child: Text(
                     "Popular picks",
-                    style: GoogleFonts.roboto(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -297,8 +289,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
               () => _productController.isLoading.value
                   ? gridLoading as Widget
                   : SliverPadding(
-                      padding:
-                          EdgeInsets.only(right: 10.0, left: 10.0, top: 20.0),
+                      padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 20.0),
                       sliver: SliverGrid.count(
                         crossAxisCount: 2,
                         childAspectRatio: 0.8,
@@ -351,9 +342,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     List<Material> items = [];
     for (int i = 0; i < data.length; i++) {
       var _givenPrice = data[i]['prod_sellingPrice'];
-      var _itemPrice = _givenPrice.toString().contains('.')
-          ? _givenPrice
-          : _givenPrice.toString() + ".00";
+      var _itemPrice = _givenPrice.toString().contains('.') ? _givenPrice : _givenPrice.toString() + ".00";
 
       var widget = Material(
         borderRadius: BorderRadius.circular(10),
@@ -391,8 +380,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                       width: double.infinity,
                       color: fadeWhite,
                       child: Column(
@@ -422,8 +410,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                                   )),
                               Row(
                                 children: [
-                                  Icon(LineIcons.box,
-                                      color: darkGray, size: 14),
+                                  Icon(LineIcons.box, color: darkGray, size: 14),
                                   Text("${data[i]['prod_qtyOnHand']}",
                                       style: GoogleFonts.roboto(
                                         color: darkGray,

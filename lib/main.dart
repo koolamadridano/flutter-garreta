@@ -17,7 +17,6 @@ void main() {
     // Navs
     statusBarColor: Colors.white,
     systemNavigationBarColor: Colors.white,
-
     // Nav Colors
     statusBarIconBrightness: Brightness.dark,
     systemNavigationBarIconBrightness: Brightness.dark,

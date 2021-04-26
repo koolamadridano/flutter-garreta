@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
-import 'package:garreta/screens/ui/overlay/default_overlay.dart'
-    as widgetOverlay;
+import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,7 +27,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _selectAll({@required state}) async {
-    widgetOverlay.toggleOverlay(context: context);
+    widgetOverlay.toggleOverlayPumpingHeart(context: context);
     try {
       if (state) {
         Future.delayed(Duration.zero, () async {
@@ -57,7 +56,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   Future<void> _handleDelete({@required type}) async {
     Get.back();
     try {
-      widgetOverlay.toggleOverlay(context: context);
+      widgetOverlay.toggleOverlayPumpingHeart(context: context);
       if (type) {
         await _cartController.cleanCartItems().then((value) {
           Get.back();
@@ -76,7 +75,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _handleSwipeDelete({@required itemId}) async {
-    widgetOverlay.toggleOverlay(context: context);
+    widgetOverlay.toggleOverlayPumpingHeart(context: context);
     await _cartController
         .removeSelectedItem(
       itemid: itemId,
@@ -94,12 +93,10 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     String hasType,
   }) async {
     if (!_cartController.cartItemSelectState[itemIndex]) {
-      widgetOverlay.toggleOverlay(context: context);
+      widgetOverlay.toggleOverlayPumpingHeart(context: context);
       if (hasType == "increment") qty += 1;
       if (hasType == "decrement") qty -= 1;
-      await _cartController
-          .updateSelectedItem(itemid: itemId, qty: qty)
-          .then((value) {
+      await _cartController.updateSelectedItem(itemid: itemId, qty: qty).then((value) {
         Get.back();
       });
     }
@@ -123,8 +120,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                   Icon(LineIcons.trash, color: darkGray),
                   SizedBox(width: 5),
                   Expanded(
-                    child: Text(
-                        "Remove selected item(s)? action cannot be reverted.",
+                    child: Text("Remove selected item(s)? action cannot be reverted.",
                         style: GoogleFonts.roboto(
                           fontWeight: FontWeight.w400,
                           color: darkGray,
@@ -137,8 +133,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => _handleDelete(
-                      type: _cartController.selectAllItemsInCart.value),
+                  onTap: () => _handleDelete(type: _cartController.selectAllItemsInCart.value),
                   child: Text("Yes",
                       style: GoogleFonts.roboto(
                         fontWeight: FontWeight.w300,
@@ -167,12 +162,8 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   List<Container> _mapShoppingCartItems({@required data}) {
     List<Container> items = [];
     for (int i = 0; i < data.length; i++) {
-      var _givenPrice =
-          (double.parse(data[i]['price']) * int.parse(data[i]['qty']))
-              .toString();
-      var _translatedPrice = _givenPrice.contains('.')
-          ? "₱" + _givenPrice
-          : "₱" + _givenPrice + ".00";
+      var _givenPrice = (double.parse(data[i]['price']) * int.parse(data[i]['qty'])).toString();
+      var _translatedPrice = _givenPrice.contains('.') ? "₱" + _givenPrice : "₱" + _givenPrice + ".00";
       // Initialize checkbox `state` per `item`
       _cartController.initializeItemCheckbox();
       var widget = Container(
@@ -209,31 +200,22 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Theme(
-                              data: ThemeData(
-                                  unselectedWidgetColor: Colors.transparent),
+                              data: ThemeData(unselectedWidgetColor: Colors.transparent),
                               child: Obx(() => Checkbox(
-                                    value:
-                                        _cartController.cartItemSelectState[i],
+                                    value: _cartController.cartItemSelectState[i],
                                     onChanged: (isChecked) {
                                       if (isChecked) {
-                                        _selectItem(
-                                            itemId: data[i]['itemID'],
-                                            type: "add");
-                                        _cartController.cartItemSelectState[i] =
-                                            true;
+                                        _selectItem(itemId: data[i]['itemID'], type: "add");
+                                        _cartController.cartItemSelectState[i] = true;
                                       }
                                       if (!isChecked) {
-                                        _selectItem(
-                                            itemId: data[i]['itemID'],
-                                            type: "remove");
-                                        _cartController.cartItemSelectState[i] =
-                                            false;
+                                        _selectItem(itemId: data[i]['itemID'], type: "remove");
+                                        _cartController.cartItemSelectState[i] = false;
                                       }
                                     },
                                     activeColor: Colors.transparent,
                                     checkColor: darkGray,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.padded,
+                                    materialTapTargetSize: MaterialTapTargetSize.padded,
                                   )),
                             ),
                           ),
@@ -285,7 +267,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                             style: GoogleFonts.roboto(
                               fontSize: 16,
                               height: 0.8,
-                              color: red,
+                              color: darkGray,
                               fontWeight: FontWeight.bold,
                             )),
                         Stack(
@@ -295,10 +277,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                 alignment: Alignment.center,
                                 child: AnimatedOpacity(
                                   duration: Duration(milliseconds: 500),
-                                  opacity:
-                                      _cartController.cartItemSelectState[i]
-                                          ? 1
-                                          : 0,
+                                  opacity: _cartController.cartItemSelectState[i] ? 1 : 0,
                                   child: Text("CONFIRMED",
                                       style: GoogleFonts.roboto(
                                         color: green,
@@ -324,10 +303,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                   },
                                   child: AnimatedOpacity(
                                     duration: Duration(milliseconds: 500),
-                                    opacity:
-                                        _cartController.cartItemSelectState[i]
-                                            ? 0
-                                            : 1,
+                                    opacity: _cartController.cartItemSelectState[i] ? 0 : 1,
                                     child: Container(
                                       color: fadeWhite,
                                       padding: EdgeInsets.all(10),
@@ -351,10 +327,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                   },
                                   child: AnimatedOpacity(
                                     duration: Duration(milliseconds: 500),
-                                    opacity:
-                                        _cartController.cartItemSelectState[i]
-                                            ? 0
-                                            : 1,
+                                    opacity: _cartController.cartItemSelectState[i] ? 0 : 1,
                                     child: Container(
                                       color: fadeWhite,
                                       padding: EdgeInsets.all(10),
@@ -430,9 +403,8 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
         actions: [
           Obx(
             () => GestureDetector(
-              onTap: () => _cartController.cartSelectedItems.length >= 1
-                  ? _deleteSelected()
-                  : {print("No item selected")},
+              onTap: () =>
+                  _cartController.cartSelectedItems.length >= 1 ? _deleteSelected() : {print("No item selected")},
               child: AnimatedOpacity(
                 duration: Duration(milliseconds: 500),
                 opacity: _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
@@ -472,18 +444,13 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Theme(
-                                  data: ThemeData(
-                                      unselectedWidgetColor:
-                                          Colors.transparent),
+                                  data: ThemeData(unselectedWidgetColor: Colors.transparent),
                                   child: Obx(() => Checkbox(
-                                        value: _cartController
-                                            .selectAllItemsInCart.value,
-                                        onChanged: (isChecked) =>
-                                            _selectAll(state: isChecked),
+                                        value: _cartController.selectAllItemsInCart.value,
+                                        onChanged: (isChecked) => _selectAll(state: isChecked),
                                         activeColor: Colors.transparent,
                                         checkColor: darkGray,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.padded,
+                                        materialTapTargetSize: MaterialTapTargetSize.padded,
                                       )),
                                 ),
                               ),
@@ -504,13 +471,12 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                 fontWeight: FontWeight.w400,
                               )),
                           SizedBox(width: 2),
-                          Obx(() =>
-                              Text("₱${_cartController.cartTotalPrice.value}",
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 20,
-                                    color: red,
-                                    fontWeight: FontWeight.w400,
-                                  ))),
+                          Obx(() => Text("₱${_cartController.cartTotalPrice.value}",
+                              style: GoogleFonts.roboto(
+                                fontSize: 20,
+                                color: red,
+                                fontWeight: FontWeight.w400,
+                              ))),
                         ],
                       ),
                       _buttonCheckout(),
@@ -579,8 +545,7 @@ Expanded _widgetCartIsEmpty = Expanded(
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      Icon(LineIcons.shoppingBasket,
-          size: 85, color: darkGray.withOpacity(0.1)),
+      Icon(LineIcons.shoppingBasket, size: 85, color: darkGray.withOpacity(0.1)),
       Text("Basket is empty",
           style: GoogleFonts.roboto(
             color: darkGray.withOpacity(0.1),
