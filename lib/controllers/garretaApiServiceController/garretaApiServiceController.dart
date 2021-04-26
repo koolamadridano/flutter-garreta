@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/services/locationService/locationCoordinates.dart';
-import 'package:garreta/services/locationService/locationTitle.dart';
-import 'package:garreta/utils/enum/enum.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import 'dart:convert';
 
-final _loginBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
 final _registrationBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/customers.php?operation=addNew&";
 final _postShoppingCartBaseUrl =
@@ -42,24 +36,12 @@ class GarretaApiServiceController extends GetxController {
   var onWillJumpToCart = false.obs;
   var shoppingCartLength = 0.obs;
 
+  var loginMobileNumber;
+  var loginPassword;
+
   RxDouble shoppingCartTotal = 0.0.obs;
 
   // Account methods
-  Future<int> login({username, password}) async {
-    try {
-      var result = await http.post(Uri.parse(
-          "${_loginBaseUrl}contactNumber=$username&password=$password"));
-      if (result.body.isNotEmpty) {
-        var response = jsonDecode(result.body);
-        userId = response[0]["personalDetails"]["cust_id"];
-        return 200;
-      } else {
-        return 401;
-      }
-    } catch (e) {
-      return 400;
-    }
-  }
 
   Future<int> register(
       {name, number, email, address, birthday, gender, password}) async {

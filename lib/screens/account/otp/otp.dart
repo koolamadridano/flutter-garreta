@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/otp/otpController.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:pinput/pin_put/pin_put.dart';
@@ -14,6 +15,7 @@ class ScreenOtpVerification extends StatefulWidget {
 
 class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
   final _otpController = Get.put(OtpController());
+  final _garretaApiService = Get.put(GarretaApiServiceController());
 
   TextEditingController _pinPutController = TextEditingController();
   FocusNode _pinPutFocusNode;
@@ -54,7 +56,8 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
           }
         },
         child: Scaffold(
-          resizeToAvoidBottomInset: false, // to avoid resizing when keyboard is toggled
+          resizeToAvoidBottomInset:
+              false, // to avoid resizing when keyboard is toggled
           backgroundColor: Colors.white,
           body: Container(
             margin: const EdgeInsets.all(50.0),
@@ -66,7 +69,8 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
                   children: [
                     GestureDetector(
                       onTap: () => Get.back(),
-                      child: Icon(LineIcons.times, color: darkGray.withOpacity(0.1), size: 24),
+                      child: Icon(LineIcons.times,
+                          color: darkGray.withOpacity(0.1), size: 24),
                     ),
                   ],
                 ),
@@ -76,8 +80,11 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Please enter 4 digit code sent to", style: _numberDisplayDescTextStyle),
-                      Text("09876462521 valid for 10mins only", style: _numberDisplayDescTextStyle),
+                      Text("Please enter 4 digit code sent to",
+                          style: _numberDisplayDescTextStyle),
+                      Text(
+                          "${_garretaApiService.customerMobileNumber} valid for 10mins only",
+                          style: _numberDisplayDescTextStyle),
                     ],
                   ),
                 ),

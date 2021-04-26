@@ -21,11 +21,7 @@ class ScreenShoppingCart extends StatefulWidget {
 
 class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
   final _cartController = Get.put(CartController());
-
-  //
-  bool _isLoading = false;
 
   void _selectItem({@required String type, @required itemId}) {
     if (type == "add") {
@@ -62,6 +58,37 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     }
   }
 
+  Future<void> _handleDelete({@required type}) async {
+    widgetOverlay.toggleOverlay(context: context);
+    try {
+      if (type) {
+        await _cartController.cleanCartItems().then((value) {
+          Get.back();
+        });
+        print("@actionType - deleteAll");
+      }
+      if (!type) {
+        await _cartController.removeSelectedInCart().then((value) {
+          Get.back();
+        });
+        print("@actionType - deleteSelected");
+      }
+    } catch (e) {
+      print("@_handleDelete $e");
+    }
+  }
+
+  Future<void> _handleSwipeDelete({@required itemId}) async {
+    widgetOverlay.toggleOverlay(context: context);
+    await _cartController
+        .removeSelectedItem(
+      itemid: itemId,
+    )
+        .then((value) {
+      Get.back();
+    });
+  }
+
   Future<void> _postCartUpdate({
     @required itemId,
     @required merchantId,
@@ -69,22 +96,14 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     @required int itemIndex,
     String hasType,
   }) async {
-    print(
-        "Item is selected? ${_cartController.cartItemSelectState[itemIndex] == true}");
     if (!_cartController.cartItemSelectState[itemIndex]) {
       widgetOverlay.toggleOverlay(context: context);
       if (hasType == "increment") qty += 1;
       if (hasType == "decrement") qty -= 1;
-      Future.delayed(Duration.zero, () async {
-        await _cartController.updateSelectedItem(
-          itemid: itemId,
-          qty: qty,
-        );
-        return true;
-      }).then((value) {
-        if (value == true) {
-          Get.back();
-        }
+      await _cartController
+          .updateSelectedItem(itemid: itemId, qty: qty)
+          .then((value) {
+        Get.back();
       });
     }
   }
@@ -279,10 +298,29 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                             )),
                         Stack(
                           children: [
+                            Positioned.fill(
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: AnimatedOpacity(
+                                  duration: Duration(milliseconds: 500),
+                                  opacity:
+                                      _cartController.cartItemSelectState[i]
+                                          ? 1
+                                          : 0,
+                                  child: Text("CONFIRMED",
+                                      style: GoogleFonts.roboto(
+                                        color: green,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                ),
+                              ),
+                            ),
                             Row(
                               children: [
                                 GestureDetector(
                                   onTap: () {
+                                    print("@typeOf decrement");
                                     _postCartUpdate(
                                         itemIndex: i,
                                         hasType: "decrement",
@@ -308,6 +346,8 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                 SizedBox(width: 2),
                                 GestureDetector(
                                   onTap: () {
+                                    print("@typeOf increment");
+
                                     _postCartUpdate(
                                         itemIndex: i,
                                         hasType: "increment",
@@ -331,24 +371,6 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                   ),
                                 ),
                               ],
-                            ),
-                            Positioned.fill(
-                              child: Align(
-                                alignment: Alignment.center,
-                                child: AnimatedOpacity(
-                                  duration: Duration(milliseconds: 500),
-                                  opacity:
-                                      _cartController.cartItemSelectState[i]
-                                          ? 1
-                                          : 0,
-                                  child: Text("CONFIRMED",
-                                      style: GoogleFonts.roboto(
-                                        color: green,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                ),
-                              ),
                             ),
                           ],
                         ),
@@ -381,9 +403,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                 foregroundColor: red,
                 caption: 'Delete',
                 icon: Icons.delete,
-                onTap: () => _cartController.removeSelectedItem(
-                  itemid: data[i]['itemID'],
-                ),
+                onTap: () => _handleSwipeDelete(itemId: data[i]['itemID']),
               ),
             ],
           ),
@@ -419,7 +439,9 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
           Obx(
             () => GestureDetector(
               onTap: () => _cartController.cartSelectedItems.length >= 1
-                  ? _cartController.removeSelectedInCart()
+                  ? _handleDelete(
+                      type: _cartController.selectAllItemsInCart.value,
+                    )
                   : {print("No item selected")},
               child: AnimatedOpacity(
                 duration: Duration(milliseconds: 500),
@@ -542,19 +564,17 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                 ),
               ),
               Obx(
-                () => _cartController.isLoading.value
-                    ? _widgetLoader
-                    : _cartController.cartItems.length == 0
-                        ? _widgetCartIsEmpty as Widget
-                        : Expanded(
-                            child: Container(
-                            width: Get.width * 0.95,
-                            child: ListView(
-                                physics: BouncingScrollPhysics(),
-                                children: _mapShoppingCartItems(
-                                  data: _cartController.cartItems,
-                                )),
-                          )),
+                () => _cartController.cartItems.length == 0
+                    ? _widgetCartIsEmpty as Widget
+                    : Expanded(
+                        child: Container(
+                        width: Get.width * 0.95,
+                        child: ListView(
+                            physics: BouncingScrollPhysics(),
+                            children: _mapShoppingCartItems(
+                              data: _cartController.cartItems,
+                            )),
+                      )),
               )
             ],
           ),
@@ -564,11 +584,6 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 }
 
-Expanded _widgetLoader = Expanded(
-  child: Center(
-    child: SpinkitThreeBounce(color: fadeWhite, size: 24),
-  ),
-);
 Expanded _widgetCartIsEmpty = Expanded(
   child: Column(
     mainAxisSize: MainAxisSize.min,

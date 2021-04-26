@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/user/userController.dart';
+
 import 'package:garreta/screens/account/login/password/password.dart';
 import 'package:garreta/screens/account/login/username/username.dart';
+import 'package:garreta/services/sharedPreferences.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
-import 'package:garreta/screens/account/login/widgets/widgets.dart' as loginWidget;
+import 'package:garreta/screens/account/login/widgets/widgets.dart'
+    as loginWidget;
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:garreta/utils/colors/colors.dart';
@@ -20,6 +24,7 @@ class ScreenLogin extends StatefulWidget {
 class _ScreenLoginState extends State<ScreenLogin> {
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _userController = Get.put(UserController());
 
   // TextController
   final _mobileNumberController = MaskedTextController(mask: '000-000-0000');
@@ -38,11 +43,21 @@ class _ScreenLoginState extends State<ScreenLogin> {
     super.initState();
     _mobileNumberFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      var getResult = await getSharedPrefKeyValue(key: 'saveLoginInfo');
+      var loginDetails = getResult.split(',');
+      // from 01234567890 to 1234567890
+      if (loginDetails.isNotEmpty) {
+        _mobileNumberController.text = loginDetails[0].substring(1);
+        _passwordController.text = loginDetails[1];
+      }
+    });
   }
 
   Future<void> _onLogin() async {
-    final mobileNumber = "0" + _mobileNumberController.text.replaceAll(RegExp('[^0-9]'), '');
-    final password = _passwordController.text;
+    final mobileNumber = "0" +
+        _mobileNumberController.text.replaceAll(RegExp('[^0-9]'), '').trim();
+    final password = _passwordController.text.trim();
 
     // CHECK IF NOT EMPTY
     if (_mobileNumberController.text.isEmpty) {
@@ -50,13 +65,14 @@ class _ScreenLoginState extends State<ScreenLogin> {
     } else if (_passwordController.text.isEmpty) {
       _passwordFocusNode.requestFocus();
     }
-
-    if (mobileNumber.isNotEmpty && password.isNotEmpty && mobileNumber.length == 11) {
+    if (mobileNumber.isNotEmpty &&
+        password.isNotEmpty &&
+        mobileNumber.length == 11) {
       setState(() {
         _isLoading = true;
         _isLoginRequestOnGoing = true;
       });
-      var getResponse = await _garretaApiService.login(
+      var getResponse = await _userController.login(
         username: mobileNumber,
         password: password,
       );
@@ -66,9 +82,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
           _isLoginRequestOnGoing = false;
           _stateHasError = false;
         });
-        if (_garretaApiService.isAuthenticated()) {
-          Get.toNamed("/store-nearby-store");
-        }
       }
       if (getResponse == 401) {
         setState(() {
@@ -98,7 +111,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
       child: GestureDetector(
         onTap: () => destroyTextFieldFocus(context),
         child: Scaffold(
-          resizeToAvoidBottomInset: false, // to avoid resizing when keyboard is toggled
+          resizeToAvoidBottomInset:
+              false, // to avoid resizing when keyboard is toggled
           backgroundColor: Colors.white,
           body: Container(
             width: double.infinity,
@@ -120,7 +134,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text("Welcome back!", style: _titleStyle),
-                                    Text("Sign in using your mobile number", style: _titleAltStyle),
+                                    Text("Sign in using your mobile number",
+                                        style: _titleAltStyle),
                                   ],
                                 ),
                               ),
@@ -159,15 +174,18 @@ class _ScreenLoginState extends State<ScreenLogin> {
                               )
                             : SizedBox(),
                         CheckboxListTile(
-                          onChanged: (state) => setState(() => _statePasswordVisibility = state),
-                          title: Text("Show password", style: _checkBoxTogglePasswordTextStyle),
+                          onChanged: (state) =>
+                              setState(() => _statePasswordVisibility = state),
+                          title: Text("Show password",
+                              style: _checkBoxTogglePasswordTextStyle),
                           secondary: GestureDetector(
                             onTap: () {
                               print("Forgot password");
                             },
                             child: Container(
                               margin: EdgeInsets.only(right: 10),
-                              child: Text("Forgot?", style: _checkBoxForgotPasswordTextStyle),
+                              child: Text("Forgot?",
+                                  style: _checkBoxForgotPasswordTextStyle),
                             ),
                           ),
                           checkColor: darkGray,
@@ -178,7 +196,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
                         ),
                         Spacer(flex: 8),
                         _buttonLogin(
-                          action: () => _isLoginRequestOnGoing ? {} : _onLogin(),
+                          action: () =>
+                              _isLoginRequestOnGoing ? {} : _onLogin(),
                           toggleSpinner: _isLoading,
                         ),
                         SizedBox(height: 10),
@@ -206,13 +225,20 @@ class _ScreenLoginState extends State<ScreenLogin> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("LOGIN", style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300)),
+            Text("LOGIN",
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w300,
+                )),
             SizedBox(width: 3),
-            toggleSpinner
-                ? SpinkitThreeBounce(
-                    color: Colors.white,
-                  )
-                : SizedBox(),
+            Obx(
+              () => _userController.isLoading.value
+                  ? SpinkitThreeBounce(
+                      color: Colors.white,
+                      size: 13,
+                    )
+                  : SizedBox(),
+            ),
           ],
         ),
         style: ElevatedButton.styleFrom(
@@ -231,7 +257,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
       height: 60,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () => Get.offAllNamed("/registration"),
+        onPressed: () => Get.offAllNamed("/registrationx"),
         child: Text(
           "Not yet registered?",
           style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300),

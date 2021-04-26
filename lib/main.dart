@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:garreta/screens/account/login/login.dart';
 import 'package:garreta/screens/account/otp/otp.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/registration.dart';
@@ -8,15 +9,26 @@ import 'package:garreta/screens/app.dart';
 import 'package:garreta/screens/store/nearby/nearby.dart';
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/store.dart';
+import 'package:garreta/screens/uknown/uknownScreen.dart';
 import 'package:get/get.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    // Navs
+    statusBarColor: Colors.white,
+    systemNavigationBarColor: Colors.white,
+
+    // Nav Colors
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
   runApp(
     GetMaterialApp(
       title: 'Garreta',
       enableLog: true,
       defaultTransition: Transition.fade,
-      transitionDuration: Duration(milliseconds: 600),
+      transitionDuration: Duration(milliseconds: 400),
+      debugShowCheckedModeBanner: false,
       initialRoute: "/home",
       getPages: [
         // # DEFAULT ROUTE
@@ -72,6 +84,11 @@ void main() {
         ),
         //GetPage(name: "/playground", page: () => ScreenPlayground()),
       ],
+      unknownRoute: GetPage(
+        title: 'Uknown route',
+        name: "/undefined route",
+        page: () => ScreenUndefined(),
+      ),
     ),
   );
 }

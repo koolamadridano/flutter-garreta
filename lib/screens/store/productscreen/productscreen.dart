@@ -4,14 +4,13 @@ import 'package:garreta/controllers/garretaApiServiceController/garretaApiServic
 import 'package:garreta/controllers/store/product-screen/productController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/store/productscreen/widgets/ui/productScreenUi.dart';
 import 'package:garreta/screens/store/productscreen/widgets/widget/productScreenWidgets.dart';
-
 import 'package:garreta/screens/ui/overlay/default_overlay.dart'
     as widgetOverlay;
 import 'package:garreta/screens/ui/search/search.dart';
 import 'package:garreta/helpers/textHelper.dart';
-
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -27,11 +26,12 @@ class ScreenProductScreen extends StatefulWidget {
 class _ScreenProductScreenState extends State<ScreenProductScreen> {
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _userController = Get.put(UserController());
+
   final _cartController = Get.put(CartController());
   final _productController = Get.put(ProductController());
   final _storeController = Get.put(StoreController());
 
-  bool _animateFabBasket = false;
   // State
   int _itemCount = 1;
 
@@ -40,14 +40,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     super.initState();
     _productController.fetchStoreProducts();
     _productController.storeCategoryData();
-
-    // `On page completely loaded`
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _animateFabBasket = true;
-      });
-      print("page loaded");
-    });
   }
 
   @override
@@ -57,7 +49,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
 
   Future<void> _handleAddToCart({@required itemId}) async {
     Get.back();
-    if (_garretaApiService.isAuthenticated()) {
+    if (_userController.isAuthenticated()) {
       widgetOverlay.toggleOverlay(context: context);
       Future<bool>.delayed(Duration.zero, () async {
         await _cartController.addToCart(itemId: itemId, qty: _itemCount);
@@ -67,7 +59,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
           Get.back();
         }
       });
-    } else if (!_garretaApiService.isAuthenticated()) {
+    } else if (!_userController.isAuthenticated()) {
       Get.offAndToNamed("/login"); // back to login screen
     }
   }
@@ -390,9 +382,13 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
-                  child: FadeInImage.assetNetwork(
-                    placeholder: "images/alt/nearby_store_alt_250x250.png",
-                    image: "https://bit.ly/3cN0Fl4",
+                  // child: FadeInImage.assetNetwork(
+                  //   placeholder: "images/alt/nearby_store_alt_250x250.png",
+                  //   image: "https://bit.ly/3cN0Fl4",
+                  //   fit: BoxFit.cover,
+                  // ),
+                  child: Image.network(
+                    "https://bit.ly/3cN0Fl4",
                     fit: BoxFit.cover,
                   ),
                 ),

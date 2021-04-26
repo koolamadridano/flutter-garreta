@@ -2,19 +2,23 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 
 final _postCartBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/posting.php";
-
 final _baseUrl =
     "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
 final _editCartBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/posting.php";
 
+final _cleanCartBaseUrl =
+    "http://shareatext.com/garreta/webservices/v2/posting.php";
+
 class CartController extends GetxController {
-  final _global = Get.find<GarretaApiServiceController>();
+  final _userController = Get.find<UserController>();
+
   final _storeController = Get.find<StoreController>();
 
   RxDouble cartTotalPrice = 0.0.obs;
@@ -51,13 +55,16 @@ class CartController extends GetxController {
     if (cartItemSelectState.length != cartItems.length) {
       cartItemSelectState.add(false);
       cartItemSelectState.refresh();
+
+      print(cartItemSelectState.length);
+      print(cartItems.length);
     }
   }
 
   Future<void> fetchShoppingCartItems() async {
     try {
       var result = await http.get(
-        Uri.parse("${_baseUrl}myid=${_global.userId}"),
+        Uri.parse("${_baseUrl}myid=${_userController.id}"),
       );
       if (result.body.trim() != "0") {
         List decodedResult = jsonDecode(result.body);
@@ -90,7 +97,7 @@ class CartController extends GetxController {
     request.fields['merid'] = _storeController.merchantId.toString();
     request.fields['itemid'] = itemId.toString();
     request.fields['qty'] = qty.toString();
-    request.fields['myid'] = _global.userId.toString();
+    request.fields['myid'] = _userController.id.toString();
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
@@ -103,31 +110,62 @@ class CartController extends GetxController {
   Future<void> updateSelectedItem({@required itemid, @required qty}) async {
     var request = http.MultipartRequest("POST", Uri.parse(_editCartBaseUrl));
     request.fields['rtr'] = "editItemCart";
-    request.fields['myid'] = _global.userId.toString();
-    request.fields['merid'] = _global.merchantId.toString();
+    request.fields['myid'] = _userController.id.toString();
+    request.fields['merid'] = _storeController.merchantId.toString();
     request.fields['itemid'] = itemid.toString();
     request.fields['qty'] = qty.toString();
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
       await fetchShoppingCartItems();
+      print("@updateSelectedItem is triggered");
     } catch (e) {
       print("@updateSelectedItem $fetchShoppingCartItems");
     }
   }
 
   Future<void> removeSelectedItem({@required itemid}) async {
+    isLoading.value = true;
     var request = http.MultipartRequest("POST", Uri.parse(_editCartBaseUrl));
     request.fields['rtr'] = "editItemCart";
-    request.fields['myid'] = _global.userId.toString();
+    request.fields['myid'] = _userController.id.toString();
     request.fields['merid'] = _storeController.merchantId.toString();
     request.fields['itemid'] = itemid.toString();
     request.fields['qty'] = 0.toString();
     try {
       var streamedResponse = await request.send();
       await http.Response.fromStream(streamedResponse);
+      await fetchShoppingCartItems();
+      isLoading.value = false;
+      print("@removeSelectedItem is triggered");
     } catch (e) {
+      isLoading.value = false;
       print("@removeSelectedItem $e");
+    }
+  }
+
+  Future<void> cleanCartItems() async {
+    isLoading.value = true;
+    var request = http.MultipartRequest("POST", Uri.parse(_cleanCartBaseUrl));
+    request.fields['rtr'] = "removeMerchantCart";
+    request.fields['myid'] = _userController.id.toString();
+    request.fields['merid'] = _storeController.merchantId.toString();
+    try {
+      var streamedResponse = await request.send();
+      await http.Response.fromStream(streamedResponse).then((value) async {
+        selectAllItems(type: "deselectAll");
+        cartItemSelectState.removeRange(0, cartItemSelectState.length);
+        // Refresh `cartSelectedItems`, `cartSelectedItemsStack`, `cartItemSelectState`
+        cartSelectedItems.refresh();
+        cartSelectedItemsStack.refresh();
+        cartItemSelectState.refresh();
+        // Fetch new value
+        await fetchShoppingCartItems();
+        isLoading.value = false;
+      });
+    } catch (e) {
+      isLoading.value = false;
+      print("@cleanCartItems $e");
     }
   }
 
@@ -142,6 +180,10 @@ class CartController extends GetxController {
       var sum = double.parse(selectedItem.toList()[0]['price']) *
           int.parse(selectedItem.toList()[0]['qty']);
       cartTotalPrice.value += sum;
+
+      // `Reset select all items`
+      selectAllItemsInCart.value = false;
+
       // Refresh add to `cartSelectedItems`,  `cartSelectedItemsStack`
       cartSelectedItems.add(itemID);
       cartSelectedItemsStack.add(itemID);
@@ -166,6 +208,10 @@ class CartController extends GetxController {
       var sum = double.parse(selectedItem.toList()[0]['price']) *
           int.parse(selectedItem.toList()[0]['qty']);
       cartTotalPrice.value -= sum;
+
+      // `Reset select all items`
+      selectAllItemsInCart.value = false;
+
       // Refresh from `cartSelectedItems`
       cartSelectedItems.remove(itemID);
       cartSelectedItemsStack.remove(itemID);
@@ -211,7 +257,7 @@ class CartController extends GetxController {
           cartItemSelectState[i] = true;
         }
       }
-      // Fetch `getShoppingCartItems` to pull the new array
+      // Fetch `getShoppingCartItems` to pull  new array
       await fetchShoppingCartItems();
       // Reset previous value
       if (cartTotalPrice.value > 0) cartTotalPrice.value = 0;

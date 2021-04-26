@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
-
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/search/search.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
@@ -22,29 +22,14 @@ class ScreenStore extends StatefulWidget {
 
 class _ScreenStoreState extends State<ScreenStore> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
   final _cartController = Get.put(CartController());
   final _storeController = Get.put(StoreController());
+  final _userController = Get.put(UserController());
 
   PageController _pageController = PageController();
 
   // State
   int _pageCounter = 0;
-
-  @override
-  void didChangeDependencies() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_garretaApiService.onWillJumpToCart.value) {
-        _pageController.jumpToPage(2);
-        setState(() {
-          _pageCounter = 2;
-        });
-      } else {
-        _pageController.jumpToPage(0);
-      }
-    });
-    super.didChangeDependencies();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +132,7 @@ class _ScreenStoreState extends State<ScreenStore> {
     return Obx(() => _cartController.cartItems.length == 0
         ? GestureDetector(
             onTap: () {
-              if (!_garretaApiService.isAuthenticated())
+              if (!_userController.isAuthenticated())
                 Get.offAndToNamed("/login");
               setState(() => _pageCounter = 2);
               _pageController.animateToPage(2,
@@ -162,7 +147,7 @@ class _ScreenStoreState extends State<ScreenStore> {
           )
         : GestureDetector(
             onTap: () {
-              if (!_garretaApiService.isAuthenticated()) {
+              if (!_userController.isAuthenticated()) {
                 Get.offAllNamed("/login");
               }
               setState(() => _pageCounter = 2);
