@@ -1,44 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:ui';
-import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
+import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/store/nearby/widgets/style/nearbyStyles.dart';
-import 'package:garreta/screens/store/nearby/widgets/ui/nearbyUi.dart';
-import 'package:garreta/screens/store/nearby/widgets/widgets/nearbyWidgets.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart';
 import 'package:garreta/screens/ui/search/search.dart';
-import 'package:garreta/utils/defaults/default_alert.dart';
-import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:garreta/services/sharedPreferences.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:get/get.dart';
 import 'package:garreta/helpers/textHelper.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ScreenNearbyStore extends StatefulWidget {
-  const ScreenNearbyStore({Key key}) : super(key: key);
   @override
   _ScreenNearbyStoreState createState() => _ScreenNearbyStoreState();
 }
-
-// Widget styles
-TextStyle _onForgotPasswordTextStyle = GoogleFonts.roboto(
-  fontWeight: FontWeight.w300,
-  fontSize: 12,
-  color: darkGray,
-);
-
-TextStyle _onForgotDismissTextStyle = GoogleFonts.roboto(
-  fontWeight: FontWeight.w300,
-  fontSize: 12,
-  color: darkGray,
-);
 
 class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   // Global state
@@ -46,61 +24,633 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   final _nearbyController = Get.put(NearbyStoreController());
   final _userController = Get.put(UserController());
 
-  // `Request handlers`
-  void _toggleLogout() {
-    // `Close bottomsheet`
-    if (Get.isBottomSheetOpen) {
-      Get.back();
-    }
-    if (!Get.isBottomSheetOpen) {
-      Alert(
-        context: context,
-        type: AlertType.none,
-        title: "",
-        desc: "Do you want to logout your account?",
-        buttons: [
-          DialogButton(
-            child: Text("YES", style: _onForgotDismissTextStyle),
-            color: Colors.white,
-            onPressed: () {
-              Get.back();
-              Future.delayed(Duration(milliseconds: 200), () {
-                toggleOverlayPumpingHeart(context: context);
-                Future.delayed(Duration(seconds: 3), () {
-                  Get.reset(clearFactory: true, clearRouteBindings: true);
-                  _userController.logout(hasType: []);
-                  Get.offAllNamed("/home");
-                });
-              });
-            },
+  List<Container> _mapNearbyStore({@required data}) {
+    List<Container> items = [];
+    for (int i = 0; i < data.length; i++) {
+      Container widget = Container(
+        child: GestureDetector(
+          onTap: () {
+            // `This will toggle bottomsheet`
+            _toggleSelectStore(
+              id: data[i]['mer_id'],
+              name: data[i]['mer_name'],
+              distance: data[i]['distance'],
+              address: data[i]['mer_address'],
+            );
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                child: FadeInImage.assetNetwork(
+                  placeholder: "images/alt/nearby_store_alt_250x250.png",
+                  image: "https://bit.ly/3tA2hoo",
+                  height: 70,
+                  width: 70,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(bottom: 5),
+                      child: Text(
+                        "${data[i]['mer_name'].toString().capitalizeFirstofEach} - Store",
+                        style: storeNameTextStyle_2,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
+                    Text(
+                      "${data[i]['mer_address']}",
+                      style: storeAddressTextStyle,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text("4.9/5", style: storeRatingTextStyle),
+                            SizedBox(width: 2),
+                            Row(
+                              children: [
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star_half, size: 12, color: Colors.yellow[700]),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Container(
+                          width: 40,
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: darkBlue,
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                          child: Text(
+                            "${double.parse(data[i]['distance']).toStringAsFixed(0)}km",
+                            style: storeDistanceTextStyle,
+                            overflow: TextOverflow.fade,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              // Icon(Ionicons.cart_outline, size: 20, color: darkGray),
+            ],
           ),
-          DialogButton(
-            child: Text("DISMISS", style: _onForgotPasswordTextStyle),
-            color: Color(0xFFf0f4fa),
-            onPressed: () {
-              Get.back();
-            },
-          ),
-        ],
-        style: AlertStyle(
-            isCloseButton: false,
-            animationType: AnimationType.grow,
-            animationDuration: alertGrowDuration,
-            titleStyle: TextStyle(height: 0, fontSize: 0),
-            alertBorder: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)),
-            ),
-            descStyle: GoogleFonts.roboto(
+        ),
+      );
+      if (i == 0) {
+        items.add(Container(
+          margin: EdgeInsets.symmetric(vertical: 15),
+        ));
+      }
+
+      items.add(widget);
+      if (i != data.length - 1) {
+        items.add(Container(
+          margin: EdgeInsets.symmetric(vertical: 10),
+          child: Divider(color: darkGray.withOpacity(0.1)),
+        ));
+      }
+      if (i == data.length - 1) {
+        items.add(Container(
+          margin: EdgeInsets.only(top: 40, bottom: 20),
+          child: Text(
+            "End of result",
+            style: GoogleFonts.roboto(
+              color: darkGray.withOpacity(0.2),
               fontWeight: FontWeight.w300,
-              fontSize: 16,
             ),
-            buttonsDirection: ButtonsDirection.row,
-            buttonAreaPadding: EdgeInsets.all(10),
-            alertElevation: 5,
-            overlayColor: Colors.black54,
-            alertPadding: EdgeInsets.all(50)),
-      ).show();
+            textAlign: TextAlign.center,
+          ),
+        ));
+      }
     }
+
+    return items;
+  }
+
+  List<String> _tempSuggestionsImg = [
+    "https://bit.ly/3u17KV8",
+    "https://bit.ly/337YKSF",
+    "https://bit.ly/3dXvNyV",
+    "https://bit.ly/2R07QxQ",
+    "https://bit.ly/3dVRO0Q",
+  ];
+
+  void _onSearch() {
+    showSearch(
+      context: context,
+      delegate: Search(
+        data: _nearbyController.nearbyProductsData.toList(),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // `On page completely loaded`1
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      //print(await getSharedPrefKeyValue(key: 'saveLoginInfo'));
+      if (_userController.isAuthenticated()) {
+        // `SAVED LOGIN INFO`
+        var _loginSavedInfo = await _userController.getSavedLoginInfo();
+        // `CURRENT LOGIN INFO`
+        var _currentLoginInfo = await _userController.getCurrentLoginInfo();
+
+        if (await _userController.toggleSaveLoginOption()) {
+          _toggleSaveLogin();
+        }
+
+        // if (await getSharedPrefKeyValue(key: 'saveLoginInfo') == "later") {
+        //   _toggleSaveLogin();
+        // }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Obx(() => _nearbyController.isLoading.value
+          ? Scaffold(
+              body: Center(
+                child: SpinKitPumpingHeart(
+                  color: darkBlue,
+                  size: 40.0,
+                  duration: Duration(milliseconds: 800),
+                ),
+              ),
+            )
+          : Scaffold(
+              backgroundColor: Colors.white,
+              body: CustomScrollView(
+                physics: BouncingScrollPhysics(),
+                slivers: [
+                  // `APPBAR`
+                  SliverAppBar(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    expandedHeight: 260,
+                    toolbarHeight: 0,
+                    leading: SizedBox(),
+                    leadingWidth: 0,
+                    stretch: true,
+                    pinned: true,
+                    stretchTriggerOffset: 150,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Container(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.asset(
+                              "images/store/banner_map.PNG",
+                              fit: BoxFit.cover,
+                            ),
+                            Positioned(
+                              bottom: 70,
+                              width: Get.width,
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  width: Get.width * 0.8,
+                                  padding: EdgeInsets.all(15),
+                                  margin: EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    //border: Border.all(color: darkGray, width: 0.1),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () => _onSearch(),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(LineIcons.search),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          "Search items e.g grain, bleach etc..",
+                                          style: TextStyle(height: 1.1),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      stretchModes: [
+                        StretchMode.zoomBackground,
+                        StretchMode.fadeTitle,
+                        StretchMode.blurBackground,
+                      ],
+                    ),
+                    bottom: AppBar(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(30),
+                        ),
+                      ),
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      leading: SizedBox(),
+                      leadingWidth: 0,
+                      toolbarHeight: 70,
+                      title: Container(
+                        margin: EdgeInsets.only(left: 14),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Obx(() => Text(
+                                  _nearbyController.locationName.value,
+                                  style: GoogleFonts.roboto(
+                                    color: darkGray,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                )),
+                            Text("Nearby store",
+                                style: GoogleFonts.roboto(
+                                  color: darkGray,
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12,
+                                )),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        Container(
+                          child: IconButton(
+                            icon: Icon(LineIcons.search, color: darkGray, size: 24),
+                            onPressed: () => _onSearch(),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(right: 14),
+                          child: IconButton(
+                            icon: Icon(LineIcons.cog, color: darkGray, size: 24),
+                            onPressed: () {},
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [],
+                  ),
+
+                  // `SUGGESTIONS TITLE`
+                  SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    sliver: SliverToBoxAdapter(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Suggestions",
+                              style: GoogleFonts.roboto(
+                                color: darkGray,
+                                fontWeight: FontWeight.w300,
+                              )),
+                          Text("See all",
+                              style: GoogleFonts.roboto(
+                                color: darkBlue,
+                                fontWeight: FontWeight.bold,
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // `SUGGESTIONS ITEMS`
+                  SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverToBoxAdapter(
+                      child: Container(
+                        height: 150,
+                        child: ListView(
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                            for (var i = 0; i < _tempSuggestionsImg.length; i++)
+                              Container(
+                                margin: EdgeInsets.only(right: 20),
+                                height: 150,
+                                width: 180,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                                  child: Image.network(
+                                    _tempSuggestionsImg[i],
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // `BADGES`
+                  SliverPadding(
+                    padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+                    sliver: SliverToBoxAdapter(
+                      child: Container(
+                        height: 35,
+                        child: ListView(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                          children: [
+                            // `BADGE DISTANCE`
+                            Opacity(
+                              opacity: 0.8,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: darkBlue,
+                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                ),
+                                margin: EdgeInsets.only(right: 10),
+                                padding: EdgeInsets.all(10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      LineIcons.streetView,
+                                      color: Colors.white,
+                                      size: 14.0,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      "Distance",
+                                      style: GoogleFonts.roboto(
+                                        color: Colors.white,
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.w300,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // `BADGE POPULARITY`
+                            Opacity(
+                              opacity: 1,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: darkBlue,
+                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                ),
+                                margin: EdgeInsets.only(right: 10),
+                                padding: EdgeInsets.all(10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      LineIcons.fire,
+                                      color: Colors.white,
+                                      size: 14.0,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      "Popularity",
+                                      style: GoogleFonts.roboto(
+                                        color: Colors.white,
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.w300,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // `BADGE NEWLY OPEN STORE`
+                            Opacity(
+                              opacity: 1,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: darkBlue,
+                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                ),
+                                margin: EdgeInsets.only(right: 10),
+                                padding: EdgeInsets.all(10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      LineIcons.store,
+                                      color: Colors.white,
+                                      size: 14.0,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      "Recommended",
+                                      style: GoogleFonts.roboto(
+                                        color: Colors.white,
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.w300,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // `BADGE NEWLY OPEN STORE`
+                            Opacity(
+                              opacity: 1,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: darkBlue,
+                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                ),
+                                margin: EdgeInsets.only(right: 10),
+                                padding: EdgeInsets.all(10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      LineIcons.store,
+                                      color: Colors.white,
+                                      size: 14.0,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      "Newly open",
+                                      style: GoogleFonts.roboto(
+                                        color: Colors.white,
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.w300,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  //  `NEARBY`
+                  Obx(() => SliverPadding(
+                        padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+                        sliver: SliverList(
+                            delegate: SliverChildListDelegate(
+                          _mapNearbyStore(data: _nearbyController.nearbyStoreData),
+                        )),
+                      )),
+                ],
+              ),
+            )),
+    );
+  }
+
+  void _toggleSaveLogin() {
+    Get.bottomSheet(Container(
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+      height: 250,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Spacer(),
+          // `TITLE`
+          Text(
+            "Do you want to save your login info?",
+            style: GoogleFonts.roboto(
+              fontWeight: FontWeight.w300,
+              color: darkGray,
+              fontSize: 15,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10),
+          // `DESCRIPTION`
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: fadeWhite,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  LineIcons.infoCircle,
+                  color: darkGray,
+                ),
+                SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    "Saving login info will help you to access your account quicker",
+                    style: GoogleFonts.roboto(
+                      fontWeight: FontWeight.w300,
+                      color: darkGray,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // `YES`
+              TextButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(darkBlue),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      side: BorderSide(
+                        color: darkBlue,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+                onPressed: () => _userController.handleSaveInfo(),
+                child: Text("Yes",
+                    style: GoogleFonts.roboto(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300,
+                    )),
+              ),
+              SizedBox(width: 10),
+              // `DISMISS`
+              TextButton(
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      side: BorderSide(
+                        color: darkBlue,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+                onPressed: () {
+                  if (Get.isBottomSheetOpen) {
+                    Get.back();
+                  }
+                },
+                child: Text("Remid me later",
+                    style: GoogleFonts.roboto(
+                      color: darkBlue,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300,
+                    )),
+              )
+            ],
+          ),
+          Spacer(),
+          GestureDetector(
+            onTap: () => _userController.neverSaveLoginInfo(),
+            child: Text(
+              "Don't remid me again",
+              style: GoogleFonts.roboto(
+                fontWeight: FontWeight.w300,
+                color: darkGray.withOpacity(0.5),
+                fontSize: 14,
+              ),
+            ),
+          ),
+          Spacer(),
+        ],
+      ),
+    ));
   }
 
   void _toggleSelectStore({id, name, distance, address}) {
@@ -212,600 +762,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _toggleChangeLocation() {
-    // Get.bottomSheet(Container(
-    //   height: 500,
-    //   width: double.infinity,
-    //   color: Colors.white,
-    //   padding: EdgeInsets.all(20),
-    //   child: Center(
-    //     child: Text("Change location"),
-    //   ),
-    // ));
-  }
-
-  GestureDetector _buttonClose() {
-    return GestureDetector(
-      onTap: () => Get.offAllNamed("/home"),
-      child: Container(
-        margin: EdgeInsets.only(right: 15),
-        child: Icon(LineIcons.times, color: darkGray, size: 26),
-      ),
-    );
-  }
-
-  void _toggleSettings() {
-    Get.bottomSheet(Container(
-      width: double.infinity,
-      color: Colors.white,
-      padding: EdgeInsets.all(20),
-      height: 250,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Spacer(),
-          Row(
-            children: [
-              Icon(LineIcons.shoppingBasket, color: darkGray.withOpacity(0.7), size: 22),
-              SizedBox(width: 2),
-              Text(
-                "Basket (All)",
-                style: GoogleFonts.roboto(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
-                  color: darkGray.withOpacity(0.7),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 40),
-          Row(
-            children: [
-              Icon(LineIcons.cog, color: darkGray.withOpacity(0.7), size: 22),
-              SizedBox(width: 2),
-              Text(
-                "App settings",
-                style: GoogleFonts.roboto(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
-                  color: darkGray.withOpacity(0.7),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Row(
-            children: [
-              Icon(LineIcons.questionCircle, color: darkGray.withOpacity(0.7), size: 22),
-              SizedBox(width: 2),
-              Text(
-                "Help and support",
-                style: GoogleFonts.roboto(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
-                  color: darkGray.withOpacity(0.7),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          GestureDetector(
-            onTap: () => _toggleLogout(),
-            child: Row(
-              children: [
-                Icon(LineIcons.alternateSignOut, color: darkGray.withOpacity(0.7), size: 22),
-                SizedBox(width: 2),
-                Text(
-                  "Sign out & Exit",
-                  style: GoogleFonts.roboto(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w300,
-                    color: darkGray.withOpacity(0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          AnimatedContainer(duration: Duration(seconds: 3)),
-          Spacer(),
-        ],
-      ),
-    ));
-  }
-
-  void _toggleSaveLogin() {
-    Get.bottomSheet(Container(
-      color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-      height: 250,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Spacer(),
-          // `TITLE`
-          Text(
-            "Do you want to save your login info?",
-            style: GoogleFonts.roboto(
-              fontWeight: FontWeight.w300,
-              color: darkGray,
-              fontSize: 15,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 10),
-          // `DESCRIPTION`
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: fadeWhite,
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  LineIcons.infoCircle,
-                  color: darkGray,
-                ),
-                SizedBox(width: 5),
-                Expanded(
-                  child: Text(
-                    "Saving login info will help you to access your account quicker",
-                    style: GoogleFonts.roboto(
-                      fontWeight: FontWeight.w300,
-                      color: darkGray,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // `YES`
-              TextButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(darkBlue),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      side: BorderSide(
-                        color: darkBlue,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                onPressed: () => _handleSaveInfo(),
-                child: Text("Yes",
-                    style: GoogleFonts.roboto(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                    )),
-              ),
-              SizedBox(width: 10),
-              // `DISMISS`
-              TextButton(
-                style: ButtonStyle(
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      side: BorderSide(
-                        color: darkBlue,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  if (Get.isBottomSheetOpen) {
-                    Get.back();
-                  }
-                },
-                child: Text("Remid me later",
-                    style: GoogleFonts.roboto(
-                      color: darkBlue,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                    )),
-              )
-            ],
-          ),
-          Spacer(),
-          GestureDetector(
-            onTap: () => _handleNever(),
-            child: Text(
-              "Don't remid me again",
-              style: GoogleFonts.roboto(
-                fontWeight: FontWeight.w300,
-                color: darkGray.withOpacity(0.5),
-                fontSize: 14,
-              ),
-            ),
-          ),
-          Spacer(),
-        ],
-      ),
-    ));
-  }
-
-  void _toggleExitApp() {
-    Get.bottomSheet(Container(
-      color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 60, vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text("Do you wish to exit?", style: onExitAppTitleTextStyle),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => SystemNavigator.pop(),
-                child: Text("Yes", style: onExitAppConfirmTextStyle),
-              ),
-              SizedBox(width: 20),
-              GestureDetector(
-                onTap: () => Get.back(),
-                child: Text("Dismiss", style: onExitAppDismissTextStyle),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ));
-  }
-
-  Future<void> _handleSaveInfo() async {
-    await getSharedPrefKeyValue(key: 'loginDetails').then((value) async {
-      var loginDetails = value.toString().split(",");
-      await setSharedPrefKeyValue(
-        key: 'saveLoginInfo',
-        value: '${loginDetails[0]},${loginDetails[1]}',
-      ).then((value) {
-        Get.back();
-      });
-    });
-  }
-
-  Future<void> _handleNever() async {
-    await setSharedPrefKeyValue(key: 'saveLoginInfo', value: 'never');
-  }
-
-  GestureDetector _buttonChangeLocation() {
-    return GestureDetector(
-      onTap: () => _toggleChangeLocation(),
-      child: Container(
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(50))),
-        child: Row(
-          children: [
-            Text("Change", style: storeBadgeChangeLocationTextStyle),
-            Icon(LineIcons.mapMarker, color: darkGray, size: 12),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<Container> _mapNearbyStore({@required data}) {
-    List<Container> items = [];
-    for (int i = 0; i < data.length; i++) {
-      Container widget = Container(
-        child: GestureDetector(
-          onTap: () {
-            _toggleSelectStore(
-              id: data[i]['mer_id'],
-              name: data[i]['mer_name'],
-              distance: data[i]['distance'],
-              address: data[i]['mer_address'],
-            );
-          },
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              FadeInImage.assetNetwork(
-                placeholder: "images/alt/nearby_store_alt_250x250.png",
-                image: "https://bit.ly/3tA2hoo",
-                height: 70,
-                width: 70,
-                fit: BoxFit.cover,
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 5),
-                      child: Text(
-                        "${data[i]['mer_name'].toString().capitalizeFirstofEach} - Store",
-                        style: storeNameTextStyle_2,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ),
-                    // Container(
-                    //   margin: EdgeInsets.only(bottom: 5),
-                    //   child: Text(
-                    //     "${data[i]['mer_BusinessHours']}",
-                    //     style: storeBizHrsTextStyle,
-                    //     overflow: TextOverflow.ellipsis,
-                    //     maxLines: 1,
-                    //   ),
-                    // ),
-                    Text(
-                      "${data[i]['mer_address']}",
-                      style: storeAddressTextStyle,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                    SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text("4.9/5", style: storeRatingTextStyle),
-                            SizedBox(width: 2),
-                            Row(
-                              children: [
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star_half, size: 12, color: Colors.yellow[700]),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Container(
-                          width: 40,
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: darkBlue,
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                          child: Text(
-                            "${double.parse(data[i]['distance']).toStringAsFixed(0)}km",
-                            style: storeDistanceTextStyle,
-                            overflow: TextOverflow.fade,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              // Icon(Ionicons.cart_outline, size: 20, color: darkGray),
-            ],
-          ),
-        ),
-      );
-      items.add(widget);
-
-      if (i != data.length - 1) {
-        items.add(Container(
-          margin: EdgeInsets.symmetric(vertical: 15),
-          child: Divider(color: darkGray.withOpacity(0.1)),
-        ));
-      }
-      if (i == data.length - 1) {
-        items.add(Container(
-          margin: EdgeInsets.only(top: 40),
-          child: Text(
-            "End of result",
-            style: GoogleFonts.roboto(
-              color: darkGray.withOpacity(0.2),
-              fontWeight: FontWeight.w300,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ));
-      }
-    }
-
-    return items;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // `On page completely loaded`
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      //print(await getSharedPrefKeyValue(key: 'saveLoginInfo'));
-      if (_userController.isAuthenticated()) {
-        // `SAVED LOGIN INFO`
-        var _loginSavedDetails = await getSharedPrefKeyValue(key: 'saveLoginInfo');
-
-        // `NEW LOGIN INFO`
-        var _loginDetails = await getSharedPrefKeyValue(key: 'loginDetails');
-        dynamic __loginDetails = _loginDetails == "Empty" ? _loginDetails : _loginDetails.split(',');
-
-        var currentNumber = __loginDetails[0].toString().trim().replaceAll(new RegExp(r'[^\w\s]+'), '');
-
-        var __loginSavedDetails = _loginSavedDetails.split(',');
-        var savedNumber = __loginSavedDetails[0].toString().trim().replaceAll(new RegExp(r'[^\w\s]+'), '');
-
-        if (_loginSavedDetails != "Empty") {
-          if (int.parse(currentNumber) != int.parse(savedNumber)) {
-            _toggleSaveLogin();
-          }
-        }
-
-        if (_loginSavedDetails == "Empty") {
-          _toggleSaveLogin();
-        }
-
-        print("new number - $currentNumber");
-        print("saved number - $savedNumber");
-        // if (await getSharedPrefKeyValue(key: 'saveLoginInfo') == "later") {
-        //   _toggleSaveLogin();
-        // }
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentLocation = _nearbyController.locationName;
-    final locationAlt = "Nearby stores";
-    // Global state
-    return WillPopScope(
-      onWillPop: () async {
-        _toggleExitApp();
-        return;
-      },
-      child: Obx(
-        () => _nearbyController.isLoading.value
-            ? Scaffold(
-                body: Center(
-                  child: SpinKitPumpingHeart(
-                    color: darkBlue,
-                    size: 40.0,
-                    duration: Duration(milliseconds: 800),
-                  ),
-                ),
-              )
-            : GestureDetector(
-                onTap: () => destroyTextFieldFocus(context),
-                child: Scaffold(
-                  backgroundColor: Colors.white,
-                  appBar: AppBar(
-                    toolbarHeight: 60,
-                    leading: SizedBox(),
-                    leadingWidth: 0,
-                    elevation: 3,
-                    backgroundColor: Colors.white,
-                    title: Obx(() => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("$currentLocation", style: storeLocationTitleTextStlye),
-                            Text("$locationAlt", style: storeAltLocationTitleTextStyle),
-                          ],
-                        )),
-                    actions: [
-                      _userController.isAuthenticated()
-                          ? GestureDetector(
-                              onTap: () => _toggleSettings(),
-                              child: Container(
-                                margin: EdgeInsets.only(right: 15),
-                                child: Icon(LineIcons.cog, color: darkGray),
-                              ),
-                            )
-                          : _buttonClose(),
-                    ],
-                  ),
-                  body: Container(
-                    width: double.infinity,
-                    child: Column(
-                      children: [
-                        SizedBox(height: 20),
-                        GestureDetector(
-                          onTap: () => showSearch(
-                            context: context,
-                            delegate: Search(data: []),
-                          ),
-                          child: Container(
-                            width: Get.width * 0.8,
-                            padding: EdgeInsets.all(15),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: darkGray, width: 0.1),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(LineIcons.search),
-                                SizedBox(width: 5),
-                                Text(
-                                  "Search items e.g grain, bleach etc..",
-                                  style: TextStyle(height: 1.1),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        Container(
-                          width: Get.width * 0.8,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: fadeWhite,
-                                      borderRadius: BorderRadius.all(Radius.circular(50)),
-                                    ),
-                                    child: Text(
-                                      "ratings",
-                                      style: storeBadgeRatingsTextStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  SizedBox(width: 2),
-                                  Container(
-                                    padding: EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: fadeWhite,
-                                      borderRadius: BorderRadius.all(Radius.circular(50)),
-                                    ),
-                                    child: Text(
-                                      "distance",
-                                      style: storeBadgeDistanceTextStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  SizedBox(width: 2),
-                                  Container(
-                                    padding: EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: fadeWhite,
-                                      borderRadius: BorderRadius.all(Radius.circular(50)),
-                                    ),
-                                    child: Text(
-                                      "recommended",
-                                      style: storeBadgeRecommendedTextStyle,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              _buttonChangeLocation(),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 30),
-                        Expanded(
-                          child: Container(
-                            width: Get.width * 0.8,
-                            child: ListView(
-                              physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                              children: _mapNearbyStore(
-                                data: _nearbyController.nearbyStoreData,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
       ),
     );
   }

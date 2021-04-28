@@ -18,16 +18,14 @@ class _ScreenStoreAccountState extends State<ScreenStoreAccount> {
   bool _clearInfo = false;
   bool _logoutAndExitApp = false;
 
-  List<String> logoutTypes() {
-    List<String> types = [];
+  String logoutTypes() {
+    String type;
     if (_clearInfo) {
-      types.add("clearCredentials");
+      type = "clearCredentials";
+    } else if (_logoutAndExitApp) {
+      type = "logoutAndExit";
     }
-    if (_logoutAndExitApp) {
-      types.add("logoutAndExit");
-    }
-
-    return types;
+    return type;
   }
 
   void _toggleLogout() {
@@ -162,7 +160,7 @@ class _ScreenStoreAccountState extends State<ScreenStoreAccount> {
                     toggleOverlayPumpingHeart(context: context);
                     Future.delayed(Duration(seconds: 2), () {
                       Get.back();
-                      _userController.logout(hasType: logoutTypes());
+                      _userController.handleLogout(typeOf: logoutTypes());
                     });
                   },
                   child: Text("Logout",

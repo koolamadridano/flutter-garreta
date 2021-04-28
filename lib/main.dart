@@ -9,7 +9,7 @@ import 'package:garreta/screens/app.dart';
 import 'package:garreta/screens/store/nearby/nearby.dart';
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/store.dart';
-import 'package:garreta/screens/uknown/uknownScreen.dart';
+import 'package:garreta/screens/undefined/undefinedScreen.dart';
 import 'package:get/get.dart';
 
 void main() {

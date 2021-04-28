@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:garreta/services/sharedPreferences.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 final _loginBaseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
+
+// `KEYs`
+final _keySavedLoginInfo = 'savedLoginInfo';
+final _keyCurrentLoginInfo = 'currentLoginInfo';
 
 class UserController extends GetxController {
   var id;
@@ -33,7 +36,7 @@ class UserController extends GetxController {
     }
   }
 
-  void logout({List<String> hasType}) async {
+  void handleLogout({String typeOf}) async {
     isLoading.value = true;
     id = null;
     name = null;
@@ -49,23 +52,17 @@ class UserController extends GetxController {
     cancelledOrders = null;
     password = null;
     try {
-      print(hasType);
-      if (hasType.contains("clearCredentials")) {
-        print("typeof clearCredentials");
+      print(typeOf);
+      if (typeOf == "clearCredentials") {
         final prefs = await SharedPreferences.getInstance();
-        prefs.remove('saveLoginInfo');
+        prefs.remove(_keySavedLoginInfo);
 
-        // `Remove` in array
-        hasType.remove("clearCredentials");
         Get.offAllNamed("/home");
       }
-      if (hasType.contains("logoutAndExit")) {
-        print("typeof logoutAndExit");
-        // `Remove` in array
-        hasType.remove("logoutAndExit");
+      if (typeOf == "logoutAndExit") {
         SystemNavigator.pop();
       }
-      if (hasType.length == 0) {
+      if (typeOf == "") {
         print("typeof normal logout");
         Get.offAllNamed("/home");
       }
@@ -97,16 +94,14 @@ class UserController extends GetxController {
         successfulOrders = result[0]["personalDetails"]["cust_numberOfOrders"];
         cancelledOrders = result[0]["personalDetails"]["cust_numberOfCancelledOrders"];
 
-        //`Save locally`
-        await setSharedPrefKeyValue(
-          key: 'loginDetails',
-          value: '$username,$password',
-        ).then((value) {
-          if (isAuthenticated()) {
-            isLoading.value = false;
-            Get.toNamed("/store-nearby-store");
-          }
-        });
+        // `Hold current login info`
+        final prefs = await SharedPreferences.getInstance();
+        print("username $username : password $password");
+        prefs.setStringList(_keyCurrentLoginInfo, [username, password]);
+        if (isAuthenticated()) {
+          isLoading.value = false;
+          Get.toNamed("/store-nearby-store");
+        }
         return 200;
       }
       if (response.body.isEmpty) {
@@ -118,6 +113,70 @@ class UserController extends GetxController {
       isLoading.value = false;
       print("@login $e");
       return 400;
+    }
+  }
+
+  Future<dynamic> getSavedLoginInfo() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final value = prefs.getStringList(_keySavedLoginInfo);
+      if (value == null) {
+        return null;
+      }
+      return value;
+    } catch (e) {
+      print("@getSavedLoginInfo $e");
+    }
+  }
+
+  Future<dynamic> getCurrentLoginInfo() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final value = prefs.getStringList(_keyCurrentLoginInfo);
+      if (value == null) {
+        return null;
+      }
+      return value;
+    } catch (e) {
+      print("@getCurrentLoginInfo $e");
+    }
+  }
+
+  Future<bool> toggleSaveLoginOption() async {
+    try {
+      final List savedInfo = await getSavedLoginInfo();
+      final List currentInfo = await getCurrentLoginInfo();
+      if (savedInfo == null) {
+        return true;
+      } else if (savedInfo[0] != currentInfo[0]) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print("@toggleSaveLoginOption $e");
+      return false;
+    }
+  }
+
+  // `Save username and password of current login info`
+  Future<void> handleSaveInfo() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setStringList(_keySavedLoginInfo, prefs.getStringList(_keyCurrentLoginInfo));
+      if (Get.isBottomSheetOpen) {
+        Get.back();
+      }
+    } catch (e) {
+      print("@handleSaveInfo $e");
+    }
+  }
+
+  // `Ignore`
+  void neverSaveLoginInfo() {
+    print("@neverSaveLoginInfo is triggered");
+    if (Get.isBottomSheetOpen) {
+      Get.back();
     }
   }
 }

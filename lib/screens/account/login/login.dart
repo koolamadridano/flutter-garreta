@@ -43,14 +43,11 @@ class _ScreenLoginState extends State<ScreenLogin> {
     _mobileNumberFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      var getResult = await getSharedPrefKeyValue(key: 'saveLoginInfo');
-      if (getResult != "Empty") {
-        var loginDetails = getResult.split(',');
+      var info = await _userController.getSavedLoginInfo();
+      if (info != null) {
         // from 01234567890 to 1234567890
-        if (loginDetails.isNotEmpty) {
-          _mobileNumberController.text = loginDetails[0].substring(1);
-          _passwordController.text = loginDetails[1];
-        }
+        _mobileNumberController.text = info[0].substring(1);
+        _passwordController.text = info[1];
       }
     });
   }
@@ -249,7 +246,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
       height: 60,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () => Get.offAllNamed("/registrationx"),
+        onPressed: () => Get.offAllNamed("/registration"),
         child: Text(
           "Not yet registered?",
           style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300),

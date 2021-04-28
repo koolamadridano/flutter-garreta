@@ -55,107 +55,139 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          toolbarHeight: 58,
-          leading: SizedBox(),
-          leadingWidth: 0,
-          elevation: 5,
-          title: Container(
-            width: Get.width * 0.6,
-            child: Obx(() => Text(
-                  "${_storeController.merchantName.value.capitalizeFirstofEach}",
-                  style: GoogleFonts.roboto(
-                    color: darkGray,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                )),
-          ),
-          actions: [
-            GestureDetector(
-              onTap: () {
-                showSearch(
-                  context: context,
-                  delegate: Search(data: _productController.storeProductsData),
-                );
-              },
-              child: Container(
-                margin: EdgeInsets.only(right: 15),
-                child: Icon(
-                  LineIcons.search,
-                  color: darkGray,
-                ),
-              ),
-            ),
-          ],
-        ),
+        // appBar: AppBar(
+        //   backgroundColor: Colors.white,
+        //   toolbarHeight: 58,
+        //   leading: SizedBox(),
+        //   leadingWidth: 0,
+        //   elevation: 5,
+        //   title: Container(
+        //     width: Get.width * 0.6,
+        //     child: Obx(
+        //       () => Column(
+        //         crossAxisAlignment: CrossAxisAlignment.start,
+        //         children: [
+        //           Text("${_storeController.merchantName.value.capitalizeFirstofEach}",
+        //               style: GoogleFonts.roboto(
+        //                 color: darkGray,
+        //                 fontWeight: FontWeight.w600,
+        //                 fontSize: 14,
+        //               ),
+        //               overflow: TextOverflow.ellipsis,
+        //               maxLines: 2),
+        //           Text("Nearby store",
+        //               style: GoogleFonts.roboto(
+        //                 color: darkGray,
+        //                 fontWeight: FontWeight.w300,
+        //                 fontSize: 12,
+        //               )),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+        //   actions: [
+        //     GestureDetector(
+        //       onTap: () {
+        //         showSearch(
+        //           context: context,
+        //           delegate: Search(data: _productController.storeProductsData),
+        //         );
+        //       },
+        //       child: Container(
+        //         margin: EdgeInsets.only(right: 15),
+        //         child: Icon(
+        //           LineIcons.search,
+        //           color: darkGray,
+        //         ),
+        //       ),
+        //     ),
+        //   ],
+        // ),
         body: CustomScrollView(
           physics: BouncingScrollPhysics(),
           slivers: [
             // `store` of SliverAppBar
             SliverAppBar(
-              elevation: 0,
               backgroundColor: Colors.white,
+              elevation: 0,
+              expandedHeight: 260,
+              toolbarHeight: 0,
               leading: SizedBox(),
-              leadingWidth: 0.0,
-              expandedHeight: 200,
+              leadingWidth: 0,
               stretch: true,
-              iconTheme: IconThemeData(color: darkGray),
+              pinned: true,
               stretchTriggerOffset: 150,
-              onStretchTrigger: () async {
-                await _productController.fetchStoreProducts();
-              },
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin,
-                title: Obx(
-                  () => Container(
-                    margin: EdgeInsets.only(bottom: 20),
-                    width: Get.width * 0.4,
-                    child: Column(
+              bottom: AppBar(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(30),
+                  ),
+                  side: BorderSide.none,
+                ),
+                backgroundColor: Colors.white,
+                toolbarHeight: 80,
+                leading: SizedBox(),
+                leadingWidth: 0,
+                elevation: 0,
+                shadowColor: darkBlue,
+                title: Container(
+                  width: Get.width * 0.6,
+                  child: Obx(
+                    () => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Flexible(
-                          child: Text(
-                            "${_storeController.merchantName.value.capitalizeFirstofEach}",
-                            style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
+                        Row(
+                          children: [
+                            Icon(LineIcons.store, color: darkGray, size: 16),
+                            SizedBox(width: 2),
+                            Text(
+                              "Store",
+                              style: GoogleFonts.roboto(
+                                color: darkGray,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 3,
-                          ),
+                          ],
                         ),
-                        Flexible(
+                        Container(
+                          width: Get.width * 0.5,
+                          margin: EdgeInsets.only(top: 3),
                           child: Text(
-                            "${_storeController.merchantAddress.value}",
+                            "${_storeController.merchantName.value.capitalizeFirstofEach} - lorem ipsum dolor sit amet",
                             style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontSize: 9,
+                              color: darkGray,
                               fontWeight: FontWeight.w300,
+                              fontSize: 12,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 3,
-                          ),
-                        ),
-                        Flexible(
-                          child: Text(
-                            "${double.parse(_storeController.merchantDistance.value).toStringAsFixed(2)}km",
-                            style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontSize: 6,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 3,
+                            maxLines: 2,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
+                actions: [
+                  GestureDetector(
+                    onTap: () {
+                      showSearch(
+                        context: context,
+                        delegate: Search(data: _productController.storeProductsData),
+                      );
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(right: 15),
+                      child: Icon(
+                        LineIcons.search,
+                        color: darkGray,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              flexibleSpace: FlexibleSpaceBar(
                 titlePadding: EdgeInsets.all(30),
                 stretchModes: [
                   StretchMode.zoomBackground,
@@ -166,16 +198,10 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      ColorFiltered(
-                        colorFilter: ColorFilter.mode(
-                          Colors.black.withOpacity(0.5),
-                          BlendMode.srcOver,
-                        ),
-                        child: Container(
-                          child: Image.asset(
-                            "images/store/vendor_banner.jpg",
-                            fit: BoxFit.cover,
-                          ),
+                      Container(
+                        child: Image.asset(
+                          "images/store/vendor_banner.jpg",
+                          fit: BoxFit.cover,
                         ),
                       ),
                       Positioned(
@@ -217,6 +243,9 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                   ),
                 ),
               ),
+              onStretchTrigger: () async {
+                await _productController.fetchStoreProducts();
+              },
             ),
 
             // `title` of category
@@ -319,8 +348,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
               margin: EdgeInsets.only(right: 10),
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                color: fadeWhite,
+                borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                color: darkBlue,
               ),
               child: Center(
                 child: Text(
@@ -328,6 +357,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                   style: GoogleFonts.roboto(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -403,7 +433,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text("₱$_itemPrice",
-                                  style: GoogleFonts.roboto(
+                                  style: GoogleFonts.rajdhani(
                                     color: darkGray,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
