@@ -156,4 +156,16 @@ class NearbyStoreController extends GetxController {
     await fetchSearchedKeyword();
     print("@clearSearchedKeyword is triggered");
   }
+
+  Future<void> removeSearchKeyword({String name}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final userId = _userController.id;
+
+    var newArray = prefs.getStringList("$userId");
+    newArray.removeWhere((element) => element == name);
+
+    // `SET LIST`
+    await prefs.setStringList("$userId", newArray);
+    await fetchSearchedKeyword();
+  }
 }
