@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
-import 'package:garreta/utils/colors/colors.dart';
-import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:simple_tooltip/simple_tooltip.dart';
+import 'package:garreta/utils/colors/colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:badges/badges.dart';
+import 'package:get/get.dart';
+import 'package:ionicons/ionicons.dart';
 
 class ScreenShoppingCart extends StatefulWidget {
   ScreenShoppingCart({Key key}) : super(key: key);
@@ -18,6 +22,9 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   // Global state
   final _cartController = Get.put(CartController());
 
+  bool _toggleAllItemsTooltip = false;
+  bool _toggleChangeDeliveryAddressTooltip = false;
+
   void _selectItem({@required String type, @required itemId}) {
     if (type == "add") {
       _cartController.addToSelectedItem(itemID: itemId);
@@ -27,7 +34,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _selectAll({@required state}) async {
-    widgetOverlay.toggleOverlayPumpingHeart(context: context);
+    widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
     try {
       if (state) {
         Future.delayed(Duration.zero, () async {
@@ -56,7 +63,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   Future<void> _handleDelete({@required type}) async {
     Get.back();
     try {
-      widgetOverlay.toggleOverlayPumpingHeart(context: context);
+      widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
       if (type) {
         await _cartController.cleanCartItems().then((value) {
           Get.back();
@@ -75,7 +82,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _handleSwipeDelete({@required itemId}) async {
-    widgetOverlay.toggleOverlayPumpingHeart(context: context);
+    widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
     await _cartController
         .removeSelectedItem(
       itemid: itemId,
@@ -93,7 +100,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     String hasType,
   }) async {
     if (!_cartController.cartItemSelectState[itemIndex]) {
-      widgetOverlay.toggleOverlayPumpingHeart(context: context);
+      widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
       if (hasType == "increment") qty += 1;
       if (hasType == "decrement") qty -= 1;
       await _cartController.updateSelectedItem(itemid: itemId, qty: qty).then((value) {
@@ -249,7 +256,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                         ),
                       ),
                       Text("x${data[i]['qty']}",
-                          style: GoogleFonts.roboto(
+                          style: GoogleFonts.rajdhani(
                             fontSize: 13,
                             color: darkGray.withOpacity(0.9),
                             fontWeight: FontWeight.w300,
@@ -264,7 +271,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('$_translatedPrice',
-                            style: GoogleFonts.roboto(
+                            style: GoogleFonts.rajdhani(
                               fontSize: 16,
                               height: 0.8,
                               color: darkGray,
@@ -380,14 +387,33 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      setState(() {
+        _toggleAllItemsTooltip = true;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         toolbarHeight: 58,
-        leading: SizedBox(),
-        leadingWidth: 0,
+        leading: GestureDetector(
+          onTap: () => Get.back(),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(Radius.circular(100)),
+            ),
+            margin: EdgeInsets.all(10),
+            child: Icon(Ionicons.chevron_back, size: 22, color: darkBlue),
+          ),
+        ),
         elevation: 5,
         title: Container(
           width: Get.width * 0.5,
@@ -415,6 +441,95 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
               ),
             ),
           ),
+          SimpleTooltip(
+            borderColor: darkBlue,
+            backgroundColor: darkBlue,
+            borderWidth: 0,
+            hideOnTooltipTap: false,
+            arrowTipDistance: 1,
+            animationDuration: Duration(milliseconds: 300),
+            arrowBaseWidth: 20,
+            show: _toggleChangeDeliveryAddressTooltip,
+            minimumOutSidePadding: 3,
+            customShadows: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 3,
+                spreadRadius: 1,
+                offset: Offset(1, 1),
+              ),
+            ],
+            ballonPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+            tooltipDirection: TooltipDirection.left,
+            content: GestureDetector(
+              onTap: () => setState(() {
+                _toggleChangeDeliveryAddressTooltip = false;
+              }),
+              child: Text(
+                "Manage delivery address here",
+                style: GoogleFonts.roboto(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
+            child: Container(
+              margin: EdgeInsets.only(right: 10),
+              child: Icon(LineIcons.truck, color: darkGray),
+            ),
+          ),
+          SimpleTooltip(
+            borderColor: darkBlue,
+            backgroundColor: darkBlue,
+            borderWidth: 0,
+            hideOnTooltipTap: false,
+            arrowTipDistance: 1,
+            animationDuration: Duration(milliseconds: 300),
+            arrowBaseWidth: 20,
+            show: _toggleAllItemsTooltip,
+            minimumOutSidePadding: 3,
+            customShadows: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 3,
+                spreadRadius: 1,
+                offset: Offset(1, 1),
+              ),
+            ],
+            ballonPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+            tooltipDirection: TooltipDirection.left,
+            content: GestureDetector(
+              onTap: () => setState(() {
+                _toggleAllItemsTooltip = false;
+                _toggleChangeDeliveryAddressTooltip = true;
+              }),
+              child: Text(
+                "All items",
+                style: GoogleFonts.roboto(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
+            child: Badge(
+              position: BadgePosition.topEnd(end: -4, top: 5),
+              badgeColor: red,
+              animationDuration: Duration(milliseconds: 500),
+              badgeContent: Obx(() => Text(
+                    '${_cartController.cartAllItems.length}',
+                    style: GoogleFonts.roboto(
+                      fontSize: _cartController.cartAllItems.length > 9 ? 5 : 8,
+                      color: Colors.white,
+                    ),
+                  )),
+              child: Icon(LineIcons.shoppingBasket, color: darkGray),
+            ),
+          ),
+          SizedBox(width: 10),
         ],
       ),
       bottomNavigationBar: Obx(
@@ -490,32 +605,39 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(0),
-                  bottomRight: Radius.circular(0),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(width: 0.1, color: darkGray),
+                  ),
                 ),
-                child: Container(
-                  color: darkBlue,
-                  padding: EdgeInsets.all(15),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(LineIcons.truck, size: 15, color: Colors.white),
-                      SizedBox(width: 3),
-                      Expanded(
-                        child: Text(
-                          "Cagayan de Oro City, Upper Balulang Uptown  Cagayan de Oro City, Upper Balulang Uptown Cagayan de Oro City, Upper Balulang Uptown",
-                          style: GoogleFonts.roboto(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 12,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0),
+                    bottomRight: Radius.circular(0),
+                  ),
+                  child: Container(
+                    color: darkBlue,
+                    padding: EdgeInsets.all(15),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(LineIcons.truck, size: 15, color: Colors.white),
+                        SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            "Cagayan de Oro City, Upper Balulang Uptown  Cagayan de Oro City, Upper Balulang Uptown Cagayan de Oro City, Upper Balulang Uptown",
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

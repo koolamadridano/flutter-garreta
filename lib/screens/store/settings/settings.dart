@@ -5,15 +5,16 @@ import 'package:garreta/utils/colors/colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:ionicons/ionicons.dart';
 
-class ScreenStoreAccount extends StatefulWidget {
-  ScreenStoreAccount({Key key}) : super(key: key);
+class ScreenSettings extends StatefulWidget {
+  ScreenSettings({Key key}) : super(key: key);
 
   @override
-  _ScreenStoreAccountState createState() => _ScreenStoreAccountState();
+  _ScreenSettingsState createState() => _ScreenSettingsState();
 }
 
-class _ScreenStoreAccountState extends State<ScreenStoreAccount> {
+class _ScreenSettingsState extends State<ScreenSettings> {
   final _userController = Get.find<UserController>();
   bool _clearInfo = false;
   bool _logoutAndExitApp = false;
@@ -182,6 +183,21 @@ class _ScreenStoreAccountState extends State<ScreenStoreAccount> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          toolbarHeight: 58,
+          leading: GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(100)),
+              ),
+              margin: EdgeInsets.all(10),
+              child: Icon(Ionicons.chevron_back, size: 22, color: darkBlue),
+            ),
+          ),
+        ),
         backgroundColor: Colors.white,
         body: Container(
           width: Get.width,

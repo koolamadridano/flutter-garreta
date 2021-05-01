@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/pages/pagesController.dart';
 import 'package:garreta/controllers/user/userController.dart';
-
 import 'package:garreta/screens/account/login/password/password.dart';
 import 'package:garreta/screens/account/login/username/username.dart';
-import 'package:garreta/services/sharedPreferences.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:garreta/screens/account/login/widgets/widgets.dart' as loginWidget;
 import 'package:extended_masked_text/extended_masked_text.dart';
@@ -22,7 +20,7 @@ class ScreenLogin extends StatefulWidget {
 
 class _ScreenLoginState extends State<ScreenLogin> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _pageController = Get.put(PageViewController());
   final _userController = Get.put(UserController());
 
   // TextController
@@ -72,11 +70,15 @@ class _ScreenLoginState extends State<ScreenLogin> {
         password: password,
       );
       if (getResponse == 200) {
+        _pageController.hasPageIndex.value = 0;
         setState(() {
           _isLoading = false;
           _isLoginRequestOnGoing = false;
           _stateHasError = false;
         });
+        if (_userController.isAuthenticated()) {
+          Get.toNamed("/screen-nearby-vendors");
+        }
       }
       if (getResponse == 401) {
         setState(() {

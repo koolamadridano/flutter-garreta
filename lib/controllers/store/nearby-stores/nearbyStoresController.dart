@@ -1,10 +1,8 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/services/locationService/locationCoordinates.dart';
 import 'package:garreta/services/locationService/locationTitle.dart';
-import 'package:garreta/services/sharedPreferences.dart';
 import 'package:garreta/utils/enum/enum.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';

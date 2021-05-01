@@ -1,24 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 
-final _postCartBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/posting.php";
-final _baseUrl =
-    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
-final _editCartBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/posting.php";
+final _postCartBaseUrl = "http://shareatext.com/garreta/webservices/v2/posting.php";
+final _baseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getMyCartbyID&";
+final _editCartBaseUrl = "http://shareatext.com/garreta/webservices/v2/posting.php";
 
-final _cleanCartBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/posting.php";
+final _cleanCartBaseUrl = "http://shareatext.com/garreta/webservices/v2/posting.php";
 
 class CartController extends GetxController {
   final _userController = Get.find<UserController>();
-
   final _storeController = Get.find<StoreController>();
 
   RxDouble cartTotalPrice = 0.0.obs;
@@ -27,6 +21,7 @@ class CartController extends GetxController {
   // `cartItemIsSelected` refers to `getShoppingCartItems`
   // `cartItemIsSelected` list `string`
   RxList cartItems = [].obs;
+  RxList cartAllItems = [].obs;
 
   // `cartSelectedItems` refers to selected item(s)
   // `cartSelectedItems` list `string`
@@ -68,6 +63,7 @@ class CartController extends GetxController {
       );
       if (result.body.trim() != "0") {
         List decodedResult = jsonDecode(result.body);
+        cartAllItems.value = decodedResult;
 
         var filteredResult = decodedResult.where((element) {
           return element['merchantID'] == _storeController.merchantId.value;
@@ -81,7 +77,9 @@ class CartController extends GetxController {
       isLoading.value = false;
       // Refresh `RxList<String> cartItems,  cartSelectedItems`
       cartItems.reversed;
+      cartAllItems.reversed;
       cartItems.refresh();
+      cartAllItems.refresh();
       cartSelectedItems.refresh();
       print("@fetchShoppingCartItems is triggered");
     } catch (e) {
@@ -174,11 +172,9 @@ class CartController extends GetxController {
       // Fetch `getShoppingCartItems` to pull the new array
       await fetchShoppingCartItems();
       // Find item in `cartItems`
-      var selectedItem =
-          cartItems.where((element) => element['itemID'] == itemID);
+      var selectedItem = cartItems.where((element) => element['itemID'] == itemID);
       // Increase total price based on item total
-      var sum = double.parse(selectedItem.toList()[0]['price']) *
-          int.parse(selectedItem.toList()[0]['qty']);
+      var sum = double.parse(selectedItem.toList()[0]['price']) * int.parse(selectedItem.toList()[0]['qty']);
       cartTotalPrice.value += sum;
 
       // `Reset select all items`
@@ -202,11 +198,9 @@ class CartController extends GetxController {
       // Fetch `getShoppingCartItems` to pull the new array
       await fetchShoppingCartItems();
       // Find item in `cartItems`
-      var selectedItem =
-          cartItems.where((element) => element['itemID'] == itemID);
+      var selectedItem = cartItems.where((element) => element['itemID'] == itemID);
       // Decrease total price based on item total
-      var sum = double.parse(selectedItem.toList()[0]['price']) *
-          int.parse(selectedItem.toList()[0]['qty']);
+      var sum = double.parse(selectedItem.toList()[0]['price']) * int.parse(selectedItem.toList()[0]['qty']);
       cartTotalPrice.value -= sum;
 
       // `Reset select all items`

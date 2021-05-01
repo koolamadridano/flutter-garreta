@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garreta/controllers/pages/pagesController.dart';
 import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/user/userController.dart';
@@ -18,143 +19,20 @@ class ScreenNearbyStore extends StatefulWidget {
   _ScreenNearbyStoreState createState() => _ScreenNearbyStoreState();
 }
 
+List<String> _tempSuggestionsImg = [
+  "https://bit.ly/3u17KV8",
+  "https://bit.ly/337YKSF",
+  "https://bit.ly/3dXvNyV",
+  "https://bit.ly/2R07QxQ",
+  "https://bit.ly/3dVRO0Q",
+];
+
 class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   // Global state
-  final _storeController = Get.put(StoreController());
-  final _nearbyController = Get.put(NearbyStoreController());
+  final _pageViewController = Get.put(PageViewController());
   final _userController = Get.put(UserController());
-
-  List<Container> _mapNearbyStore({@required data}) {
-    List<Container> items = [];
-    for (int i = 0; i < data.length; i++) {
-      Container widget = Container(
-        child: GestureDetector(
-          onTap: () {
-            // `This will toggle bottomsheet`
-            _toggleSelectStore(
-              id: data[i]['mer_id'],
-              name: data[i]['mer_name'],
-              distance: data[i]['distance'],
-              address: data[i]['mer_address'],
-            );
-          },
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                child: FadeInImage.assetNetwork(
-                  placeholder: "images/alt/nearby_store_alt_250x250.png",
-                  image: "https://bit.ly/3tA2hoo",
-                  height: 70,
-                  width: 70,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 5),
-                      child: Text(
-                        "${data[i]['mer_name'].toString().capitalizeFirstofEach} - Store",
-                        style: storeNameTextStyle_2,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ),
-                    Text(
-                      "${data[i]['mer_address']}",
-                      style: storeAddressTextStyle,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                    SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text("4.9/5", style: storeRatingTextStyle),
-                            SizedBox(width: 2),
-                            Row(
-                              children: [
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
-                                Icon(Ionicons.star_half, size: 12, color: Colors.yellow[700]),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Container(
-                          width: 40,
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: darkBlue,
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                          child: Text(
-                            "${double.parse(data[i]['distance']).toStringAsFixed(0)}km",
-                            style: storeDistanceTextStyle,
-                            overflow: TextOverflow.fade,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              // Icon(Ionicons.cart_outline, size: 20, color: darkGray),
-            ],
-          ),
-        ),
-      );
-      if (i == 0) {
-        items.add(Container(
-          margin: EdgeInsets.symmetric(vertical: 15),
-        ));
-      }
-
-      items.add(widget);
-      if (i != data.length - 1) {
-        items.add(Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: Divider(color: darkGray.withOpacity(0.1)),
-        ));
-      }
-      if (i == data.length - 1) {
-        items.add(Container(
-          margin: EdgeInsets.only(top: 40, bottom: 20),
-          child: Text(
-            "End of result",
-            style: GoogleFonts.roboto(
-              color: darkGray.withOpacity(0.2),
-              fontWeight: FontWeight.w300,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ));
-      }
-    }
-
-    return items;
-  }
-
-  List<String> _tempSuggestionsImg = [
-    "https://bit.ly/3u17KV8",
-    "https://bit.ly/337YKSF",
-    "https://bit.ly/3dXvNyV",
-    "https://bit.ly/2R07QxQ",
-    "https://bit.ly/3dVRO0Q",
-  ];
+  final _nearbyController = Get.put(NearbyStoreController());
+  final _storeController = Get.put(StoreController());
 
   void _onSearch() {
     showSearch(
@@ -167,24 +45,14 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // `On page completely loaded`1
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       //print(await getSharedPrefKeyValue(key: 'saveLoginInfo'));
       if (_userController.isAuthenticated()) {
-        // `SAVED LOGIN INFO`
-        var _loginSavedInfo = await _userController.getSavedLoginInfo();
-        // `CURRENT LOGIN INFO`
-        var _currentLoginInfo = await _userController.getCurrentLoginInfo();
-
         if (await _userController.toggleSaveLoginOption()) {
           _toggleSaveLogin();
         }
-
-        // if (await getSharedPrefKeyValue(key: 'saveLoginInfo') == "later") {
-        //   _toggleSaveLogin();
-        // }
       }
     });
   }
@@ -223,47 +91,70 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Image.asset(
-                              "images/store/banner_map.PNG",
-                              fit: BoxFit.cover,
-                            ),
-                            Positioned(
-                              bottom: 70,
-                              width: Get.width,
-                              child: Align(
-                                alignment: Alignment.center,
-                                child: Container(
-                                  width: Get.width * 0.8,
-                                  padding: EdgeInsets.all(15),
-                                  margin: EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    //border: Border.all(color: darkGray, width: 0.1),
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: () => _onSearch(),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Icon(LineIcons.search),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          "Search items e.g grain, bleach etc..",
-                                          style: TextStyle(height: 1.1),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                            ColorFiltered(
+                              colorFilter: ColorFilter.mode(Colors.white.withOpacity(0.7), BlendMode.lighten),
+                              child: Image.asset(
+                                "images/store/banner_map.PNG",
+                                fit: BoxFit.cover,
                               ),
                             ),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Welcome back",
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: darkGray,
+                                      )),
+                                  Text("Kolya!",
+                                      style: GoogleFonts.righteous(
+                                        fontSize: 44,
+                                        fontWeight: FontWeight.bold,
+                                        color: darkGray,
+                                        height: 0.9,
+                                      )),
+                                ],
+                              ),
+                            )
+                            // Positioned(
+                            //   bottom: 70,
+                            //   width: Get.width,
+                            //   child: Align(
+                            //     alignment: Alignment.center,
+                            //     child: Container(
+                            //       width: Get.width * 0.8,
+                            //       padding: EdgeInsets.all(15),
+                            //       margin: EdgeInsets.symmetric(vertical: 10),
+                            //       decoration: BoxDecoration(
+                            //         color: Colors.white,
+                            //         //border: Border.all(color: darkGray, width: 0.1),
+                            //       ),
+                            //       child: GestureDetector(
+                            //         onTap: () => _onSearch(),
+                            //         child: Row(
+                            //           crossAxisAlignment: CrossAxisAlignment.center,
+                            //           children: [
+                            //             Icon(LineIcons.search),
+                            //             SizedBox(width: 5),
+                            //             Text(
+                            //               "Search items e.g grain, bleach etc..",
+                            //               style: TextStyle(height: 1.1),
+                            //             ),
+                            //           ],
+                            //         ),
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
                       stretchModes: [
                         StretchMode.zoomBackground,
                         StretchMode.fadeTitle,
-                        StretchMode.blurBackground,
                       ],
                     ),
                     bottom: AppBar(
@@ -313,7 +204,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                           margin: EdgeInsets.only(right: 14),
                           child: IconButton(
                             icon: Icon(LineIcons.cog, color: darkGray, size: 24),
-                            onPressed: () {},
+                            onPressed: () => Get.toNamed("/settings"),
                           ),
                         ),
                       ],
@@ -533,124 +424,251 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   }
 
   void _toggleSaveLogin() {
-    Get.bottomSheet(Container(
-      color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-      height: 250,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Spacer(),
-          // `TITLE`
-          Text(
-            "Do you want to save your login info?",
+    Get.bottomSheet(
+      Container(
+        color: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+        height: 250,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Spacer(),
+            // `TITLE`
+            Text(
+              "Do you want to save your login info?",
+              style: GoogleFonts.roboto(
+                fontWeight: FontWeight.w300,
+                color: darkGray,
+                fontSize: 15,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            // `DESCRIPTION`
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: fadeWhite,
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    LineIcons.infoCircle,
+                    color: darkGray,
+                  ),
+                  SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      "Saving login info will help you to access your account quicker",
+                      style: GoogleFonts.roboto(
+                        fontWeight: FontWeight.w300,
+                        color: darkGray,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // `YES`
+                TextButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(darkBlue),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        side: BorderSide(
+                          color: darkBlue,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                  onPressed: () => _userController.handleSaveInfo(),
+                  child: Text("Yes",
+                      style: GoogleFonts.roboto(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                      )),
+                ),
+                SizedBox(width: 10),
+                // `DISMISS`
+                TextButton(
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        side: BorderSide(
+                          color: darkBlue,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (Get.isBottomSheetOpen) {
+                      Get.back();
+                    }
+                  },
+                  child: Text("Remid me later",
+                      style: GoogleFonts.roboto(
+                        color: darkBlue,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                      )),
+                )
+              ],
+            ),
+            Spacer(),
+            GestureDetector(
+              onTap: () => _userController.neverSaveLoginInfo(),
+              child: Text(
+                "Don't remid me again",
+                style: GoogleFonts.roboto(
+                  fontWeight: FontWeight.w300,
+                  color: darkGray.withOpacity(0.5),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            Spacer(),
+          ],
+        ),
+      ),
+      isDismissible: false,
+    );
+  }
+
+  List<Container> _mapNearbyStore({@required data}) {
+    List<Container> items = [];
+    for (int i = 0; i < data.length; i++) {
+      Container widget = Container(
+        child: GestureDetector(
+          onTap: () {
+            // `This will toggle bottomsheet`
+            _toggleSelectStore(
+              id: data[i]['mer_id'],
+              name: data[i]['mer_name'],
+              distance: data[i]['distance'],
+              address: data[i]['mer_address'],
+            );
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                child: FadeInImage.assetNetwork(
+                  placeholder: "images/alt/nearby_store_alt_250x250.png",
+                  image: "https://bit.ly/3tA2hoo",
+                  height: 70,
+                  width: 70,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(bottom: 5),
+                      child: Text(
+                        "${data[i]['mer_name'].toString().capitalizeFirstofEach} - Store",
+                        style: storeNameTextStyle_2,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
+                    Text(
+                      "${data[i]['mer_address']}",
+                      style: storeAddressTextStyle,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text("4.9/5", style: storeRatingTextStyle),
+                            SizedBox(width: 2),
+                            Row(
+                              children: [
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star, size: 12, color: Colors.yellow[700]),
+                                Icon(Ionicons.star_half, size: 12, color: Colors.yellow[700]),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Container(
+                          width: 40,
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: darkBlue,
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                          child: Text(
+                            "${double.parse(data[i]['distance']).toStringAsFixed(0)}km",
+                            style: storeDistanceTextStyle,
+                            overflow: TextOverflow.fade,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              // Icon(Ionicons.cart_outline, size: 20, color: darkGray),
+            ],
+          ),
+        ),
+      );
+      if (i == 0) {
+        items.add(Container(
+          margin: EdgeInsets.symmetric(vertical: 15),
+        ));
+      }
+
+      items.add(widget);
+      if (i != data.length - 1) {
+        items.add(Container(
+          margin: EdgeInsets.symmetric(vertical: 10),
+          child: Divider(color: darkGray.withOpacity(0.1)),
+        ));
+      }
+      if (i == data.length - 1) {
+        items.add(Container(
+          margin: EdgeInsets.only(top: 40, bottom: 20),
+          child: Text(
+            "End of result",
             style: GoogleFonts.roboto(
+              color: darkGray.withOpacity(0.2),
               fontWeight: FontWeight.w300,
-              color: darkGray,
-              fontSize: 15,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 10),
-          // `DESCRIPTION`
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: fadeWhite,
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  LineIcons.infoCircle,
-                  color: darkGray,
-                ),
-                SizedBox(width: 5),
-                Expanded(
-                  child: Text(
-                    "Saving login info will help you to access your account quicker",
-                    style: GoogleFonts.roboto(
-                      fontWeight: FontWeight.w300,
-                      color: darkGray,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // `YES`
-              TextButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(darkBlue),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      side: BorderSide(
-                        color: darkBlue,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                onPressed: () => _userController.handleSaveInfo(),
-                child: Text("Yes",
-                    style: GoogleFonts.roboto(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                    )),
-              ),
-              SizedBox(width: 10),
-              // `DISMISS`
-              TextButton(
-                style: ButtonStyle(
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      side: BorderSide(
-                        color: darkBlue,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  if (Get.isBottomSheetOpen) {
-                    Get.back();
-                  }
-                },
-                child: Text("Remid me later",
-                    style: GoogleFonts.roboto(
-                      color: darkBlue,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                    )),
-              )
-            ],
-          ),
-          Spacer(),
-          GestureDetector(
-            onTap: () => _userController.neverSaveLoginInfo(),
-            child: Text(
-              "Don't remid me again",
-              style: GoogleFonts.roboto(
-                fontWeight: FontWeight.w300,
-                color: darkGray.withOpacity(0.5),
-                fontSize: 14,
-              ),
-            ),
-          ),
-          Spacer(),
-        ],
-      ),
-    ));
+        ));
+      }
+    }
+
+    return items;
   }
 
   void _toggleSelectStore({id, name, distance, address}) {
@@ -724,7 +742,11 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                     if (Get.isBottomSheetOpen) {
                                       Get.back();
                                     }
-                                    Get.toNamed("/store");
+                                    _pageViewController.hasPageIndex.value = 1;
+                                    // Navigation.popAndPushNamed() shortcut.
+                                    // Pop the current named page and pushes a new [page] to
+                                    // the stack in its place
+                                    Get.toNamed("/screen-products");
                                   }
                                 });
                               });

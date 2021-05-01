@@ -5,8 +5,7 @@ import 'package:get/get.dart';
 
 final _fetchStoreProductsBaseUrl =
     "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getItemsbyCategVendor&";
-final _fetchStoreCategoryBaseUrl =
-    "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getCategorybyVendor&";
+final _fetchStoreCategoryBaseUrl = "http://shareatext.com/garreta/webservices/v2/getting.php?rtr=getCategorybyVendor&";
 
 class ProductController extends GetxController {
   final _storeController = Get.find<StoreController>();
@@ -14,13 +13,7 @@ class ProductController extends GetxController {
   RxList storeProductsData = [].obs;
   RxList storeCategoryData = [].obs;
   RxBool isLoading = true.obs;
-
-  @override
-  onInit() {
-    super.onInit();
-    fetchStoreProducts();
-    fetchStoreCategory();
-  }
+  RxBool categoryIsFetching = true.obs;
 
   Future<void> fetchStoreCategory() async {
     try {
@@ -33,13 +26,16 @@ class ProductController extends GetxController {
         var decodedCategory = jsonDecode(result.body);
         storeCategoryData.value = decodedCategory;
         storeCategoryData.refresh();
+
+        print(storeCategoryData);
         //`Stop loading`
-        isLoading.value = false;
+        categoryIsFetching.value = false;
       } else if (result.body.runtimeType != String) {
-        isLoading.value = false;
+        categoryIsFetching.value = false;
+        print("@fetchStoreCategory - done");
       }
     } catch (e) {
-      isLoading.value = false;
+      categoryIsFetching.value = false;
       print("@fetchStoreCategory $e");
     }
   }

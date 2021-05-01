@@ -98,10 +98,8 @@ class UserController extends GetxController {
         final prefs = await SharedPreferences.getInstance();
         print("username $username : password $password");
         prefs.setStringList(_keyCurrentLoginInfo, [username, password]);
-        if (isAuthenticated()) {
-          isLoading.value = false;
-          Get.toNamed("/store-nearby-store");
-        }
+        isLoading.value = false;
+
         return 200;
       }
       if (response.body.isEmpty) {

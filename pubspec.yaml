@@ -85,6 +85,11 @@ dev_dependencies:
   
   #convex_bottom_bar: ^3.0.0
   flutter_switch: ^0.3.1
+  
+  simple_tooltip: ^0.1.16
+  
+  flutter_sticky_header: ^0.6.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

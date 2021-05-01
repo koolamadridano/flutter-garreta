@@ -4,7 +4,6 @@ import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
-import 'package:get/get.dart';
 
 class Search extends SearchDelegate {
   // Global state
@@ -17,11 +16,11 @@ class Search extends SearchDelegate {
   String selectedResult;
 
   @override
-  String get searchFieldLabel => "Search items e.g grain, bleach etc..";
+  String get searchFieldLabel => "Looking for something?";
   TextStyle get searchFieldStyle => GoogleFonts.roboto(
-        color: darkGray,
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
+        color: darkGray.withOpacity(0.5),
+        fontSize: 14,
+        fontWeight: FontWeight.w300,
       );
 
   @override
@@ -83,28 +82,31 @@ class Search extends SearchDelegate {
                               )),
                         )
                       : SizedBox(),
-                  ListTile(
-                    leading: Icon(
-                      LineIcons.history,
-                      color: darkGray,
-                    ),
-                    horizontalTitleGap: 0,
-                    minLeadingWidth: 30,
-                    title: Text("${_nearbyController.searchedKeywords[index]}",
-                        style: GoogleFonts.roboto(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
-                          color: darkGray,
-                          height: 0.8,
-                        )),
-                    trailing: IconButton(
-                      icon: Icon(
-                        LineIcons.times,
+                  GestureDetector(
+                    onTap: () => query = _nearbyController.searchedKeywords[index].toString(),
+                    child: ListTile(
+                      leading: Icon(
+                        LineIcons.history,
                         color: darkGray,
-                        size: 16,
                       ),
-                      onPressed: () => _nearbyController.removeSearchKeyword(
-                        name: _nearbyController.searchedKeywords[index],
+                      horizontalTitleGap: 0,
+                      minLeadingWidth: 30,
+                      title: Text("${_nearbyController.searchedKeywords[index]}",
+                          style: GoogleFonts.roboto(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            color: darkGray,
+                            height: 0.8,
+                          )),
+                      trailing: IconButton(
+                        icon: Icon(
+                          LineIcons.times,
+                          color: darkGray,
+                          size: 16,
+                        ),
+                        onPressed: () => _nearbyController.removeSearchKeyword(
+                          name: _nearbyController.searchedKeywords[index],
+                        ),
                       ),
                     ),
                   ),

@@ -5,13 +5,13 @@ import 'package:get/get.dart';
 
 void toggleSelectItem({productPrice, productName, productId, action}) {
   var _givenPrice = productPrice.toString();
-  var _translatedPrice =
-      _givenPrice.contains('.') ? "₱" + _givenPrice : "₱" + _givenPrice + ".00";
+  var _translatedPrice = _givenPrice.contains('.') ? "₱" + _givenPrice : "₱" + _givenPrice + ".00";
   Get.bottomSheet(
     Container(
+      height: 250,
       color: Colors.white,
       width: Get.width,
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.only(top: 50, left: 20, right: 20),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -49,7 +49,7 @@ void toggleSelectItem({productPrice, productName, productId, action}) {
                       margin: EdgeInsets.only(top: 10),
                       child: Text(
                         "$_translatedPrice",
-                        style: GoogleFonts.roboto(
+                        style: GoogleFonts.rajdhani(
                           color: darkGray,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -61,8 +61,7 @@ void toggleSelectItem({productPrice, productName, productId, action}) {
                       margin: EdgeInsets.only(top: 10),
                       child: TextButton(
                         style: ButtonStyle(
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                               side: BorderSide(

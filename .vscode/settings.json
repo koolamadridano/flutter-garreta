@@ -14,5 +14,8 @@
     },
     "editor.wordWrapColumn": 200,
     "editor.defaultFormatter": "Dart-Code.dart-code",
-    "dart.lineLength": 120
+    "dart.lineLength": 120,
+    "editor.mouseWheelZoom": false,
+    "window.zoomLevel": -1
+
 }
