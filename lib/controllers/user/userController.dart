@@ -177,4 +177,7 @@ class UserController extends GetxController {
       Get.back();
     }
   }
+
+  String get displayName => name.toString().split(" ").elementAt(0).capitalizeFirst + "!";
+  String get displayMobileNumber => contactNumber;
 }

@@ -36,8 +36,8 @@ class NearbyStoreController extends GetxController {
   @override
   onInit() {
     super.onInit();
-    fetchNearbyStore();
     fetchSearchedKeyword();
+    fetchNearbyStore();
   }
 
   Future<void> fetchNearbyStore() async {
@@ -108,7 +108,6 @@ class NearbyStoreController extends GetxController {
         searchedKeywords.value = _keywords;
         searchedKeywords.reversed;
         searchedKeywords.refresh();
-        print("fetchSearchedKeyword: $searchedKeywords");
         return;
       }
     } catch (e) {
@@ -152,7 +151,6 @@ class NearbyStoreController extends GetxController {
     searchedKeywords.clear();
     searchedKeywords.refresh();
     await fetchSearchedKeyword();
-    print("@clearSearchedKeyword is triggered");
   }
 
   Future<void> removeSearchKeyword({String name}) async {

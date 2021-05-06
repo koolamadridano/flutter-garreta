@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/pages/pagesController.dart';
 import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
@@ -46,9 +48,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   @override
   void initState() {
     super.initState();
-    // `On page completely loaded`1
+    // `On page completely loaded`
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      //print(await getSharedPrefKeyValue(key: 'saveLoginInfo'));
       if (_userController.isAuthenticated()) {
         if (await _userController.toggleSaveLoginOption()) {
           _toggleSaveLogin();
@@ -59,367 +60,339 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Obx(() => _nearbyController.isLoading.value
-          ? Scaffold(
-              body: Center(
-                child: SpinKitPumpingHeart(
-                  color: darkBlue,
-                  size: 40.0,
-                  duration: Duration(milliseconds: 800),
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: SafeArea(
+        child: Obx(() => _nearbyController.isLoading.value
+            ? Scaffold(
+                body: Center(
+                  child: SpinKitPumpingHeart(
+                    color: darkBlue,
+                    size: 40.0,
+                    duration: Duration(milliseconds: 800),
+                  ),
                 ),
-              ),
-            )
-          : Scaffold(
-              backgroundColor: Colors.white,
-              body: CustomScrollView(
-                physics: BouncingScrollPhysics(),
-                slivers: [
-                  // `APPBAR`
-                  SliverAppBar(
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                    expandedHeight: 260,
-                    toolbarHeight: 0,
-                    leading: SizedBox(),
-                    leadingWidth: 0,
-                    stretch: true,
-                    pinned: true,
-                    stretchTriggerOffset: 150,
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Container(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            ColorFiltered(
-                              colorFilter: ColorFilter.mode(Colors.white.withOpacity(0.7), BlendMode.lighten),
-                              child: Image.asset(
-                                "images/store/banner_map.PNG",
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Welcome back",
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: darkGray,
-                                      )),
-                                  Text("Kolya!",
-                                      style: GoogleFonts.righteous(
-                                        fontSize: 44,
-                                        fontWeight: FontWeight.bold,
-                                        color: darkGray,
-                                        height: 0.9,
-                                      )),
-                                ],
-                              ),
-                            )
-                            // Positioned(
-                            //   bottom: 70,
-                            //   width: Get.width,
-                            //   child: Align(
-                            //     alignment: Alignment.center,
-                            //     child: Container(
-                            //       width: Get.width * 0.8,
-                            //       padding: EdgeInsets.all(15),
-                            //       margin: EdgeInsets.symmetric(vertical: 10),
-                            //       decoration: BoxDecoration(
-                            //         color: Colors.white,
-                            //         //border: Border.all(color: darkGray, width: 0.1),
-                            //       ),
-                            //       child: GestureDetector(
-                            //         onTap: () => _onSearch(),
-                            //         child: Row(
-                            //           crossAxisAlignment: CrossAxisAlignment.center,
-                            //           children: [
-                            //             Icon(LineIcons.search),
-                            //             SizedBox(width: 5),
-                            //             Text(
-                            //               "Search items e.g grain, bleach etc..",
-                            //               style: TextStyle(height: 1.1),
-                            //             ),
-                            //           ],
-                            //         ),
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
-                          ],
-                        ),
-                      ),
-                      stretchModes: [
-                        StretchMode.zoomBackground,
-                        StretchMode.fadeTitle,
-                      ],
-                    ),
-                    bottom: AppBar(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(30),
-                        ),
-                      ),
+              )
+            : Scaffold(
+                backgroundColor: Colors.white,
+                body: CustomScrollView(
+                  physics: BouncingScrollPhysics(),
+                  slivers: [
+                    // `APPBAR`
+                    SliverAppBar(
                       backgroundColor: Colors.white,
                       elevation: 0,
+                      expandedHeight: 260,
+                      toolbarHeight: 0,
                       leading: SizedBox(),
                       leadingWidth: 0,
-                      toolbarHeight: 70,
-                      title: Container(
-                        margin: EdgeInsets.only(left: 14),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Obx(() => Text(
-                                  _nearbyController.locationName.value,
+                      stretch: true,
+                      pinned: true,
+                      stretchTriggerOffset: 150,
+                      flexibleSpace: FlexibleSpaceBar(
+                        background: Container(
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ColorFiltered(
+                                colorFilter: ColorFilter.mode(Colors.white.withOpacity(0.7), BlendMode.lighten),
+                                child: Image.asset(
+                                  "images/store/banner_map.PNG",
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Welcome back",
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: darkGray,
+                                        )),
+                                    Text(_userController.displayName,
+                                        style: GoogleFonts.righteous(
+                                          fontSize: 44,
+                                          fontWeight: FontWeight.bold,
+                                          color: darkGray,
+                                          height: 0.9,
+                                        )),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        stretchModes: [
+                          StretchMode.zoomBackground,
+                          StretchMode.fadeTitle,
+                        ],
+                      ),
+                      bottom: AppBar(
+                        // shape: RoundedRectangleBorder(
+                        //   borderRadius: BorderRadius.vertical(
+                        //     top: Radius.circular(30),
+                        //   ),
+                        // ),
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        leading: SizedBox(),
+                        leadingWidth: 0,
+                        toolbarHeight: 70,
+                        title: Container(
+                          margin: EdgeInsets.only(left: 14),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Obx(() => Text(
+                                    _nearbyController.locationName.value,
+                                    style: GoogleFonts.roboto(
+                                      color: darkGray,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  )),
+                              Text("Nearby store",
                                   style: GoogleFonts.roboto(
                                     color: darkGray,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                )),
-                            Text("Nearby store",
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 12,
+                                  )),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          Container(
+                            child: IconButton(
+                              icon: Icon(LineIcons.search, color: darkGray, size: 24),
+                              onPressed: () => _onSearch(),
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.only(right: 14),
+                            child: IconButton(
+                              icon: Icon(LineIcons.cog, color: darkGray, size: 24),
+                              onPressed: () => Get.toNamed("/settings"),
+                            ),
+                          ),
+                        ],
+                      ),
+                      actions: [],
+                    ),
+
+                    // `SUGGESTIONS TITLE`
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      sliver: SliverToBoxAdapter(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text("Suggestions",
                                 style: GoogleFonts.roboto(
                                   color: darkGray,
                                   fontWeight: FontWeight.w300,
-                                  fontSize: 12,
+                                )),
+                            Text("See all",
+                                style: GoogleFonts.roboto(
+                                  color: darkBlue,
+                                  fontWeight: FontWeight.bold,
                                 )),
                           ],
                         ),
                       ),
-                      actions: [
-                        Container(
-                          child: IconButton(
-                            icon: Icon(LineIcons.search, color: darkGray, size: 24),
-                            onPressed: () => _onSearch(),
-                          ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(right: 14),
-                          child: IconButton(
-                            icon: Icon(LineIcons.cog, color: darkGray, size: 24),
-                            onPressed: () => Get.toNamed("/settings"),
-                          ),
-                        ),
-                      ],
                     ),
-                    actions: [],
-                  ),
 
-                  // `SUGGESTIONS TITLE`
-                  SliverPadding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    sliver: SliverToBoxAdapter(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Suggestions",
-                              style: GoogleFonts.roboto(
-                                color: darkGray,
-                                fontWeight: FontWeight.w300,
-                              )),
-                          Text("See all",
-                              style: GoogleFonts.roboto(
-                                color: darkBlue,
-                                fontWeight: FontWeight.bold,
-                              )),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // `SUGGESTIONS ITEMS`
-                  SliverPadding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverToBoxAdapter(
-                      child: Container(
-                        height: 150,
-                        child: ListView(
-                          shrinkWrap: true,
-                          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            for (var i = 0; i < _tempSuggestionsImg.length; i++)
-                              Container(
-                                margin: EdgeInsets.only(right: 20),
-                                height: 150,
-                                width: 180,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                    // `SUGGESTIONS ITEMS`
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverToBoxAdapter(
+                        child: Container(
+                          height: 150,
+                          child: ListView(
+                            shrinkWrap: true,
+                            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              for (var i = 0; i < _tempSuggestionsImg.length; i++)
+                                Container(
+                                  margin: EdgeInsets.only(right: 20),
+                                  height: 150,
+                                  width: 180,
                                   child: Image.network(
                                     _tempSuggestionsImg[i],
                                     fit: BoxFit.cover,
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // `BADGES`
-                  SliverPadding(
-                    padding: EdgeInsets.only(left: 20, right: 20, top: 20),
-                    sliver: SliverToBoxAdapter(
-                      child: Container(
-                        height: 35,
-                        child: ListView(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                          children: [
-                            // `BADGE DISTANCE`
-                            Opacity(
-                              opacity: 0.8,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: darkBlue,
-                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                                ),
-                                margin: EdgeInsets.only(right: 10),
-                                padding: EdgeInsets.all(10),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      LineIcons.streetView,
-                                      color: Colors.white,
-                                      size: 14.0,
-                                    ),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      "Distance",
-                                      style: GoogleFonts.roboto(
+                    // `BADGES`
+                    SliverPadding(
+                      padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+                      sliver: SliverToBoxAdapter(
+                        child: Container(
+                          height: 35,
+                          child: ListView(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                            children: [
+                              // `BADGE DISTANCE`
+                              Opacity(
+                                opacity: 0.8,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: darkBlue,
+                                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                  ),
+                                  margin: EdgeInsets.only(right: 10),
+                                  padding: EdgeInsets.all(10),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        LineIcons.streetView,
                                         color: Colors.white,
-                                        fontSize: 13.0,
-                                        fontWeight: FontWeight.w300,
-                                        height: 1.2,
+                                        size: 14.0,
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(width: 2),
+                                      Text(
+                                        "Distance",
+                                        style: GoogleFonts.roboto(
+                                          color: Colors.white,
+                                          fontSize: 13.0,
+                                          fontWeight: FontWeight.w300,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            // `BADGE POPULARITY`
-                            Opacity(
-                              opacity: 1,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: darkBlue,
-                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                                ),
-                                margin: EdgeInsets.only(right: 10),
-                                padding: EdgeInsets.all(10),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      LineIcons.fire,
-                                      color: Colors.white,
-                                      size: 14.0,
-                                    ),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      "Popularity",
-                                      style: GoogleFonts.roboto(
+                              // `BADGE POPULARITY`
+                              Opacity(
+                                opacity: 1,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: darkBlue,
+                                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                  ),
+                                  margin: EdgeInsets.only(right: 10),
+                                  padding: EdgeInsets.all(10),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        LineIcons.fire,
                                         color: Colors.white,
-                                        fontSize: 13.0,
-                                        fontWeight: FontWeight.w300,
-                                        height: 1.2,
+                                        size: 14.0,
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(width: 2),
+                                      Text(
+                                        "Popularity",
+                                        style: GoogleFonts.roboto(
+                                          color: Colors.white,
+                                          fontSize: 13.0,
+                                          fontWeight: FontWeight.w300,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            // `BADGE NEWLY OPEN STORE`
-                            Opacity(
-                              opacity: 1,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: darkBlue,
-                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                                ),
-                                margin: EdgeInsets.only(right: 10),
-                                padding: EdgeInsets.all(10),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      LineIcons.store,
-                                      color: Colors.white,
-                                      size: 14.0,
-                                    ),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      "Recommended",
-                                      style: GoogleFonts.roboto(
+                              // `BADGE NEWLY OPEN STORE`
+                              Opacity(
+                                opacity: 1,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: darkBlue,
+                                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                  ),
+                                  margin: EdgeInsets.only(right: 10),
+                                  padding: EdgeInsets.all(10),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        LineIcons.store,
                                         color: Colors.white,
-                                        fontSize: 13.0,
-                                        fontWeight: FontWeight.w300,
-                                        height: 1.2,
+                                        size: 14.0,
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(width: 2),
+                                      Text(
+                                        "Recommended",
+                                        style: GoogleFonts.roboto(
+                                          color: Colors.white,
+                                          fontSize: 13.0,
+                                          fontWeight: FontWeight.w300,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            // `BADGE NEWLY OPEN STORE`
-                            Opacity(
-                              opacity: 1,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: darkBlue,
-                                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                                ),
-                                margin: EdgeInsets.only(right: 10),
-                                padding: EdgeInsets.all(10),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      LineIcons.store,
-                                      color: Colors.white,
-                                      size: 14.0,
-                                    ),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      "Newly open",
-                                      style: GoogleFonts.roboto(
+                              // `BADGE NEWLY OPEN STORE`
+                              Opacity(
+                                opacity: 1,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: darkBlue,
+                                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                  ),
+                                  margin: EdgeInsets.only(right: 10),
+                                  padding: EdgeInsets.all(10),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        LineIcons.store,
                                         color: Colors.white,
-                                        fontSize: 13.0,
-                                        fontWeight: FontWeight.w300,
-                                        height: 1.2,
+                                        size: 14.0,
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(width: 2),
+                                      Text(
+                                        "Newly open",
+                                        style: GoogleFonts.roboto(
+                                          color: Colors.white,
+                                          fontSize: 13.0,
+                                          fontWeight: FontWeight.w300,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  //  `NEARBY`
-                  Obx(() => SliverPadding(
-                        padding: EdgeInsets.only(left: 20, right: 20, top: 20),
-                        sliver: SliverList(
-                            delegate: SliverChildListDelegate(
-                          _mapNearbyStore(data: _nearbyController.nearbyStoreData),
+                    //  `NEARBY`
+                    Obx(() => SliverPadding(
+                          padding: EdgeInsets.only(left: 20, right: 20, top: 20),
+                          sliver: SliverList(
+                              delegate: SliverChildListDelegate(
+                            _mapNearbyStore(data: _nearbyController.nearbyStoreData),
+                          )),
                         )),
-                      )),
-                ],
-              ),
-            )),
+                  ],
+                ),
+              )),
+      ),
     );
   }
 
@@ -559,21 +532,19 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
               name: data[i]['mer_name'],
               distance: data[i]['distance'],
               address: data[i]['mer_address'],
+              number: data[i]['mer_contactNumber'],
             );
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                child: FadeInImage.assetNetwork(
-                  placeholder: "images/alt/nearby_store_alt_250x250.png",
-                  image: "https://bit.ly/3tA2hoo",
-                  height: 70,
-                  width: 70,
-                  fit: BoxFit.cover,
-                ),
+              FadeInImage.assetNetwork(
+                placeholder: "images/alt/alt-product-coming-soon.png",
+                image: "https://bit.ly/3tA2hoo",
+                height: 70,
+                width: 70,
+                fit: BoxFit.cover,
               ),
               SizedBox(width: 10),
               Expanded(
@@ -671,8 +642,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     return items;
   }
 
-  void _toggleSelectStore({id, name, distance, address}) {
-    List props = [id, name, distance, address];
+  void _toggleSelectStore({id, name, distance, address, number}) {
+    List props = [id, name, distance, address, number];
     bool propsIsValid = props.every((element) {
       return element != null && element.toString().isNotEmpty;
     });
@@ -739,11 +710,12 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                     _storeController.merchantName.value = name;
                                     _storeController.merchantAddress.value = address;
                                     _storeController.merchantDistance.value = distance;
+                                    _storeController.merchantMobileNumber = number;
                                     if (Get.isBottomSheetOpen) {
                                       Get.back();
                                     }
                                     _pageViewController.hasPageIndex.value = 1;
-                                    // Navigation.popAndPushNamed() shortcut.
+                                    // Navigation.pushNamed() shortcut.
                                     // Pop the current named page and pushes a new [page] to
                                     // the stack in its place
                                     Get.toNamed("/screen-products");

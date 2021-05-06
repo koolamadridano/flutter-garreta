@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/username/username.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/address/address.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/name/name.dart';
@@ -24,7 +25,7 @@ class ScreenRegistrationPhase1 extends StatefulWidget {
 class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
   // Global state
   final _otpController = Get.put(OtpController());
-  final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _userController = Get.put(UserController());
 
   // TextController
   final _nameController = TextEditingController();
@@ -75,9 +76,10 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
 
     if (mobileNumber.isNotEmpty && name.isNotEmpty && address.isNotEmpty) {
       // ASSIGN TO GLOBAL STATE
-      _garretaApiService.customerName = name;
-      _garretaApiService.customerMobileNumber = mobileNumber;
-      _garretaApiService.customerAddress = address;
+      _userController.name = name;
+      _userController.contactNumber = mobileNumber;
+      _userController.address = address;
+
       try {
         setState(() => _stateToggleOnValidateLoader = true);
         var result = await _otpController.validate(number: mobileNumber);

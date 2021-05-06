@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
 import 'package:garreta/controllers/store/product-screen/productController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
@@ -8,12 +9,17 @@ import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverla
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/helpers/textHelper.dart';
+import 'package:garreta/screens/ui/search/search.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:badges/badges.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
+import 'package:intent/intent.dart' as android_intent;
+import 'package:intent/action.dart' as android_action;
+import 'package:permission_handler/permission_handler.dart';
 
 class ScreenProductScreen extends StatefulWidget {
   ScreenProductScreen({Key key}) : super(key: key);
@@ -28,6 +34,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   final _cartController = Get.put(CartController());
   final _productController = Get.put(ProductController());
   final _storeController = Get.put(StoreController());
+  final _nearbyController = Get.put(NearbyStoreController());
 
   // State
   int _categoryIndex = 0;
@@ -38,6 +45,43 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     _productController.fetchStoreProducts();
     _cartController.fetchShoppingCartItems();
     _productController.fetchStoreCategory();
+  }
+
+  Future<void> _onDialNumber(String number) async {
+    try {
+      // If platform is android
+      // we can use direct call
+      if (GetPlatform.isAndroid) {
+        var _phoneCallStatus = await Permission.phone.status;
+
+        do {
+          await Permission.phone.request();
+        } while (_phoneCallStatus == PermissionStatus.denied);
+
+        if (_phoneCallStatus.isGranted) {
+          android_intent.Intent()
+            ..setAction(android_action.Action.ACTION_CALL)
+            ..setData(Uri(scheme: "tel", path: number))
+            ..startActivity().catchError((e) => print(e));
+        }
+      }
+      // Create some exemptions for other platforms
+      // since ios does not support legally a direct call
+      else {
+        await UrlLauncher.launch(number);
+      }
+    } catch (e) {
+      print("@_onDialNumber $e");
+    }
+  }
+
+  void _onSearch() {
+    showSearch(
+      context: context,
+      delegate: Search(
+        data: _productController.storeProductsData.toList(),
+      ),
+    );
   }
 
   Future<void> _handleAddToCart({@required itemId}) async {
@@ -124,16 +168,21 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                 ),
               ),
               actions: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(100)),
-                  ),
-                  margin: EdgeInsets.only(top: 10, bottom: 10, right: 5),
-                  child: Icon(Ionicons.call_outline, size: 22, color: darkBlue),
-                ),
+                _storeController == null
+                    ? SizedBox()
+                    : GestureDetector(
+                        onTap: () => _onDialNumber(_storeController.merchantMobileNumber),
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(100)),
+                          ),
+                          margin: EdgeInsets.only(top: 10, bottom: 10, right: 5),
+                          child: Icon(Ionicons.call_outline, size: 22, color: darkBlue),
+                        ),
+                      ),
                 Container(
                   width: 38,
                   decoration: BoxDecoration(
@@ -154,14 +203,44 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   StretchMode.zoomBackground,
                   StretchMode.fadeTitle,
                 ],
-                title: Obx(() => Text(
-                      "${_storeController.merchantName.value.capitalizeFirstofEach} - lorem ipsum dolor sit amet",
-                      style: GoogleFonts.roboto(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                      ),
-                      maxLines: 2,
+                title: Obx(() => Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            "${_storeController.merchantName.value.capitalizeFirstofEach}",
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 18,
+                            ),
+                            maxLines: 2,
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            "${_storeController.merchantAddress}",
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 10,
+                            ),
+                            maxLines: 2,
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            "${double.parse(_storeController.merchantDistance.value).toStringAsFixed(1)}km",
+                            style: GoogleFonts.roboto(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w300,
+                              fontSize: 8,
+                            ),
+                            maxLines: 2,
+                          ),
+                        ),
+                      ],
                     )),
                 background: Container(
                   color: Colors.white,
@@ -212,21 +291,11 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                           ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          Text("See all",
-                              style: GoogleFonts.roboto(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300,
-                                color: darkGray,
-                              )),
-                          Icon(
-                            Ionicons.chevron_forward,
-                            color: darkGray.withOpacity(0.8),
-                            size: 13,
-                          ),
-                        ],
-                      ),
+                      Text("See all",
+                          style: GoogleFonts.roboto(
+                            color: darkBlue,
+                            fontWeight: FontWeight.bold,
+                          )),
                     ],
                   ),
                 ),
@@ -299,13 +368,22 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
             Obx(() => _productController.isLoading.value
                 ? gridLoading as Widget
                 : SliverPadding(
-                    padding: EdgeInsets.only(top: 0.0),
+                    padding: EdgeInsets.only(top: 20.0),
                     sliver: SliverStickyHeader(
                       header: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                              offset: Offset(3, 5),
+                            ),
+                          ],
                         ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               height: 60,
@@ -318,22 +396,30 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                               ),
                             ),
                             Container(
-                              padding: EdgeInsets.only(bottom: 15, left: 10, right: 10, top: 10),
+                              padding: EdgeInsets.only(left: 10, right: 10),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Icon(LineIcons.search),
-                                      SizedBox(width: 5),
-                                      Text("Looking for something?",
-                                          style: GoogleFonts.roboto(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w300,
-                                            color: darkGray,
-                                            height: 0.8,
-                                          )),
-                                    ],
+                                  GestureDetector(
+                                    onTap: () => _onSearch(),
+                                    child: Container(
+                                      color: Colors.white,
+                                      width: Get.width * 0.65,
+                                      padding: EdgeInsets.only(bottom: 20, top: 20),
+                                      child: Row(
+                                        children: [
+                                          Icon(LineIcons.search),
+                                          SizedBox(width: 5),
+                                          Text("Looking for something?",
+                                              style: GoogleFonts.roboto(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w300,
+                                                color: darkGray,
+                                                height: 0.8,
+                                              )),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                   Row(
                                     children: [
@@ -385,10 +471,151 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                       ),
                     ),
                   )),
+
+            // `title` of "Nearby stores
+            SliverPadding(
+              padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 30.0, bottom: 20),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(LineIcons.store, color: darkBlue, size: 36),
+                          SizedBox(width: 10),
+                          Text("Other stores",
+                              style: GoogleFonts.roboto(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: darkGray,
+                              )),
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () => Get.offAndToNamed("/screen-nearby-vendors"),
+                        child: Text("See all",
+                            style: GoogleFonts.roboto(
+                              color: darkBlue,
+                              fontWeight: FontWeight.bold,
+                            )),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // `ListView.builder` of popular picks
+            SliverPadding(
+              padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0, bottom: 50),
+              sliver: SliverToBoxAdapter(
+                child: Container(
+                  height: 280.0,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    physics: BouncingScrollPhysics(),
+                    children: _mapNearby(data: _nearbyController.nearbyStoreData),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  List<InkWell> _mapNearby({@required data}) {
+    List<InkWell> items = [];
+    for (var i = 0; i < data.length; i++) {
+      var widget = InkWell(
+        onTap: () {
+          _storeController.merchantId.value = data[i]['mer_id'];
+          _storeController.merchantName.value = data[i]['mer_name'];
+          _storeController.merchantAddress.value = data[i]['mer_address'];
+          _storeController.merchantDistance.value = data[i]['distance'];
+          // Navigation.pushNamed() shortcut.
+          // Pop the current named page and pushes a new [page] to
+          // the stack in its place
+          Get.offAndToNamed("/screen-products");
+        },
+        child: Container(
+          margin: EdgeInsets.only(right: 10),
+          decoration: BoxDecoration(
+            // borderRadius: BorderRadius.all(Radius.circular(20)),
+            color: fadeWhite,
+            border: Border.all(color: darkGray, width: 0.1),
+          ),
+          child: Stack(
+            children: [
+              Container(
+                height: 300,
+                width: Get.width,
+                child: FadeInImage.assetNetwork(
+                  placeholder: "images/alt/alt-product-coming-soon.png",
+                  image: "https://bit.ly/3tA2hoo",
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  width: Get.width,
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("${data[i]['mer_name'].toString().capitalizeFirstofEach}",
+                              style: GoogleFonts.roboto(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                color: darkGray,
+                              )),
+                          Row(
+                            children: [
+                              Icon(Ionicons.star, size: 14, color: Colors.yellow[900]),
+                              Icon(Ionicons.star, size: 14, color: Colors.yellow[900]),
+                              Icon(Ionicons.star, size: 14, color: Colors.yellow[900]),
+                              Icon(Ionicons.star, size: 14, color: Colors.yellow[900]),
+                              Icon(Ionicons.star, size: 14, color: Colors.yellow[900]),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 5),
+                      Container(
+                        width: Get.width * 0.6,
+                        child: Text(
+                          "${data[i]['mer_address']}",
+                          style: GoogleFonts.roboto(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 13,
+                            color: darkGray.withOpacity(0.7),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      );
+      if (_storeController.merchantId.value != data[i]['mer_id']) {
+        items.add(widget);
+      }
+    }
+    return items;
   }
 
   List<InkWell> _mapStoreCategory({@required data}) {
@@ -403,9 +630,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
           margin: EdgeInsets.only(right: 10, left: 10),
           child: Stack(
             children: [
-              AnimatedContainer(
+              Container(
                 padding: EdgeInsets.all(5),
-                duration: Duration(milliseconds: 1000),
                 child: Text("${data[i]['cat_name']}",
                     style: GoogleFonts.roboto(
                       fontSize: 16,
@@ -416,7 +642,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
               Positioned(
                 bottom: 0,
                 child: AnimatedContainer(
-                  duration: Duration(milliseconds: 1000),
+                  duration: Duration(milliseconds: 500),
                   curve: Curves.easeInOut,
                   height: 2,
                   width: Get.width,
@@ -458,14 +684,16 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     tag: data[i]['prod_id'].toString(),
                     child: ClipRRect(
                       borderRadius: BorderRadius.all(Radius.circular(0)),
-                      child: Image.network(
-                        "https://bit.ly/3cN0Fl4",
+                      child: FadeInImage.assetNetwork(
+                        placeholder: "images/alt/alt-product-coming-soon.png",
+                        image: "https://bit.ly/3cN0Fl4",
                         fit: BoxFit.cover,
+                        height: Get.height,
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: 20,
+                    top: 90,
                     right: 10,
                     child: Material(
                       color: Colors.white,
@@ -484,7 +712,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                 ],
               ),
               ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderRadius: BorderRadius.all(Radius.circular(0)),
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(

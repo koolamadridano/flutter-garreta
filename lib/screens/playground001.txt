@@ -1,40 +1,9 @@
-            Positioned.fill(
-              child: ClipRRect(
-                // borderRadius: BorderRadius.only(
-                //   topLeft: Radius.circular(34.0),
-                //   topRight: Radius.circular(34.0),
-                // ),
-                child: ImageFiltered(
-                  imageFilter: ImageFilter.blur(sigmaY: 2, sigmaX: 2),
-                  child: FadeInImage.assetNetwork(
-                    placeholder: "images/store/banner.PNG",
-                    image: "https://bit.ly/32min8Z",
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            // Positioned.fill(
-            //   child: Container(
-            //     decoration: BoxDecoration(
-            //       gradient: LinearGradient(
-            //         begin: Alignment.topRight,
-            //         end: Alignment.bottomLeft,
-            //         stops: [
-            //           0.2,
-            //           0.9,
-            //           0.9,
-            //           0.9,
-            //           0.9,
-            //         ],
-            //         colors: [
-            //           Colors.transparent,
-            //           Colors.black,
-            //           Colors.black,
-            //           Colors.black,
-            //           Colors.black,
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
+Future<void> openMap(double latitude, double longitude) async {
+    String googleUrl =
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    if (await canLaunch(googleUrl)) {
+      await launch(googleUrl);
+    } else {
+      throw 'Could not open the map.';
+    }
+}

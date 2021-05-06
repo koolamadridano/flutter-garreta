@@ -12,6 +12,8 @@ import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
 import 'package:garreta/screens/store/shoppingcart/shoppingcart.dart';
 import 'package:garreta/screens/store/store.dart';
+import 'package:garreta/screens/location/location.dart';
+
 import 'package:garreta/screens/undefined/undefinedScreen.dart';
 import 'package:get/get.dart';
 
@@ -52,6 +54,7 @@ void main() {
 
         // # MISC
         GetPage(title: 'Settings screen', name: "/settings", page: () => ScreenSettings()),
+        GetPage(title: 'Access location', name: "/screen-access-location", page: () => ScreenAccessLocation()),
 
         // # OTP ROUTES
         GetPage(title: 'OTP screen', name: "/otp-verification", page: () => ScreenOtpVerification()),
