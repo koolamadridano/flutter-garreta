@@ -5,7 +5,7 @@ class SpinkitThreeBounce extends StatelessWidget {
   const SpinkitThreeBounce({
     Key key,
     @required this.color,
-    @required this.size,
+    this.size,
   }) : super(key: key);
   final double size;
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -16,7 +17,7 @@ class SelectBirthday extends StatefulWidget {
 
 class _SelectBirthdayState extends State<SelectBirthday> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _userController = Get.put(UserController());
 
   // State
   var selectedDateToString = "Select birthday";
@@ -25,15 +26,15 @@ class _SelectBirthdayState extends State<SelectBirthday> {
   void initState() {
     super.initState();
     // Validate if birthday existed in memory
-    if (_garretaApiService.customerBirthday != null) {
-      setState(() => selectedDateToString = _garretaApiService.customerBirthdayInString);
+    if (_userController.birthday != null) {
+      setState(() => selectedDateToString = _userController.displayBirthday);
     }
   }
 
   _onSelectBirthdate({@required year, @required month, @required day}) {
     // Date format  YYYY-MM-DD
-    _garretaApiService.customerBirthday = "$year-$month-$day";
-    _garretaApiService.customerBirthdayInString = Jiffy([year, month, day]).yMMMMd;
+    _userController.birthday = "$year-$month-$day";
+    _userController.displayBirthday = Jiffy([year, month, day]).yMMMMd;
 
     setState(() => selectedDateToString = Jiffy([year, month, day]).yMMMMd);
     // January 19, 2021

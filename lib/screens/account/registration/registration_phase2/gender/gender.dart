@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:get/get.dart';
 
@@ -18,16 +18,16 @@ class SelectGender extends StatefulWidget {
 
 class _SelectGenderState extends State<SelectGender> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _userController = Get.put(UserController());
 
   void _onSelectGender(String value) {
     setState(() => selectedKey = value);
-    _garretaApiService.customerGender = value;
+    _userController.gender = value;
   }
 
   @override
   Widget build(BuildContext context) {
-    String selectedKey = _garretaApiService.customerGender != null ? _garretaApiService.customerGender : "Gender";
+    String selectedKey = _userController.gender != null ? _userController.gender : "Gender";
     final Widget normalChildButton = SizedBox(
       width: double.infinity,
       height: 40,

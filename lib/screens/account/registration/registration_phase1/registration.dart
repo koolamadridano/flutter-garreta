@@ -6,6 +6,7 @@ import 'package:garreta/screens/account/registration/registration_phase1/address
 import 'package:garreta/screens/account/registration/registration_phase1/name/name.dart';
 import 'package:garreta/services/locationService/locationCoordinates.dart';
 import 'package:garreta/services/locationService/locationTitle.dart';
+import 'package:garreta/utils/enum/enum.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:garreta/controllers/otp/otpController.dart';
@@ -75,15 +76,14 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     }
 
     if (mobileNumber.isNotEmpty && name.isNotEmpty && address.isNotEmpty) {
-      // ASSIGN TO GLOBAL STATE
-      _userController.name = name;
-      _userController.contactNumber = mobileNumber;
-      _userController.address = address;
-
       try {
         setState(() => _stateToggleOnValidateLoader = true);
         var result = await _otpController.validate(number: mobileNumber);
         if (result.runtimeType == int) {
+          // ASSIGN TO GLOBAL STATE
+          _userController.name = name;
+          _userController.contactNumber = mobileNumber;
+          _userController.address = address;
           setState(() {
             _stateToggleOnValidateLoader = false;
             _stateHasError = false;
@@ -118,6 +118,7 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
       var location = await locationTitle(
         latitude: currentCoord.latitude,
         longitude: currentCoord.longitude,
+        type: Location.featureNameAndLocality,
       );
       _addressController.text = location;
       setState(() => _stateToggleGetAddressLoader = false);

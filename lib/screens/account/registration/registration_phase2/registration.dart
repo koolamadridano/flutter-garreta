@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/birthday/birthday.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/gender/gender.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
@@ -17,14 +18,14 @@ class ScreenRegistrationPhase2 extends StatefulWidget {
 
 class _ScreenRegistrationPhase2State extends State<ScreenRegistrationPhase2> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _userController = Get.put(UserController());
   // State
   bool _stateHasScreenFocus = false;
 
   _onProceed() {
-    final gender = _garretaApiService.customerGender;
-    final birthday = _garretaApiService.customerBirthday;
-    if (!(gender == null) && !(birthday == null)) {
+    final gender = _userController.gender;
+    final birthday = _userController.birthday;
+    if (gender != null && birthday != null) {
       Get.toNamed("/registration-phase-3");
     }
   }

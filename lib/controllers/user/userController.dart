@@ -25,6 +25,9 @@ class UserController extends GetxController {
   var cancelledOrders;
   var password;
 
+  // Display birthday in readable format
+  var displayBirthday;
+
   RxBool isLoading = false.obs;
   bool isAuthenticated() {
     if (id != null) {

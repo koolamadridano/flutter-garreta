@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/account/registration/registration_phase3/confirmPassword/confirmPassword.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/screens/account/registration/registration_phase3/password/password.dart';
@@ -20,6 +21,7 @@ class ScreenRegistrationPhase3 extends StatefulWidget {
 class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
   // Global state
   final _garretaApiService = Get.put(GarretaApiServiceController());
+  final _userController = Get.put(UserController());
 
   // TextController
   final _emailController = TextEditingController();
@@ -52,8 +54,8 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    _garretaApiService.customerEmail = email;
-    _garretaApiService.customerPassword = password;
+    _userController.email = email;
+    _userController.password = password;
 
     if (email.isNotEmpty && password.isNotEmpty && confirmPassword.isNotEmpty) {
       if (password == confirmPassword) {
@@ -63,13 +65,13 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
             _isLoginRequestOnGoing = true;
           });
           var getResponse = await _garretaApiService.register(
-            name: _garretaApiService.customerName,
-            number: _garretaApiService.customerMobileNumber,
-            email: _garretaApiService.customerEmail,
-            address: _garretaApiService.customerAddress,
-            birthday: _garretaApiService.customerBirthday,
+            name: _userController.name,
+            number: _userController.contactNumber,
+            email: _userController.email,
+            address: _userController.address,
+            birthday: _userController.birthday,
             gender: _getGender(),
-            password: _garretaApiService.customerPassword,
+            password: _userController.password,
           );
           if (getResponse == 200) {
             setState(() {
@@ -84,13 +86,13 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
               _isLoginRequestOnGoing = false;
             });
           }
-          print("Global customerName: ${_garretaApiService.customerName}");
-          print("Global customerMobileNumber: ${_garretaApiService.customerMobileNumber}");
-          print("Global customerEmail: ${_garretaApiService.customerEmail}");
-          print("Global customerAddress: ${_garretaApiService.customerAddress}");
-          print("Global customerBirthday: ${_garretaApiService.customerBirthday}");
-          print("Global customerGender: ${_garretaApiService.customerGender}");
-          print("Global customerPassword: ${_garretaApiService.customerPassword}");
+          print("Global customerName: ${_userController.name}");
+          print("Global customerMobileNumber: ${_userController.contactNumber}");
+          print("Global customerEmail: ${_userController.email}");
+          print("Global customerAddress: ${_userController.address}");
+          print("Global customerBirthday: ${_userController.birthday}");
+          print("Global customerGender: ${_userController.gender}");
+          print("Global customerPassword: ${_userController.password}");
         } catch (e) {
           print("Cannot create account");
           setState(() {
@@ -246,6 +248,14 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     );
   }
 
+  _getGender() {
+    if (_userController.gender == "Rather not to say") {
+      return "Secret";
+    } else {
+      return _garretaApiService.customerGender;
+    }
+  }
+
   TextStyle _checkBoxTogglePasswordTextStyle = GoogleFonts.roboto(
     fontSize: 15,
     fontWeight: FontWeight.w300,
@@ -261,13 +271,6 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     fontWeight: FontWeight.w300,
     color: darkGray.withOpacity(0.9),
   );
-  _getGender() {
-    if (_garretaApiService.customerGender == "Rather not to say") {
-      return "Secret";
-    } else {
-      return _garretaApiService.customerGender;
-    }
-  }
 
   @override
   void dispose() {
