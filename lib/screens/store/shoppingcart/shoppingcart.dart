@@ -4,7 +4,7 @@ import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.d
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:simple_tooltip/simple_tooltip.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:badges/badges.dart';
@@ -124,13 +124,13 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(LineIcons.trash, color: darkGray),
+                  Icon(LineIcons.trash, color: primary),
                   SizedBox(width: 5),
                   Expanded(
                     child: Text("Remove selected item(s)? action cannot be reverted.",
                         style: GoogleFonts.roboto(
                           fontWeight: FontWeight.w400,
-                          color: darkGray,
+                          color: primary,
                           fontSize: 12,
                         )),
                   ),
@@ -144,7 +144,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                   child: Text("Yes",
                       style: GoogleFonts.roboto(
                         fontWeight: FontWeight.w300,
-                        color: darkGray,
+                        color: primary,
                         fontSize: 22,
                       )),
                 ),
@@ -154,7 +154,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                   child: Text("Dismiss",
                       style: GoogleFonts.roboto(
                         fontWeight: FontWeight.w500,
-                        color: darkGray,
+                        color: primary,
                         fontSize: 22,
                       )),
                 ),
@@ -202,7 +202,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 1,
-                                color: darkGray,
+                                color: primary,
                               ),
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -221,7 +221,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                       }
                                     },
                                     activeColor: Colors.transparent,
-                                    checkColor: darkGray,
+                                    checkColor: primary,
                                     materialTapTargetSize: MaterialTapTargetSize.padded,
                                   )),
                             ),
@@ -248,7 +248,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                           "${data[i]['itemname']} - lorem ipsum dolor sit amet",
                           style: GoogleFonts.roboto(
                             fontSize: 13,
-                            color: darkGray,
+                            color: primary,
                             fontWeight: FontWeight.w400,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -258,7 +258,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                       Text("x${data[i]['qty']}",
                           style: GoogleFonts.rajdhani(
                             fontSize: 13,
-                            color: darkGray.withOpacity(0.9),
+                            color: primary.withOpacity(0.9),
                             fontWeight: FontWeight.w300,
                           )),
                     ],
@@ -274,7 +274,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                             style: GoogleFonts.rajdhani(
                               fontSize: 16,
                               height: 0.8,
-                              color: darkGray,
+                              color: primary,
                               fontWeight: FontWeight.bold,
                             )),
                         Stack(
@@ -287,7 +287,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                   opacity: _cartController.cartItemSelectState[i] ? 1 : 0,
                                   child: Text("CONFIRMED",
                                       style: GoogleFonts.roboto(
-                                        color: green,
+                                        color: success,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       )),
@@ -312,7 +312,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                     duration: Duration(milliseconds: 500),
                                     opacity: _cartController.cartItemSelectState[i] ? 0 : 1,
                                     child: Container(
-                                      color: fadeWhite,
+                                      color: light,
                                       padding: EdgeInsets.all(10),
                                       child: Icon(LineIcons.minus, size: 16),
                                     ),
@@ -336,7 +336,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                     duration: Duration(milliseconds: 500),
                                     opacity: _cartController.cartItemSelectState[i] ? 0 : 1,
                                     child: Container(
-                                      color: fadeWhite,
+                                      color: light,
                                       padding: EdgeInsets.all(10),
                                       child: Icon(LineIcons.plus, size: 16),
                                     ),
@@ -372,7 +372,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
             actions: [],
             secondaryActions: [
               IconSlideAction(
-                foregroundColor: red,
+                foregroundColor: danger,
                 caption: 'Delete',
                 icon: Icons.delete,
                 onTap: () => _handleSwipeDelete(itemId: data[i]['itemID']),
@@ -411,7 +411,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
               borderRadius: BorderRadius.all(Radius.circular(100)),
             ),
             margin: EdgeInsets.all(10),
-            child: Icon(Ionicons.chevron_back, size: 22, color: darkBlue),
+            child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
           ),
         ),
         elevation: 5,
@@ -420,7 +420,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
           child: Obx(() => Text(
                 "Selected items (${_cartController.cartSelectedItems.length})",
                 style: GoogleFonts.roboto(
-                  color: darkGray,
+                  color: primary,
                   fontSize: 18,
                   fontWeight: FontWeight.w400,
                 ),
@@ -436,14 +436,14 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                 opacity: _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
                 child: Container(
                   margin: EdgeInsets.only(right: 10),
-                  child: Icon(LineIcons.trash, color: red),
+                  child: Icon(LineIcons.trash, color: danger),
                 ),
               ),
             ),
           ),
           SimpleTooltip(
-            borderColor: darkBlue,
-            backgroundColor: darkBlue,
+            borderColor: secondary,
+            backgroundColor: secondary,
             borderWidth: 0,
             hideOnTooltipTap: false,
             arrowTipDistance: 1,
@@ -477,12 +477,12 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
             ),
             child: Container(
               margin: EdgeInsets.only(right: 10),
-              child: Icon(LineIcons.truck, color: darkGray),
+              child: Icon(LineIcons.truck, color: primary),
             ),
           ),
           SimpleTooltip(
-            borderColor: darkBlue,
-            backgroundColor: darkBlue,
+            borderColor: secondary,
+            backgroundColor: secondary,
             borderWidth: 0,
             hideOnTooltipTap: false,
             arrowTipDistance: 1,
@@ -517,7 +517,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
             ),
             child: Badge(
               position: BadgePosition.topEnd(end: -4, top: 5),
-              badgeColor: red,
+              badgeColor: danger,
               animationDuration: Duration(milliseconds: 500),
               badgeContent: Obx(() => Text(
                     '${_cartController.cartAllItems.length}',
@@ -526,7 +526,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                       color: Colors.white,
                     ),
                   )),
-              child: Icon(LineIcons.shoppingBasket, color: darkGray),
+              child: Icon(LineIcons.shoppingBasket, color: primary),
             ),
           ),
           SizedBox(width: 10),
@@ -554,7 +554,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                 decoration: BoxDecoration(
                                   border: Border.all(
                                     width: 1,
-                                    color: darkGray,
+                                    color: primary,
                                   ),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -564,7 +564,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                                         value: _cartController.selectAllItemsInCart.value,
                                         onChanged: (isChecked) => _selectAll(state: isChecked),
                                         activeColor: Colors.transparent,
-                                        checkColor: darkGray,
+                                        checkColor: primary,
                                         materialTapTargetSize: MaterialTapTargetSize.padded,
                                       )),
                                 ),
@@ -582,14 +582,14 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                           Text("Total",
                               style: GoogleFonts.roboto(
                                 fontSize: 13,
-                                color: darkGray,
+                                color: primary,
                                 fontWeight: FontWeight.w400,
                               )),
                           SizedBox(width: 2),
                           Obx(() => Text("₱${_cartController.cartTotalPrice.value}",
                               style: GoogleFonts.roboto(
                                 fontSize: 20,
-                                color: red,
+                                color: danger,
                                 fontWeight: FontWeight.w400,
                               ))),
                         ],
@@ -608,7 +608,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
               Container(
                 decoration: BoxDecoration(
                   border: Border(
-                    bottom: BorderSide(width: 0.1, color: darkGray),
+                    bottom: BorderSide(width: 0.1, color: primary),
                   ),
                 ),
                 child: ClipRRect(
@@ -617,7 +617,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                     bottomRight: Radius.circular(0),
                   ),
                   child: Container(
-                    color: darkBlue,
+                    color: secondary,
                     padding: EdgeInsets.all(15),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -667,10 +667,10 @@ Expanded _widgetCartIsEmpty = Expanded(
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      Icon(LineIcons.shoppingBasket, size: 85, color: darkGray.withOpacity(0.1)),
+      Icon(LineIcons.shoppingBasket, size: 85, color: primary.withOpacity(0.1)),
       Text("Basket is empty",
           style: GoogleFonts.roboto(
-            color: darkGray.withOpacity(0.1),
+            color: primary.withOpacity(0.1),
             fontWeight: FontWeight.w400,
             fontSize: 12,
           )),
@@ -680,7 +680,7 @@ Expanded _widgetCartIsEmpty = Expanded(
 TextButton _buttonCheckout() {
   return TextButton(
     style: TextButton.styleFrom(
-      backgroundColor: darkBlue,
+      backgroundColor: secondary,
       padding: EdgeInsets.all(10),
     ),
     onPressed: () {},

@@ -6,7 +6,7 @@ import 'package:garreta/screens/account/registration/registration_phase3/passwor
 import 'package:garreta/screens/account/registration/registration_phase3/email/email.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
@@ -118,93 +118,87 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     return SafeArea(
       child: GestureDetector(
         onTap: () => destroyTextFieldFocus(context),
-        child: Focus(
-          onFocusChange: (hasFocus) => setState(() => _stateHasScreenFocus = hasFocus),
-          child: Scaffold(
-            resizeToAvoidBottomInset: false, // to avoid resizing when keyboard is toggled
-            backgroundColor: Colors.white,
-            body: Container(
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Container(
-                      width: _screenWidth * 0.8,
-                      child: Column(
-                        children: [
-                          Spacer(),
-                          if (!_stateHasScreenFocus)
-                            Container(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Container(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text("Account", style: _titleStyle),
-                                        Text("Keep your account secure", style: _titleAltStyle),
-                                      ],
-                                    ),
-                                  ),
-                                  _onReturnIcon(),
-                                  // Close icon
-                                ],
-                              ),
-                            )
-                          else
-                            SizedBox(),
-                          SizedBox(height: 20),
-                          textFieldEmail(
-                            textFieldController: _emailController,
-                            textFieldFocusNode: _emailFocusNode,
-                          ),
-                          SizedBox(height: 20),
-                          Row(
+        child: Scaffold(
+          resizeToAvoidBottomInset: false, // to avoid resizing when keyboard is toggled
+          backgroundColor: Colors.white,
+          body: Container(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Container(
+                    width: _screenWidth * 0.8,
+                    child: Column(
+                      children: [
+                        Spacer(),
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "Account security",
-                                style: GoogleFonts.roboto(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w300,
-                                  color: darkGray.withOpacity(0.5),
+                              Container(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Account", style: _titleStyle),
+                                    Text("Keep your account secure", style: _titleAltStyle),
+                                  ],
                                 ),
-                              )
+                              ),
+                              _onReturnIcon(),
+                              // Close icon
                             ],
                           ),
-                          SizedBox(height: 10),
-                          textFieldPassword(
-                            textFieldController: _passwordController,
-                            textFieldFocusNode: _passwordFocusNode,
-                            isVisible: _statePasswordVisibility,
-                          ),
-                          CheckboxListTile(
-                            onChanged: (state) => setState(() => _statePasswordVisibility = state),
-                            title: Text("Show password", style: _checkBoxTogglePasswordTextStyle),
-                            checkColor: darkGray,
-                            activeColor: Color(0xFFfafafa),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                            controlAffinity: ListTileControlAffinity.leading,
-                            value: _statePasswordVisibility,
-                          ),
-                          textFieldConfirmPassword(
-                            textFieldController: _confirmPasswordController,
-                            textFieldFocusNode: _confirmPasswordFocusNode,
-                          ),
-                          SizedBox(height: 5),
-                          Spacer(flex: 8),
-                          _buttonContinue(
-                            loaderState: _isLoading,
-                            action: () => _isLoginRequestOnGoing ? {} : _onCreateAccount(),
-                          ),
-                          SizedBox(height: 30),
-                        ],
-                      ),
+                        ),
+                        SizedBox(height: 20),
+                        textFieldEmail(
+                          textFieldController: _emailController,
+                          textFieldFocusNode: _emailFocusNode,
+                        ),
+                        SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Text(
+                              "Account security",
+                              style: GoogleFonts.roboto(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w300,
+                                color: primary.withOpacity(0.5),
+                              ),
+                            )
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        textFieldPassword(
+                          textFieldController: _passwordController,
+                          textFieldFocusNode: _passwordFocusNode,
+                          isVisible: _statePasswordVisibility,
+                        ),
+                        CheckboxListTile(
+                          onChanged: (state) => setState(() => _statePasswordVisibility = state),
+                          title: Text("Show password", style: _checkBoxTogglePasswordTextStyle),
+                          checkColor: primary,
+                          activeColor: Color(0xFFfafafa),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: _statePasswordVisibility,
+                        ),
+                        textFieldConfirmPassword(
+                          textFieldController: _confirmPasswordController,
+                          textFieldFocusNode: _confirmPasswordFocusNode,
+                        ),
+                        SizedBox(height: 5),
+                        Spacer(flex: 8),
+                        _buttonContinue(
+                          loaderState: _isLoading,
+                          action: () => _isLoginRequestOnGoing ? {} : _onCreateAccount(),
+                        ),
+                        SizedBox(height: 30),
+                      ],
                     ),
-                  )
-                ],
-              ),
+                  ),
+                )
+              ],
             ),
           ),
         ),
@@ -227,7 +221,7 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
           ],
         ),
         style: ElevatedButton.styleFrom(
-          primary: darkGray,
+          primary: primary,
           onPrimary: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(0),
@@ -243,7 +237,7 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
       child: Icon(
         LineIcons.arrowLeft,
         size: 24,
-        color: darkGray.withOpacity(0.1),
+        color: primary.withOpacity(0.1),
       ),
     );
   }
@@ -264,12 +258,12 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
   TextStyle _titleStyle = GoogleFonts.roboto(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: darkGray,
+    color: primary,
   );
   TextStyle _titleAltStyle = GoogleFonts.roboto(
     fontSize: 13,
     fontWeight: FontWeight.w300,
-    color: darkGray.withOpacity(0.9),
+    color: primary.withOpacity(0.9),
   );
 
   @override

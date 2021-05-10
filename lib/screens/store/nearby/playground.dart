@@ -14,7 +14,7 @@ import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:garreta/services/sharedPreferences.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:get/get.dart';
@@ -31,13 +31,13 @@ class ScreenNearbyStore extends StatefulWidget {
 TextStyle _onForgotPasswordTextStyle = GoogleFonts.roboto(
   fontWeight: FontWeight.w300,
   fontSize: 12,
-  color: darkGray,
+  color: primary,
 );
 
 TextStyle _onForgotDismissTextStyle = GoogleFonts.roboto(
   fontWeight: FontWeight.w300,
   fontSize: 12,
-  color: darkGray,
+  color: primary,
 );
 
 class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
@@ -153,7 +153,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.0),
                                   side: BorderSide(
-                                    color: darkBlue,
+                                    color: secondary,
                                   ),
                                 ),
                               ),
@@ -181,7 +181,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                             },
                             child: Text("VISIT STORE",
                                 style: GoogleFonts.roboto(
-                                  color: darkBlue,
+                                  color: secondary,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w300,
                                 )),
@@ -194,13 +194,13 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                       children: [
                         Text("4.9",
                             style: GoogleFonts.roboto(
-                              color: darkGray,
+                              color: primary,
                               fontSize: 50,
                               fontWeight: FontWeight.w500,
                             )),
                         Text("ratings",
                             style: GoogleFonts.roboto(
-                              color: darkGray.withOpacity(0.3),
+                              color: primary.withOpacity(0.3),
                               fontSize: 10,
                               fontWeight: FontWeight.w300,
                             )),
@@ -233,7 +233,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       onTap: () => Get.offAllNamed("/home"),
       child: Container(
         margin: EdgeInsets.only(right: 15),
-        child: Icon(LineIcons.times, color: darkGray, size: 26),
+        child: Icon(LineIcons.times, color: primary, size: 26),
       ),
     );
   }
@@ -250,14 +250,14 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           Spacer(),
           Row(
             children: [
-              Icon(LineIcons.shoppingBasket, color: darkGray.withOpacity(0.7), size: 22),
+              Icon(LineIcons.shoppingBasket, color: primary.withOpacity(0.7), size: 22),
               SizedBox(width: 2),
               Text(
                 "Basket (All)",
                 style: GoogleFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w300,
-                  color: darkGray.withOpacity(0.7),
+                  color: primary.withOpacity(0.7),
                 ),
               ),
             ],
@@ -265,14 +265,14 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           SizedBox(height: 40),
           Row(
             children: [
-              Icon(LineIcons.cog, color: darkGray.withOpacity(0.7), size: 22),
+              Icon(LineIcons.cog, color: primary.withOpacity(0.7), size: 22),
               SizedBox(width: 2),
               Text(
                 "App settings",
                 style: GoogleFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w300,
-                  color: darkGray.withOpacity(0.7),
+                  color: primary.withOpacity(0.7),
                 ),
               ),
             ],
@@ -280,14 +280,14 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           SizedBox(height: 20),
           Row(
             children: [
-              Icon(LineIcons.questionCircle, color: darkGray.withOpacity(0.7), size: 22),
+              Icon(LineIcons.questionCircle, color: primary.withOpacity(0.7), size: 22),
               SizedBox(width: 2),
               Text(
                 "Help and support",
                 style: GoogleFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w300,
-                  color: darkGray.withOpacity(0.7),
+                  color: primary.withOpacity(0.7),
                 ),
               ),
             ],
@@ -297,14 +297,14 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             onTap: () => _toggleLogout(),
             child: Row(
               children: [
-                Icon(LineIcons.alternateSignOut, color: darkGray.withOpacity(0.7), size: 22),
+                Icon(LineIcons.alternateSignOut, color: primary.withOpacity(0.7), size: 22),
                 SizedBox(width: 2),
                 Text(
                   "Sign out & Exit",
                   style: GoogleFonts.roboto(
                     fontSize: 18,
                     fontWeight: FontWeight.w300,
-                    color: darkGray.withOpacity(0.7),
+                    color: primary.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -331,7 +331,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             "Do you want to save your login info?",
             style: GoogleFonts.roboto(
               fontWeight: FontWeight.w300,
-              color: darkGray,
+              color: primary,
               fontSize: 15,
             ),
             textAlign: TextAlign.center,
@@ -341,7 +341,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: fadeWhite,
+              color: light,
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: Row(
@@ -349,7 +349,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
               children: [
                 Icon(
                   LineIcons.infoCircle,
-                  color: darkGray,
+                  color: primary,
                 ),
                 SizedBox(width: 5),
                 Expanded(
@@ -357,7 +357,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                     "Saving login info will help you to access your account quicker",
                     style: GoogleFonts.roboto(
                       fontWeight: FontWeight.w300,
-                      color: darkGray,
+                      color: primary,
                       fontSize: 12,
                     ),
                     textAlign: TextAlign.left,
@@ -373,12 +373,12 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
               // `YES`
               TextButton(
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(darkBlue),
+                  backgroundColor: MaterialStateProperty.all(secondary),
                   shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                       side: BorderSide(
-                        color: darkBlue,
+                        color: secondary,
                         width: 1,
                       ),
                     ),
@@ -400,7 +400,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                       side: BorderSide(
-                        color: darkBlue,
+                        color: secondary,
                         width: 1,
                       ),
                     ),
@@ -413,7 +413,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                 },
                 child: Text("Remid me later",
                     style: GoogleFonts.roboto(
-                      color: darkBlue,
+                      color: secondary,
                       fontSize: 14,
                       fontWeight: FontWeight.w300,
                     )),
@@ -427,7 +427,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
               "Don't remid me again",
               style: GoogleFonts.roboto(
                 fontWeight: FontWeight.w300,
-                color: darkGray.withOpacity(0.5),
+                color: primary.withOpacity(0.5),
                 fontSize: 14,
               ),
             ),
@@ -489,7 +489,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         child: Row(
           children: [
             Text("Change", style: storeBadgeChangeLocationTextStyle),
-            Icon(LineIcons.mapMarker, color: darkGray, size: 12),
+            Icon(LineIcons.mapMarker, color: primary, size: 12),
           ],
         ),
       ),
@@ -573,7 +573,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                           width: 40,
                           padding: EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: darkBlue,
+                            color: secondary,
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
                           child: Text(
@@ -589,7 +589,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                   ],
                 ),
               ),
-              // Icon(Ionicons.cart_outline, size: 20, color: darkGray),
+              // Icon(Ionicons.cart_outline, size: 20, color: primary),
             ],
           ),
         ),
@@ -606,7 +606,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       if (i != data.length - 1) {
         items.add(Container(
           margin: EdgeInsets.symmetric(vertical: 15),
-          child: Divider(color: darkGray.withOpacity(0.1)),
+          child: Divider(color: primary.withOpacity(0.1)),
         ));
       }
       if (i == data.length - 1) {
@@ -615,7 +615,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           child: Text(
             "End of result",
             style: GoogleFonts.roboto(
-              color: darkGray.withOpacity(0.2),
+              color: primary.withOpacity(0.2),
               fontWeight: FontWeight.w300,
             ),
             textAlign: TextAlign.center,
@@ -684,7 +684,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             ? Scaffold(
                 body: Center(
                   child: SpinKitPumpingHeart(
-                    color: darkBlue,
+                    color: secondary,
                     size: 40.0,
                     duration: Duration(milliseconds: 800),
                   ),
@@ -713,7 +713,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                               onTap: () => _toggleSettings(),
                               child: Container(
                                 margin: EdgeInsets.only(right: 15),
-                                child: Icon(LineIcons.cog, color: darkGray),
+                                child: Icon(LineIcons.cog, color: primary),
                               ),
                             )
                           : _buttonClose(),
@@ -735,7 +735,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                             padding: EdgeInsets.all(15),
                             margin: EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
-                              border: Border.all(color: darkGray, width: 0.1),
+                              border: Border.all(color: primary, width: 0.1),
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -766,12 +766,12 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                     children: [
                                       Text("Suggestions",
                                           style: GoogleFonts.roboto(
-                                            color: darkGray,
+                                            color: primary,
                                             fontWeight: FontWeight.w300,
                                           )),
                                       Text("See all",
                                           style: GoogleFonts.roboto(
-                                            color: darkBlue,
+                                            color: secondary,
                                             fontWeight: FontWeight.bold,
                                           )),
                                     ],
@@ -792,7 +792,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                           margin: EdgeInsets.only(right: 10),
                                           height: 100,
                                           width: 100,
-                                          color: fadeWhite,
+                                          color: light,
                                         ),
                                     ],
                                   ),
@@ -809,7 +809,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                           Container(
                                             padding: EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: fadeWhite,
+                                              color: light,
                                               borderRadius: BorderRadius.all(Radius.circular(50)),
                                             ),
                                             child: Text(
@@ -822,7 +822,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                           Container(
                                             padding: EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: fadeWhite,
+                                              color: light,
                                               borderRadius: BorderRadius.all(Radius.circular(50)),
                                             ),
                                             child: Text(
@@ -835,7 +835,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                           Container(
                                             padding: EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: fadeWhite,
+                                              color: light,
                                               borderRadius: BorderRadius.all(Radius.circular(50)),
                                             ),
                                             child: Text(

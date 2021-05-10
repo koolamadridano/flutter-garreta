@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:garreta/controllers/user/userController.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:get/get.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:garreta/helpers/textHelper.dart';
-import 'package:line_icons/line_icons.dart';
 
 class ScreenProductView extends StatefulWidget {
   @override
@@ -98,7 +97,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                   borderRadius: BorderRadius.all(Radius.circular(100)),
                 ),
                 margin: EdgeInsets.all(10),
-                child: Icon(Ionicons.chevron_back, size: 22, color: darkBlue),
+                child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -130,7 +129,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                 child: Text(
                   _storeName,
                   style: GoogleFonts.roboto(
-                    color: darkGray,
+                    color: primary,
                     fontWeight: FontWeight.w400,
                     fontSize: 18,
                   ),
@@ -149,7 +148,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                     Text(
                       '$_productName - lorem ipsum dolor sit amet',
                       style: GoogleFonts.roboto(
-                        color: darkGray,
+                        color: primary,
                         fontWeight: FontWeight.w600,
                         fontSize: 26,
                       ),
@@ -159,7 +158,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                     Text(
                       '₱$_productPrice',
                       style: GoogleFonts.rajdhani(
-                        color: darkGray,
+                        color: primary,
                         fontWeight: FontWeight.w400,
                         fontSize: 26,
                       ),
@@ -181,14 +180,14 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                 children: [
                   Text("Available stocks",
                       style: GoogleFonts.roboto(
-                        color: darkGray.withOpacity(0.5),
+                        color: primary.withOpacity(0.5),
                         fontWeight: FontWeight.w300,
                         fontSize: 16,
                       )),
                   SizedBox(width: 10),
                   Text("x$_productStocks",
                       style: GoogleFonts.rajdhani(
-                        color: darkGray.withOpacity(0.5),
+                        color: primary.withOpacity(0.5),
                         fontWeight: FontWeight.w400,
                         fontSize: 16,
                       )),
@@ -208,7 +207,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                 children: [
                   Text("₱${_productPrice * _selectedQty}",
                       style: GoogleFonts.rajdhani(
-                        color: red,
+                        color: danger,
                         fontWeight: FontWeight.w400,
                         fontSize: 26,
                       )),
@@ -222,15 +221,15 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                           child: Container(
                             height: 40,
                             width: 40,
-                            color: fadeWhite,
-                            child: Icon(Ionicons.remove_outline, color: darkBlue),
+                            color: light,
+                            child: Icon(Ionicons.remove_outline, color: secondary),
                           ),
                         ),
                       ),
                       SizedBox(width: 10),
                       Text(_selectedQty.toString(),
                           style: GoogleFonts.rajdhani(
-                            color: darkGray,
+                            color: primary,
                             fontWeight: FontWeight.w400,
                             fontSize: 26,
                           )),
@@ -243,8 +242,8 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                           child: Container(
                             height: 40,
                             width: 40,
-                            color: fadeWhite,
-                            child: Icon(Ionicons.add, color: darkBlue),
+                            color: light,
+                            child: Icon(Ionicons.add, color: secondary),
                           ),
                         ),
                       ),
@@ -262,7 +261,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                 height: 60,
                 child: TextButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.resolveWith((states) => darkBlue),
+                    backgroundColor: MaterialStateProperty.resolveWith((states) => secondary),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),

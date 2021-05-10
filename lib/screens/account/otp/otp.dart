@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
+import 'package:garreta/colors.dart';
 import 'package:garreta/controllers/otp/otpController.dart';
 import 'package:garreta/controllers/user/userController.dart';
-import 'package:garreta/utils/colors/colors.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -34,7 +33,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
     }
   }
 
-  _onValidatePin(String typedPin) {
+  _handleValidatePin(String typedPin) {
     if (int.parse(typedPin) == int.parse(_otpController.generatedPin)) {
       if (_pinPutFocusNode.hasFocus) {
         _pinPutFocusNode.unfocus();
@@ -69,7 +68,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
                   children: [
                     GestureDetector(
                       onTap: () => Get.back(),
-                      child: Icon(LineIcons.times, color: darkGray.withOpacity(0.1), size: 24),
+                      child: Icon(LineIcons.times, color: primary.withOpacity(0.1), size: 24),
                     ),
                   ],
                 ),
@@ -91,7 +90,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
                   child: PinPut(
                     fieldsCount: 4,
                     onSubmit: (String pin) {
-                      _onValidatePin(pin);
+                      _handleValidatePin(pin);
                     },
                     focusNode: _pinPutFocusNode,
                     controller: _pinPutController,
@@ -103,7 +102,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
                     followingFieldDecoration: _pinPutDecoration.copyWith(
                       borderRadius: BorderRadius.circular(5.0),
                       border: Border.all(
-                        color: darkGray.withOpacity(0.2),
+                        color: primary.withOpacity(0.2),
                       ),
                     ),
                   ),
@@ -127,7 +126,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
 
   BoxDecoration get _pinPutDecoration {
     return BoxDecoration(
-      border: Border.all(color: darkGray),
+      border: Border.all(color: primary),
       borderRadius: BorderRadius.circular(5.0),
     );
   }

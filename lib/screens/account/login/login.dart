@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:garreta/colors.dart';
 import 'package:garreta/controllers/pages/pagesController.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/account/login/password/password.dart';
@@ -7,7 +8,6 @@ import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:garreta/screens/account/login/widgets/widgets.dart' as loginWidget;
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
-import 'package:garreta/utils/colors/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
@@ -140,7 +140,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                                 child: Icon(
                                   LineIcons.arrowLeft,
                                   size: 24,
-                                  color: darkGray.withOpacity(0.1),
+                                  color: primary.withOpacity(0.1),
                                 ),
                               ),
                             ],
@@ -180,7 +180,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                               child: Text("Forgot?", style: _checkBoxForgotPasswordTextStyle),
                             ),
                           ),
-                          checkColor: darkGray,
+                          checkColor: primary,
                           activeColor: Color(0xFFfafafa),
                           contentPadding: EdgeInsets.symmetric(horizontal: 0.0),
                           controlAffinity: ListTileControlAffinity.leading,
@@ -191,7 +191,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                           action: () => _isLoginRequestOnGoing ? {} : _onLogin(),
                           toggleSpinner: _isLoading,
                         ),
-                        SizedBox(height: 10),
+                        SizedBox(height: 5),
                         _buttonCreateAccount(),
                         SizedBox(height: 30),
                       ],
@@ -206,11 +206,23 @@ class _ScreenLoginState extends State<ScreenLogin> {
     );
   }
 
-  SizedBox _buttonLogin({@required action, @required toggleSpinner}) {
+  Widget _buttonLogin({@required action, @required toggleSpinner}) {
     return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ElevatedButton(
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0.0),
+              side: BorderSide(
+                color: primary,
+              ),
+            ),
+          ),
+          backgroundColor: MaterialStateColor.resolveWith((states) => primary),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
+        ),
         onPressed: action,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -220,6 +232,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                 style: GoogleFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w300,
+                  color: Colors.white,
                 )),
             SizedBox(width: 3),
             Obx(
@@ -232,41 +245,40 @@ class _ScreenLoginState extends State<ScreenLogin> {
             ),
           ],
         ),
-        style: ElevatedButton.styleFrom(
-          primary: darkGray,
-          onPrimary: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
-          ),
-        ),
       ),
     );
   }
 
-  SizedBox _buttonCreateAccount() {
+  Widget _buttonCreateAccount() {
     return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => Get.offAllNamed("/registration"),
-        child: Text(
-          "Not yet registered?",
-          style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300),
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          // shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          //   RoundedRectangleBorder(
+          //     borderRadius: BorderRadius.circular(0.0),
+          //     side: BorderSide(
+          //       color: darkGray,
+          //     ),
+          //   ),
+          // ),
+          // backgroundColor: MaterialStateColor.resolveWith((states) => darkGray),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
         ),
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          primary: Colors.white,
-          onPrimary: darkGray,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
-          ),
-        ),
+        onPressed: () => Get.offAndToNamed('/registration'),
+        child: Text("Not yet registered?",
+            style: GoogleFonts.roboto(
+              fontSize: 13,
+              fontWeight: FontWeight.w300,
+              color: primary,
+            )),
       ),
     );
   }
 
   TextStyle _displayErrorTextStyle = GoogleFonts.roboto(
-    color: red,
+    color: danger,
     fontSize: 14,
     fontWeight: FontWeight.w300,
   );
@@ -282,12 +294,12 @@ class _ScreenLoginState extends State<ScreenLogin> {
   TextStyle _titleStyle = GoogleFonts.roboto(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: darkGray,
+    color: primary,
   );
   TextStyle _titleAltStyle = GoogleFonts.roboto(
     fontSize: 13,
     fontWeight: FontWeight.w300,
-    color: darkGray.withOpacity(0.9),
+    color: primary.withOpacity(0.9),
   );
 
   @override

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:garreta/controllers/user/userController.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:jiffy/jiffy.dart';
@@ -62,7 +62,7 @@ class _SelectBirthdayState extends State<SelectBirthday> {
           children: [
             Text(selectedDateToString.toString(), style: _selectBirthdayTextStyle),
             SizedBox(width: 5),
-            Icon(LineIcons.birthdayCake, color: darkGray, size: 21),
+            Icon(LineIcons.birthdayCake, color: primary, size: 21),
           ],
         ),
       ),
@@ -80,5 +80,5 @@ DatePickerTheme _datePickerTheme = DatePickerTheme(
 TextStyle _selectBirthdayTextStyle = GoogleFonts.roboto(
   fontSize: 16,
   fontWeight: FontWeight.w300,
-  color: darkGray,
+  color: primary,
 );

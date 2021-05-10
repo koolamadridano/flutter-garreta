@@ -10,7 +10,7 @@ import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/helpers/textHelper.dart';
 import 'package:garreta/screens/ui/search/search.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
@@ -39,6 +39,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   // State
   int _categoryIndex = 0;
 
+  // Hold value for direct-call
+
   @override
   void initState() {
     super.initState();
@@ -53,11 +55,9 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
       // we can use direct call
       if (GetPlatform.isAndroid) {
         var _phoneCallStatus = await Permission.phone.status;
-
-        do {
+        if (_phoneCallStatus == PermissionStatus.denied) {
           await Permission.phone.request();
-        } while (_phoneCallStatus == PermissionStatus.denied);
-
+        }
         if (_phoneCallStatus.isGranted) {
           android_intent.Intent()
             ..setAction(android_action.Action.ACTION_CALL)
@@ -100,54 +100,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        // appBar: AppBar(
-        //   backgroundColor: Colors.white,
-        //   toolbarHeight: 58,
-        //   leading: SizedBox(),
-        //   leadingWidth: 0,
-        //   elevation: 5,
-        //   title: Container(
-        //     width: Get.width * 0.6,
-        //     child: Obx(
-        //       () => Column(
-        //         crossAxisAlignment: CrossAxisAlignment.start,
-        //         children: [
-        //           Text("${_storeController.merchantName.value.capitalizeFirstofEach}",
-        //               style: GoogleFonts.roboto(
-        //                 color: darkGray,
-        //                 fontWeight: FontWeight.w600,
-        //                 fontSize: 14,
-        //               ),
-        //               overflow: TextOverflow.ellipsis,
-        //               maxLines: 2),
-        //           Text("Nearby store",
-        //               style: GoogleFonts.roboto(
-        //                 color: darkGray,
-        //                 fontWeight: FontWeight.w300,
-        //                 fontSize: 12,
-        //               )),
-        //         ],
-        //       ),
-        //     ),
-        //   ),
-        //   actions: [
-        //     GestureDetector(
-        //       onTap: () {
-        //         showSearch(
-        //           context: context,
-        //           delegate: Search(data: _productController.storeProductsData),
-        //         );
-        //       },
-        //       child: Container(
-        //         margin: EdgeInsets.only(right: 15),
-        //         child: Icon(
-        //           LineIcons.search,
-        //           color: darkGray,
-        //         ),
-        //       ),
-        //     ),
-        //   ],
-        // ),
         body: CustomScrollView(
           physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
@@ -155,7 +107,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
             SliverAppBar(
               backgroundColor: Colors.white,
               elevation: 0,
-              expandedHeight: 200,
+              expandedHeight: 250,
               leading: GestureDetector(
                 onTap: () => Get.back(),
                 child: Container(
@@ -164,7 +116,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     borderRadius: BorderRadius.all(Radius.circular(100)),
                   ),
                   margin: EdgeInsets.all(10),
-                  child: Icon(Ionicons.chevron_back, size: 22, color: darkBlue),
+                  child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
                 ),
               ),
               actions: [
@@ -180,7 +132,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                             borderRadius: BorderRadius.all(Radius.circular(100)),
                           ),
                           margin: EdgeInsets.only(top: 10, bottom: 10, right: 5),
-                          child: Icon(Ionicons.call_outline, size: 22, color: darkBlue),
+                          child: Icon(Ionicons.call_outline, size: 22, color: secondary),
                         ),
                       ),
                 Container(
@@ -190,7 +142,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     borderRadius: BorderRadius.all(Radius.circular(100)),
                   ),
                   margin: EdgeInsets.only(top: 10, bottom: 10, right: 5),
-                  child: Icon(Ionicons.information_circle_outline, size: 22, color: darkBlue),
+                  child: Icon(Ionicons.information_circle_outline, size: 22, color: secondary),
                 ),
               ],
               stretch: true,
@@ -269,7 +221,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.local_fire_department, color: darkBlue, size: 36),
+                          Icon(Icons.local_fire_department, color: secondary, size: 36),
                           SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,13 +230,13 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                                   style: GoogleFonts.roboto(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: darkGray,
+                                    color: primary,
                                   )),
                               Text("Frequently bought items",
                                   style: GoogleFonts.roboto(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w400,
-                                    color: darkGray.withOpacity(0.5),
+                                    color: primary.withOpacity(0.5),
                                     height: 0.7,
                                   )),
                             ],
@@ -293,7 +245,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                       ),
                       Text("See all",
                           style: GoogleFonts.roboto(
-                            color: darkBlue,
+                            color: secondary,
                             fontWeight: FontWeight.bold,
                           )),
                     ],
@@ -318,7 +270,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                           padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.all(Radius.circular(20)),
-                            color: fadeWhite,
+                            color: light,
                           ),
                           child: Container(
                             height: 100,
@@ -339,7 +291,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Ionicons.grid, color: darkBlue, size: 36),
+                      Icon(Ionicons.grid, color: secondary, size: 36),
                       SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,13 +300,13 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                               style: GoogleFonts.roboto(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: darkGray,
+                                color: primary,
                               )),
                           Text("Filter to find easily",
                               style: GoogleFonts.roboto(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w400,
-                                color: darkGray.withOpacity(0.5),
+                                color: primary.withOpacity(0.5),
                                 height: 0.7,
                               )),
                         ],
@@ -371,17 +323,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     padding: EdgeInsets.only(top: 20.0),
                     sliver: SliverStickyHeader(
                       header: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              spreadRadius: 1,
-                              offset: Offset(3, 5),
-                            ),
-                          ],
-                        ),
+                        color: white,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -414,7 +356,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                                               style: GoogleFonts.roboto(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w300,
-                                                color: darkGray,
+                                                color: primary,
                                                 height: 0.8,
                                               )),
                                         ],
@@ -429,7 +371,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                                           width: 38,
                                           height: 38,
                                           child: Obx(() => Badge(
-                                                animationType: BadgeAnimationType.scale,
+                                                animationType: BadgeAnimationType.slide,
                                                 position: BadgePosition.topEnd(
                                                   end: _cartController.cartItems.length > 99 ? -5 : -2,
                                                   top: _cartController.cartItems.length > 99 ? -8 : -5,
@@ -441,14 +383,14 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                                                       fontSize: _cartController.cartItems.length > 9 ? 7 : 9,
                                                       color: Colors.white,
                                                     )),
-                                                child: Icon(Ionicons.basket_outline, size: 32, color: darkBlue),
+                                                child: Icon(Ionicons.basket_outline, size: 32, color: secondary),
                                               )),
                                         ),
                                       ),
                                       Container(
                                         width: 38,
                                         height: 38,
-                                        child: Icon(LineIcons.userCircleAlt, size: 32, color: darkBlue),
+                                        child: Icon(LineIcons.userCircleAlt, size: 32, color: secondary),
                                       ),
                                     ],
                                   ),
@@ -483,13 +425,13 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     children: [
                       Row(
                         children: [
-                          Icon(LineIcons.store, color: darkBlue, size: 36),
+                          Icon(LineIcons.store, color: secondary, size: 36),
                           SizedBox(width: 10),
                           Text("Other stores",
                               style: GoogleFonts.roboto(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: darkGray,
+                                color: primary,
                               )),
                         ],
                       ),
@@ -497,7 +439,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                         onTap: () => Get.offAndToNamed("/screen-nearby-vendors"),
                         child: Text("See all",
                             style: GoogleFonts.roboto(
-                              color: darkBlue,
+                              color: secondary,
                               fontWeight: FontWeight.bold,
                             )),
                       )
@@ -545,8 +487,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
           margin: EdgeInsets.only(right: 10),
           decoration: BoxDecoration(
             // borderRadius: BorderRadius.all(Radius.circular(20)),
-            color: fadeWhite,
-            border: Border.all(color: darkGray, width: 0.1),
+            color: light,
+            border: Border.all(color: primary, width: 0.1),
           ),
           child: Stack(
             children: [
@@ -576,7 +518,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                               style: GoogleFonts.roboto(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 16,
-                                color: darkGray,
+                                color: primary,
                               )),
                           Row(
                             children: [
@@ -597,7 +539,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                           style: GoogleFonts.roboto(
                             fontWeight: FontWeight.w400,
                             fontSize: 13,
-                            color: darkGray.withOpacity(0.7),
+                            color: primary.withOpacity(0.7),
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
@@ -636,7 +578,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     style: GoogleFonts.roboto(
                       fontSize: 16,
                       fontWeight: _categoryIndex == i ? FontWeight.bold : FontWeight.w300,
-                      color: _categoryIndex == i ? darkBlue : darkBlue.withOpacity(0.4),
+                      color: _categoryIndex == i ? secondary : secondary.withOpacity(0.4),
                     )),
               ),
               Positioned(
@@ -646,7 +588,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   curve: Curves.easeInOut,
                   height: 2,
                   width: Get.width,
-                  color: _categoryIndex == i ? darkBlue : Colors.white,
+                  color: _categoryIndex == i ? secondary : Colors.white,
                 ),
               ),
             ],
@@ -704,7 +646,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                         child: Container(
                           height: 40,
                           width: 40,
-                          child: Icon(Ionicons.basket_outline, color: darkBlue),
+                          child: Icon(Ionicons.basket_outline, color: secondary),
                         ),
                       ),
                     ),
@@ -727,7 +669,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                         Text(
                           "${data[i]['prod_name']} - lorem ipsum dolor sit amet",
                           style: GoogleFonts.roboto(
-                            color: darkGray,
+                            color: primary,
                             fontSize: 13,
                             fontWeight: FontWeight.w400,
                           ),
@@ -740,16 +682,16 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                           children: [
                             Text("₱$_itemPrice",
                                 style: GoogleFonts.rajdhani(
-                                  color: darkGray,
+                                  color: primary,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 )),
                             Row(
                               children: [
-                                Icon(LineIcons.box, color: darkGray, size: 14),
+                                Icon(LineIcons.box, color: primary, size: 14),
                                 Text("${data[i]['prod_qtyOnHand']}",
                                     style: GoogleFonts.roboto(
-                                      color: darkGray,
+                                      color: primary,
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     )),

@@ -1,25 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-TextStyle _titleStyle = GoogleFonts.roboto(
-  fontSize: 70,
-  fontWeight: FontWeight.bold,
-  color: darkGray,
-);
-TextStyle _titleAltStyle = GoogleFonts.roboto(
-  fontSize: 18,
-  fontWeight: FontWeight.w300,
-  color: darkGray,
-);
-
 class ScreenApplication extends StatefulWidget {
   const ScreenApplication({Key key}) : super(key: key);
-
   @override
   _ScreenApplicationState createState() => _ScreenApplicationState();
 }
@@ -41,7 +28,7 @@ class _ScreenApplicationState extends State<ScreenApplication> {
     }
   }
 
-  Future _onExitApp() {
+  dynamic _onExitApp() {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -74,7 +61,6 @@ class _ScreenApplicationState extends State<ScreenApplication> {
 
   @override
   Widget build(BuildContext context) {
-    final _screenWidth = MediaQuery.of(context).size.width;
     return WillPopScope(
       onWillPop: () async => _onExitApp(),
       child: !hasEnabledLocation
@@ -88,35 +74,29 @@ class _ScreenApplicationState extends State<ScreenApplication> {
                   children: [
                     Expanded(
                       child: Container(
-                        width: _screenWidth * 0.8,
+                        width: Get.width * 0.60,
                         child: Column(
                           children: [
-                            Spacer(),
+                            Spacer(flex: 1),
                             Container(
                               width: double.infinity,
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text('Garreta', style: _titleStyle),
-                                  Row(
-                                    children: [
-                                      SizedBox(width: 5),
-                                      Text('Near your area', style: _titleAltStyle),
-                                      Icon(LineIcons.mapMarker, color: darkGray, size: 18),
-                                    ],
-                                  ),
+                                  Text('SKIP the HASSLE', style: _titleAltStyle),
                                 ],
                               ),
                             ),
-                            Spacer(flex: 2),
+                            Spacer(flex: 3),
                             // Login button
-                            _onLogin(),
+                            _buttonLogin(),
                             SizedBox(height: 5),
                             // Register button
-                            _onRegister(),
-                            SizedBox(height: 30),
+                            _buttonRegister(),
+                            Spacer(),
                             // Skip button
-                            _onSkip(),
+                            _buttonSkip(),
                             SizedBox(height: 30),
                           ],
                         ),
@@ -129,65 +109,92 @@ class _ScreenApplicationState extends State<ScreenApplication> {
     );
   }
 
-  SizedBox _onLogin() {
+  Widget _buttonLogin() {
     return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => Get.toNamed("/login"),
-        child: Text("I already have an account"),
-        style: ElevatedButton.styleFrom(
-          primary: darkGray,
-          onPrimary: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0.0),
+              side: BorderSide(
+                color: primary,
+              ),
+            ),
           ),
+          backgroundColor: MaterialStateColor.resolveWith((states) => primary),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
         ),
+        onPressed: () => Get.toNamed('/login'),
+        child: Text("I already have an account",
+            style: GoogleFonts.roboto(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w300,
+            )),
       ),
     );
   }
 
-  SizedBox _onRegister() {
+  Widget _buttonRegister() {
     return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: () => Get.toNamed("/registration"),
-        child: Text("I want to create an account", style: TextStyle(color: darkGray)),
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          onPrimary: Colors.white,
-          primary: Colors.white,
-          side: BorderSide(width: 1.0, color: darkGray),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
-          ),
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          // shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          //   RoundedRectangleBorder(
+          //     borderRadius: BorderRadius.circular(10.0),
+          //     side: BorderSide(
+          //       color: darkGray,
+          //     ),
+          //   ),
+          // ),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
+          // backgroundColor: MaterialStateColor.resolveWith((states) => darkGray),
         ),
+        onPressed: () => Get.toNamed('/registration'),
+        child: Text("I want to create an account",
+            style: GoogleFonts.roboto(
+              color: primary,
+              fontSize: 13,
+              fontWeight: FontWeight.w300,
+            )),
       ),
     );
   }
 
-  GestureDetector _onSkip() {
+  Widget _buttonSkip() {
     return GestureDetector(
       onTap: () => Get.toNamed("/store-nearby-store"),
-      child: Text("Skip", style: TextStyle(color: darkGray)),
+      child: Text("Skip", style: TextStyle(color: primary.withOpacity(0.3))),
     );
   }
 }
 
+final TextStyle _titleStyle = GoogleFonts.quicksand(
+  fontSize: 50,
+  fontWeight: FontWeight.bold,
+  color: primary,
+);
+final TextStyle _titleAltStyle = GoogleFonts.roboto(
+  fontSize: 14,
+  fontWeight: FontWeight.w300,
+  color: primary,
+);
 final TextStyle _onExitAppConfirmTextStyle = GoogleFonts.roboto(
-  color: darkGray,
+  color: primary,
   fontSize: 14,
   fontWeight: FontWeight.w300,
 );
 final TextStyle _onExitAppTitleTextStyle = GoogleFonts.roboto(
-  color: darkGray,
+  color: primary,
   fontSize: 14,
   fontWeight: FontWeight.w300,
 );
-
 final TextStyle _onExitAppDismissTextStyle = GoogleFonts.roboto(
-  color: darkGray,
+  color: primary,
   fontSize: 14,
   fontWeight: FontWeight.w500,
 );

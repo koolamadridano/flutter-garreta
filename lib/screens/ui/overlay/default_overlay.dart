@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -36,7 +36,7 @@ void toggleOverlayThreeBounce({BuildContext context}) {
     buttons: [],
     content: SizedBox(
       child: SpinKitThreeBounce(
-        color: darkBlue,
+        color: secondary,
         size: 18.0,
         duration: Duration(milliseconds: 1000),
       ),
@@ -66,7 +66,7 @@ void toggleOverlayPumpingHeart({BuildContext context, double overlayOpacity, dou
     buttons: [],
     content: SizedBox(
       child: SpinKitPumpingHeart(
-        color: darkBlue,
+        color: secondary,
         size: iconSize != null ? iconSize : 40.0,
         duration: Duration(milliseconds: 800),
       ),
@@ -98,7 +98,7 @@ void toggleOverlayFadingCircle({BuildContext context}) {
     buttons: [],
     content: SizedBox(
       child: SpinKitFadingCircle(
-        color: darkBlue,
+        color: secondary,
         size: 18.0,
         duration: Duration(milliseconds: 1000),
       ),

@@ -1,6 +1,6 @@
 // `Grid loader`
 import 'package:flutter/material.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:shimmer/shimmer.dart';
 
 SliverPadding gridPopularPicks = SliverPadding(
@@ -18,11 +18,11 @@ SliverPadding gridPopularPicks = SliverPadding(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
-                color: fadeWhite,
+                color: light,
               ),
               child: Shimmer.fromColors(
-                baseColor: fadeWhite,
-                highlightColor: fadeWhite.withOpacity(0.4),
+                baseColor: light,
+                highlightColor: light.withOpacity(0.4),
                 child: Container(
                   height: 100,
                   width: 100,
@@ -51,8 +51,8 @@ SliverPadding gridLoading = SliverPadding(
           width: 200.0,
           height: 200.0,
           child: Shimmer.fromColors(
-            baseColor: fadeWhite,
-            highlightColor: fadeWhite.withOpacity(0.4),
+            baseColor: light,
+            highlightColor: light.withOpacity(0.4),
             child: ClipRRect(
               borderRadius: BorderRadius.all(Radius.circular(10)),
               child: Container(

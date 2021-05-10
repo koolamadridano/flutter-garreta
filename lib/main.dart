@@ -11,7 +11,6 @@ import 'package:garreta/screens/store/productscreen/productView/productView.dart
 import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
 import 'package:garreta/screens/store/shoppingcart/shoppingcart.dart';
-import 'package:garreta/screens/store/store.dart';
 import 'package:garreta/screens/location/location.dart';
 
 import 'package:garreta/screens/undefined/undefinedScreen.dart';
@@ -45,8 +44,6 @@ void main() {
         GetPage(title: 'Registration-3 screen', name: "/registration-phase-3", page: () => ScreenRegistrationPhase3()),
 
         // # STORE ROUTES
-        GetPage(title: 'Store screen', name: "/store", page: () => ScreenStore()),
-
         GetPage(title: 'Nearby vendor', name: "/screen-nearby-vendors", page: () => ScreenNearbyStore()),
         GetPage(title: 'Product screen', name: "/screen-products", page: () => ScreenProductScreen()),
         GetPage(title: 'Product view', name: "/store-product-view", page: () => ScreenProductView()),

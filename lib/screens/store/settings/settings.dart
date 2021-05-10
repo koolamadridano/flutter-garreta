@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -60,11 +60,11 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                         width: 100,
                         child: SwitchListTile(
                             value: _clearInfo,
-                            activeColor: darkBlue,
+                            activeColor: secondary,
                             controlAffinity: ListTileControlAffinity.leading,
-                            inactiveTrackColor: darkBlue.withOpacity(0.4),
+                            inactiveTrackColor: secondary.withOpacity(0.4),
                             contentPadding: EdgeInsets.all(0),
-                            activeTrackColor: darkBlue.withOpacity(0.5),
+                            activeTrackColor: secondary.withOpacity(0.5),
                             onChanged: (value) {
                               builderSetState(() {
                                 _clearInfo = value;
@@ -85,7 +85,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                         style: GoogleFonts.roboto(
                           fontSize: 12,
                           fontWeight: FontWeight.w300,
-                          color: darkGray.withOpacity(0.4),
+                          color: primary.withOpacity(0.4),
                         )),
                   )
                 ],
@@ -111,11 +111,11 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                         width: 100,
                         child: SwitchListTile(
                             value: _logoutAndExitApp,
-                            activeColor: darkBlue,
+                            activeColor: secondary,
                             controlAffinity: ListTileControlAffinity.leading,
-                            inactiveTrackColor: darkBlue.withOpacity(0.4),
+                            inactiveTrackColor: secondary.withOpacity(0.4),
                             contentPadding: EdgeInsets.all(0),
-                            activeTrackColor: darkBlue.withOpacity(0.5),
+                            activeTrackColor: secondary.withOpacity(0.5),
                             onChanged: (value) {
                               builderSetState(() {
                                 _logoutAndExitApp = value;
@@ -135,7 +135,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                         style: GoogleFonts.roboto(
                           fontSize: 12,
                           fontWeight: FontWeight.w300,
-                          color: darkGray.withOpacity(0.4),
+                          color: primary.withOpacity(0.4),
                         )),
                   )
                 ],
@@ -146,12 +146,12 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                 width: Get.width,
                 child: TextButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(darkBlue),
+                    backgroundColor: MaterialStateProperty.all(secondary),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
                         side: BorderSide(
-                          color: darkBlue,
+                          color: secondary,
                           width: 1,
                         ),
                       ),
@@ -194,7 +194,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                 borderRadius: BorderRadius.all(Radius.circular(100)),
               ),
               margin: EdgeInsets.all(10),
-              child: Icon(Ionicons.chevron_back, size: 22, color: darkBlue),
+              child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
             ),
           ),
         ),
@@ -223,7 +223,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.user, size: 54),
+                              Icon(LineIcons.user, size: 54, color: secondary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,7 +232,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                     "Personal Information",
                                     style: GoogleFonts.roboto(
                                       fontSize: 18,
-                                      color: darkGray,
+                                      color: primary,
                                     ),
                                   ),
                                   Container(
@@ -241,7 +241,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                       "Update your name, Phone numbers and other details",
                                       style: GoogleFonts.roboto(
                                         fontSize: 14,
-                                        color: darkGray,
+                                        color: primary,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),
@@ -261,7 +261,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.store, size: 54),
+                              Icon(LineIcons.store, size: 54, color: secondary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,7 +270,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                     "Store",
                                     style: GoogleFonts.roboto(
                                       fontSize: 18,
-                                      color: darkGray,
+                                      color: primary,
                                     ),
                                   ),
                                   Container(
@@ -279,7 +279,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                       "View transaction history, Prioritize and filter stores based on your likings",
                                       style: GoogleFonts.roboto(
                                         fontSize: 14,
-                                        color: darkGray,
+                                        color: primary,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),
@@ -299,7 +299,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.alternateShield, size: 54),
+                              Icon(LineIcons.alternateShield, size: 54, color: secondary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,7 +308,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                     "Security and login",
                                     style: GoogleFonts.roboto(
                                       fontSize: 18,
-                                      color: darkGray,
+                                      color: primary,
                                     ),
                                   ),
                                   Container(
@@ -317,7 +317,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                       "Change your password and take other actions to add more security to your account",
                                       style: GoogleFonts.roboto(
                                         fontSize: 14,
-                                        color: darkGray,
+                                        color: primary,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),
@@ -328,9 +328,6 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 30),
-                      Divider(),
-                      SizedBox(height: 30),
                       InkWell(
                         onTap: () {
                           print("Help and Support");
@@ -340,7 +337,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.infoCircle, size: 30),
+                              Icon(LineIcons.infoCircle, size: 54, color: secondary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,7 +346,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                     "Help and Support",
                                     style: GoogleFonts.roboto(
                                       fontSize: 16,
-                                      color: darkGray,
+                                      color: primary,
                                     ),
                                   ),
                                   Container(
@@ -357,8 +354,8 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                     child: Text(
                                       "Ask for help, Support or contact us we response as soon as possible",
                                       style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        color: darkGray,
+                                        fontSize: 14,
+                                        color: primary,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),
@@ -376,7 +373,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.doorOpen, size: 30),
+                              Icon(LineIcons.doorOpen, size: 54, color: secondary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,7 +382,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                     "Logout",
                                     style: GoogleFonts.roboto(
                                       fontSize: 16,
-                                      color: darkGray,
+                                      color: primary,
                                     ),
                                   ),
                                   Container(
@@ -393,8 +390,8 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                                     child: Text(
                                       "Change the way you logout your account based on your preferences",
                                       style: GoogleFonts.roboto(
-                                        fontSize: 12,
-                                        color: darkGray,
+                                        fontSize: 14,
+                                        color: primary,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),

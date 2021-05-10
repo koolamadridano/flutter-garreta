@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 
@@ -39,7 +39,7 @@ void toggleSelectItem({productPrice, productName, productId, action}) {
                       child: Text(
                         "$productName - lorem ipsum dolor sit amet",
                         style: GoogleFonts.roboto(
-                          color: darkGray,
+                          color: primary,
                           fontSize: 16,
                           fontWeight: FontWeight.w300,
                         ),
@@ -50,7 +50,7 @@ void toggleSelectItem({productPrice, productName, productId, action}) {
                       child: Text(
                         "$_translatedPrice",
                         style: GoogleFonts.rajdhani(
-                          color: darkGray,
+                          color: primary,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -65,7 +65,7 @@ void toggleSelectItem({productPrice, productName, productId, action}) {
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                               side: BorderSide(
-                                color: darkBlue,
+                                color: secondary,
                                 width: 1,
                               ),
                             ),
@@ -74,7 +74,7 @@ void toggleSelectItem({productPrice, productName, productId, action}) {
                         onPressed: action,
                         child: Text("ADD TO CART",
                             style: GoogleFonts.roboto(
-                              color: darkBlue,
+                              color: secondary,
                               fontSize: 14,
                               fontWeight: FontWeight.w300,
                             )),

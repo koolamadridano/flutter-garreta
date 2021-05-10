@@ -11,7 +11,7 @@ import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:garreta/controllers/otp/otpController.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
@@ -169,7 +169,7 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                                 child: Icon(
                                   LineIcons.arrowLeft,
                                   size: 24,
-                                  color: darkGray.withOpacity(0.1),
+                                  color: primary.withOpacity(0.1),
                                 ),
                               ),
                               // Close icon
@@ -197,11 +197,11 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                           children: [
                             TextButton(
                               onPressed: () => _onGetLocation(),
-                              child: Text("GET ADDRESS", style: GoogleFonts.roboto(color: darkGray, fontSize: 12)),
+                              child: Text("GET ADDRESS", style: GoogleFonts.roboto(color: primary, fontSize: 12)),
                             ),
                             _stateToggleGetAddressLoader
-                                ? SpinkitThreeBounce(color: darkGray)
-                                : Icon(LineIcons.syncIcon, size: 14, color: darkGray),
+                                ? SpinkitThreeBounce(color: primary)
+                                : Icon(LineIcons.syncIcon, size: 14, color: primary),
                           ],
                         ),
                         SizedBox(height: 5),
@@ -221,7 +221,7 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                             : SizedBox(),
                         Spacer(flex: 8),
                         _buttonGetOtp(loaderState: _stateToggleOnValidateLoader),
-                        Spacer(),
+                        SizedBox(height: 5),
                         _buttonLogin(),
                         SizedBox(height: 30),
                       ],
@@ -236,26 +236,37 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     );
   }
 
-  SizedBox _buttonGetOtp({@required loaderState}) {
+  _buttonGetOtp({@required loaderState}) {
     return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ElevatedButton(
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0.0),
+              side: BorderSide(
+                color: primary,
+              ),
+            ),
+          ),
+          backgroundColor: MaterialStateColor.resolveWith((states) => primary),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
+        ),
         onPressed: () => _onValidate(),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("NEXT STEP", style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300)),
+            Text("CONTINUE",
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                )),
             SizedBox(width: 3),
             loaderState ? SpinkitThreeBounce(color: Colors.white) : SizedBox(),
           ],
-        ),
-        style: ElevatedButton.styleFrom(
-          primary: darkGray,
-          onPrimary: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
-          ),
         ),
       ),
     );
@@ -263,40 +274,46 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
 
   SizedBox _buttonLogin() {
     return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => _onNavigateToLogin(),
-        child: Text(
-          "Already have an account?",
-          style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300),
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          // shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          //   RoundedRectangleBorder(
+          //     borderRadius: BorderRadius.circular(0.0),
+          //     side: BorderSide(
+          //       color: darkGray,
+          //     ),
+          //   ),
+          // ),
+          // backgroundColor: MaterialStateColor.resolveWith((states) => darkGray),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
         ),
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          primary: Colors.white,
-          onPrimary: darkGray,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
-          ),
-        ),
+        onPressed: () => Get.offAndToNamed("/login"),
+        child: Text("Already have an account?",
+            style: GoogleFonts.roboto(
+              fontSize: 13,
+              fontWeight: FontWeight.w300,
+              color: primary,
+            )),
       ),
     );
   }
 
   TextStyle _displayErrorTextStyle = GoogleFonts.roboto(
-    color: red,
+    color: danger,
     fontSize: 14,
     fontWeight: FontWeight.w300,
   );
   TextStyle _titleStyle = GoogleFonts.roboto(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: darkGray,
+    color: primary,
   );
   TextStyle _titleAltStyle = GoogleFonts.roboto(
     fontSize: 13,
     fontWeight: FontWeight.w300,
-    color: darkGray.withOpacity(0.9),
+    color: primary.withOpacity(0.9),
   );
 
   @override

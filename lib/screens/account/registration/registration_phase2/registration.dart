@@ -4,7 +4,7 @@ import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/birthday/birthday.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/gender/gender.dart';
 import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
@@ -79,7 +79,7 @@ class _ScreenRegistrationPhase2State extends State<ScreenRegistrationPhase2> {
                           SizedBox(height: 5),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: darkGray.withOpacity(0.1)),
+                              border: Border.all(color: primary.withOpacity(0.1)),
                             ),
                             child: SelectBirthday(),
                           ),
@@ -108,7 +108,7 @@ class _ScreenRegistrationPhase2State extends State<ScreenRegistrationPhase2> {
         onPressed: () => _onProceed(),
         child: Text("NEXT STEP", style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w300)),
         style: ElevatedButton.styleFrom(
-          primary: darkGray,
+          primary: primary,
           onPrimary: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(0),
@@ -124,7 +124,7 @@ class _ScreenRegistrationPhase2State extends State<ScreenRegistrationPhase2> {
       child: Icon(
         LineIcons.arrowLeft,
         size: 24,
-        color: darkGray.withOpacity(0.1),
+        color: primary.withOpacity(0.1),
       ),
     );
   }
@@ -132,11 +132,11 @@ class _ScreenRegistrationPhase2State extends State<ScreenRegistrationPhase2> {
   TextStyle _titleStyle = GoogleFonts.roboto(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    color: darkGray,
+    color: primary,
   );
   TextStyle _titleAltStyle = GoogleFonts.roboto(
     fontSize: 13,
     fontWeight: FontWeight.w300,
-    color: darkGray.withOpacity(0.9),
+    color: primary.withOpacity(0.9),
   );
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:garreta/utils/defaults/default_alert.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:line_icons/line_icons.dart';
@@ -25,7 +25,7 @@ dynamic toggleLoginErrorAlert({context}) {
     onWillPopActive: false,
     closeIcon: Icon(
       LineIcons.times,
-      color: darkGray,
+      color: primary,
       size: 22,
     ),
     style: AlertStyle(
@@ -40,12 +40,12 @@ dynamic toggleLoginErrorAlert({context}) {
       titleStyle: GoogleFonts.roboto(
         fontWeight: FontWeight.w600,
         fontSize: 18,
-        color: red,
+        color: danger,
       ),
       descStyle: GoogleFonts.roboto(
         fontWeight: FontWeight.w300,
         fontSize: 12,
-        color: red,
+        color: danger,
       ),
       buttonsDirection: ButtonsDirection.row,
       buttonAreaPadding: EdgeInsets.all(10),
@@ -54,7 +54,7 @@ dynamic toggleLoginErrorAlert({context}) {
   ).show();
 }
 
-Alert toggleNetworkErrorAlert({context}) {
+dynamic toggleNetworkErrorAlert({context}) {
   Alert(
     context: context,
     title: "Network problem",
@@ -74,7 +74,7 @@ Alert toggleNetworkErrorAlert({context}) {
     onWillPopActive: false,
     closeIcon: Icon(
       LineIcons.times,
-      color: darkGray,
+      color: primary,
       size: 22,
     ),
     style: AlertStyle(
@@ -89,12 +89,12 @@ Alert toggleNetworkErrorAlert({context}) {
       titleStyle: GoogleFonts.roboto(
         fontWeight: FontWeight.w600,
         fontSize: 18,
-        color: red,
+        color: danger,
       ),
       descStyle: GoogleFonts.roboto(
         fontWeight: FontWeight.w300,
         fontSize: 12,
-        color: red,
+        color: danger,
       ),
       buttonsDirection: ButtonsDirection.row,
       buttonAreaPadding: EdgeInsets.all(10),
@@ -107,11 +107,11 @@ Alert toggleNetworkErrorAlert({context}) {
 TextStyle _onForgotPasswordTextStyle = GoogleFonts.roboto(
   fontWeight: FontWeight.w300,
   fontSize: 12,
-  color: darkGray,
+  color: primary,
 );
 
 TextStyle _onForgotDismissTextStyle = GoogleFonts.roboto(
   fontWeight: FontWeight.w300,
   fontSize: 12,
-  color: darkGray,
+  color: primary,
 );

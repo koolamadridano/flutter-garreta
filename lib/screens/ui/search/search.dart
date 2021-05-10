@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
-import 'package:garreta/utils/colors/colors.dart';
+import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
@@ -20,7 +20,7 @@ class Search extends SearchDelegate {
   @override
   String get searchFieldLabel => "Looking for something?";
   TextStyle get searchFieldStyle => GoogleFonts.roboto(
-        color: darkGray.withOpacity(0.5),
+        color: primary.withOpacity(0.5),
         fontSize: 14,
         fontWeight: FontWeight.w300,
       );
@@ -38,7 +38,7 @@ class Search extends SearchDelegate {
           : IconButton(
               icon: Icon(
                 LineIcons.trash,
-                color: red,
+                color: danger,
               ),
               onPressed: () {
                 _nearbyController.clearSearchedKeyword();
@@ -80,7 +80,7 @@ class Search extends SearchDelegate {
                               style: GoogleFonts.roboto(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: darkGray,
+                                color: primary,
                               )),
                         )
                       : SizedBox(),
@@ -89,7 +89,7 @@ class Search extends SearchDelegate {
                     child: ListTile(
                       leading: Icon(
                         LineIcons.history,
-                        color: darkGray,
+                        color: primary,
                       ),
                       horizontalTitleGap: 0,
                       minLeadingWidth: 30,
@@ -97,13 +97,13 @@ class Search extends SearchDelegate {
                           style: GoogleFonts.roboto(
                             fontSize: 18,
                             fontWeight: FontWeight.w400,
-                            color: darkGray,
+                            color: primary,
                             height: 0.8,
                           )),
                       trailing: IconButton(
                         icon: Icon(
                           LineIcons.times,
-                          color: darkGray,
+                          color: primary,
                           size: 16,
                         ),
                         onPressed: () => _nearbyController.removeSearchKeyword(
@@ -183,7 +183,7 @@ class Search extends SearchDelegate {
                                         "${results[index]['prod_name']} - lorem ipsum dolor sit amet",
                                         style: GoogleFonts.roboto(
                                           fontSize: 14,
-                                          color: darkGray,
+                                          color: primary,
                                           fontWeight: FontWeight.w400,
                                         ),
                                         overflow: TextOverflow.ellipsis,
@@ -197,7 +197,7 @@ class Search extends SearchDelegate {
                                       "x${int.parse(results[index]['prod_qtyOnHand']) > 5000 ? "5000+" : results[index]['prod_qtyOnHand']}",
                                       style: GoogleFonts.roboto(
                                         fontSize: 14,
-                                        color: darkGray,
+                                        color: primary,
                                         fontWeight: FontWeight.w300,
                                       ),
                                     ),
@@ -214,7 +214,7 @@ class Search extends SearchDelegate {
                                       child: Text(
                                         "₱$_itemPrice",
                                         style: GoogleFonts.rajdhani(
-                                          color: darkGray,
+                                          color: primary,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           height: 0.3,
@@ -222,7 +222,7 @@ class Search extends SearchDelegate {
                                       ),
                                     ),
                                     IconButton(
-                                      icon: Icon(LineIcons.shoppingBasket, color: darkBlue, size: 24),
+                                      icon: Icon(LineIcons.shoppingBasket, color: secondary, size: 24),
                                       onPressed: () => _addSearchKeyword(),
                                     )
                                   ],
