@@ -38,7 +38,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
 
   // State
   int _categoryIndex = 0;
-
+  String _storeName;
   // Hold value for direct-call
 
   @override
@@ -47,6 +47,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     _productController.fetchStoreProducts();
     _cartController.fetchShoppingCartItems();
     _productController.fetchStoreCategory();
+    _storeName = _storeController.merchantName.value.capitalizeFirstofEach;
   }
 
   Future<void> _onDialNumber(String number) async {
@@ -75,7 +76,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     }
   }
 
-  void _onSearch() {
+  void _handleSearch() {
     showSearch(
       context: context,
       delegate: Search(
@@ -99,55 +100,92 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          elevation: 5,
+          toolbarHeight: 65,
+          leadingWidth: 45,
+          backgroundColor: white,
+          iconTheme: IconThemeData(color: primary),
+          title: Container(
+            width: Get.width,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _storeName,
+                  style: GoogleFonts.roboto(
+                    color: primary,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15,
+                  ),
+                  maxLines: 1,
+                ),
+                Text(
+                  "Store",
+                  style: GoogleFonts.roboto(
+                    color: primary,
+                    fontWeight: FontWeight.w300,
+                    fontSize: 12,
+                  ),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+          leading: Container(
+            margin: EdgeInsets.only(left: 10),
+            child: IconButton(
+                tooltip: "Back",
+                icon: Icon(LineIcons.arrowLeft, size: 25),
+                splashRadius: 25,
+                onPressed: () => Get.back()),
+          ),
+          actions: [
+            IconButton(
+              tooltip: "Call vendor",
+              icon: Icon(LineIcons.phone, size: 25),
+              splashRadius: 25,
+              onPressed: () => _onDialNumber(_storeController.merchantMobileNumber),
+            ),
+            IconButton(
+              tooltip: "Vendor's info",
+              icon: Icon(Ionicons.information_circle_outline, size: 25),
+              splashRadius: 25,
+              onPressed: () {},
+            ),
+            IconButton(
+              tooltip: 'My basket',
+              splashRadius: 25,
+              icon: Badge(
+                animationType: BadgeAnimationType.slide,
+                showBadge: _cartController.cartItems.length >= 1 ? true : false,
+                badgeContent:
+                    Text("${_cartController.cartItems.length > 99 ? '99+' : _cartController.cartItems.length}",
+                        style: GoogleFonts.roboto(
+                          fontSize: _cartController.cartItems.length > 9 ? 7 : 9,
+                          color: Colors.white,
+                        )),
+                child: Icon(Ionicons.basket_outline, size: 25),
+              ),
+              onPressed: () => Get.toNamed("/screen-basket"),
+            ),
+            SizedBox(width: 10),
+          ],
+        ),
         backgroundColor: Colors.white,
         body: CustomScrollView(
           physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
             // `store` of SliverAppBar
             SliverAppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              expandedHeight: 250,
-              leading: GestureDetector(
-                onTap: () => Get.back(),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(100)),
-                  ),
-                  margin: EdgeInsets.all(10),
-                  child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
-                ),
-              ),
-              actions: [
-                _storeController == null
-                    ? SizedBox()
-                    : GestureDetector(
-                        onTap: () => _onDialNumber(_storeController.merchantMobileNumber),
-                        child: Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.all(Radius.circular(100)),
-                          ),
-                          margin: EdgeInsets.only(top: 10, bottom: 10, right: 5),
-                          child: Icon(Ionicons.call_outline, size: 22, color: secondary),
-                        ),
-                      ),
-                Container(
-                  width: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(100)),
-                  ),
-                  margin: EdgeInsets.only(top: 10, bottom: 10, right: 5),
-                  child: Icon(Ionicons.information_circle_outline, size: 22, color: secondary),
-                ),
-              ],
+              backgroundColor: white,
               stretch: true,
-              floating: true,
               stretchTriggerOffset: 150,
+              elevation: 0,
+              expandedHeight: 230,
+              leading: Container(),
+              leadingWidth: 0,
+              toolbarHeight: 0,
               flexibleSpace: FlexibleSpaceBar(
                 collapseMode: CollapseMode.parallax,
                 titlePadding: EdgeInsets.all(30),
@@ -155,54 +193,90 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   StretchMode.zoomBackground,
                   StretchMode.fadeTitle,
                 ],
-                title: Obx(() => Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            "${_storeController.merchantName.value.capitalizeFirstofEach}",
-                            style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
-                            ),
-                            maxLines: 2,
-                          ),
-                        ),
-                        Flexible(
-                          child: Text(
-                            "${_storeController.merchantAddress}",
-                            style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 10,
-                            ),
-                            maxLines: 2,
-                          ),
-                        ),
-                        Flexible(
-                          child: Text(
-                            "${double.parse(_storeController.merchantDistance.value).toStringAsFixed(1)}km",
-                            style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w300,
-                              fontSize: 8,
-                            ),
-                            maxLines: 2,
-                          ),
-                        ),
-                      ],
-                    )),
-                background: Container(
-                  color: Colors.white,
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.5), BlendMode.darken),
-                    child: Image.network(
-                      "https://bit.ly/32min8Z",
-                      fit: BoxFit.cover,
+                // title: Obx(() => Column(
+                //       mainAxisSize: MainAxisSize.min,
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         Flexible(
+                //           child: Text(
+                //             "${_storeController.merchantName.value.capitalizeFirstofEach}",
+                //             style: GoogleFonts.roboto(
+                //               color: Colors.white,
+                //               fontWeight: FontWeight.w500,
+                //               fontSize: 18,
+                //             ),
+                //             maxLines: 2,
+                //           ),
+                //         ),
+                //         Flexible(
+                //           child: Text(
+                //             "${_storeController.merchantAddress}",
+                //             style: GoogleFonts.roboto(
+                //               color: Colors.white,
+                //               fontWeight: FontWeight.w400,
+                //               fontSize: 10,
+                //             ),
+                //             maxLines: 2,
+                //           ),
+                //         ),
+                //         Flexible(
+                //           child: Text(
+                //             "${double.parse(_storeController.merchantDistance.value).toStringAsFixed(1)}km",
+                //             style: GoogleFonts.roboto(
+                //               color: Colors.white,
+                //               fontWeight: FontWeight.w300,
+                //               fontSize: 8,
+                //             ),
+                //             maxLines: 2,
+                //           ),
+                //         ),
+                //       ],
+                //     )),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      color: Colors.white,
+                      child: Image.network(
+                        "https://bit.ly/32min8Z",
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.5),
+                              blurRadius: 8,
+                              spreadRadius: 5,
+                              offset: Offset(0, 5),
+                            )
+                          ],
+                        ),
+                        width: Get.width * 0.90,
+                        padding: EdgeInsets.all(20),
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          children: [
+                            Icon(LineIcons.search, color: primary),
+                            SizedBox(width: 10),
+                            Text(
+                              "Looking for something?",
+                              style: GoogleFonts.roboto(
+                                fontWeight: FontWeight.w300,
+                                fontSize: 16,
+                                height: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               onStretchTrigger: () async {
@@ -221,7 +295,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.local_fire_department, color: secondary, size: 36),
+                          Icon(Icons.local_fire_department, color: primary, size: 36),
                           SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,7 +319,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                       ),
                       Text("See all",
                           style: GoogleFonts.roboto(
-                            color: secondary,
+                            color: primary,
                             fontWeight: FontWeight.bold,
                           )),
                     ],
@@ -291,7 +365,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Ionicons.grid, color: secondary, size: 36),
+                      Icon(Ionicons.grid, color: primary, size: 36),
                       SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,81 +397,14 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     padding: EdgeInsets.only(top: 20.0),
                     sliver: SliverStickyHeader(
                       header: Container(
-                        color: white,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 60,
-                              padding: EdgeInsets.symmetric(vertical: 10),
-                              child: ListView(
-                                physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                                scrollDirection: Axis.horizontal,
-                                shrinkWrap: true,
-                                children: _mapStoreCategory(data: _productController.storeCategoryData),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.only(left: 10, right: 10),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => _onSearch(),
-                                    child: Container(
-                                      color: Colors.white,
-                                      width: Get.width * 0.65,
-                                      padding: EdgeInsets.only(bottom: 20, top: 20),
-                                      child: Row(
-                                        children: [
-                                          Icon(LineIcons.search),
-                                          SizedBox(width: 5),
-                                          Text("Looking for something?",
-                                              style: GoogleFonts.roboto(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w300,
-                                                color: primary,
-                                                height: 0.8,
-                                              )),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () => Get.toNamed("/screen-basket"),
-                                        child: Container(
-                                          width: 38,
-                                          height: 38,
-                                          child: Obx(() => Badge(
-                                                animationType: BadgeAnimationType.slide,
-                                                position: BadgePosition.topEnd(
-                                                  end: _cartController.cartItems.length > 99 ? -5 : -2,
-                                                  top: _cartController.cartItems.length > 99 ? -8 : -5,
-                                                ),
-                                                showBadge: _cartController.cartItems.length >= 1 ? true : false,
-                                                badgeContent: Text(
-                                                    "${_cartController.cartItems.length > 99 ? '99' : _cartController.cartItems.length}",
-                                                    style: GoogleFonts.roboto(
-                                                      fontSize: _cartController.cartItems.length > 9 ? 7 : 9,
-                                                      color: Colors.white,
-                                                    )),
-                                                child: Icon(Ionicons.basket_outline, size: 32, color: secondary),
-                                              )),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 38,
-                                        height: 38,
-                                        child: Icon(LineIcons.userCircleAlt, size: 32, color: secondary),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                        color: Colors.white,
+                        height: 60,
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: ListView(
+                          physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          children: _mapStoreCategory(data: _productController.storeCategoryData),
                         ),
                       ),
                       sliver: SliverPadding(
@@ -425,7 +432,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     children: [
                       Row(
                         children: [
-                          Icon(LineIcons.store, color: secondary, size: 36),
+                          Icon(LineIcons.store, color: primary, size: 36),
                           SizedBox(width: 10),
                           Text("Other stores",
                               style: GoogleFonts.roboto(
@@ -439,7 +446,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                         onTap: () => Get.offAndToNamed("/screen-nearby-vendors"),
                         child: Text("See all",
                             style: GoogleFonts.roboto(
-                              color: secondary,
+                              color: primary,
                               fontWeight: FontWeight.bold,
                             )),
                       )
@@ -469,7 +476,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     );
   }
 
-  List<InkWell> _mapNearby({@required data}) {
+  List<Widget> _mapNearby({@required data}) {
     List<InkWell> items = [];
     for (var i = 0; i < data.length; i++) {
       var widget = InkWell(
@@ -560,7 +567,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     return items;
   }
 
-  List<InkWell> _mapStoreCategory({@required data}) {
+  List<Widget> _mapStoreCategory({@required data}) {
     List<InkWell> items = [];
     for (var i = 0; i < data.length; i++) {
       var widget = InkWell(
@@ -578,7 +585,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     style: GoogleFonts.roboto(
                       fontSize: 16,
                       fontWeight: _categoryIndex == i ? FontWeight.bold : FontWeight.w300,
-                      color: _categoryIndex == i ? secondary : secondary.withOpacity(0.4),
+                      color: _categoryIndex == i ? primary : primary.withOpacity(0.4),
                     )),
               ),
               Positioned(
@@ -588,7 +595,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   curve: Curves.easeInOut,
                   height: 2,
                   width: Get.width,
-                  color: _categoryIndex == i ? secondary : Colors.white,
+                  color: _categoryIndex == i ? primary : Colors.white,
                 ),
               ),
             ],
@@ -600,7 +607,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     return items;
   }
 
-  List<Container> _mapStoreItems({@required data}) {
+  List<Widget> _mapStoreItems({@required data}) {
     List<Container> items = [];
     for (int i = 0; i < data.length; i++) {
       var _givenPrice = data[i]['prod_sellingPrice'];
@@ -646,7 +653,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                         child: Container(
                           height: 40,
                           width: 40,
-                          child: Icon(Ionicons.basket_outline, color: secondary),
+                          child: Icon(Ionicons.basket_outline, color: primary),
                         ),
                       ),
                     ),

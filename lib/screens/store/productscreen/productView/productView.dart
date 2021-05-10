@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:garreta/helpers/textHelper.dart';
+import 'package:line_icons/line_icons.dart';
 
 class ScreenProductView extends StatefulWidget {
   @override
@@ -18,15 +19,13 @@ class _ScreenProductViewState extends State<ScreenProductView> {
   final _userController = Get.put(UserController());
   final _cartController = Get.put(CartController());
 
-  double _productPrice = 0;
-
-  // Product id
   int _productId;
   int _productStocks;
+  int _selectedQty = 1;
+  double _productPrice = 0;
   String _productImg;
   String _storeName;
   String _productName;
-  int _selectedQty = 1;
 
   @override
   void initState() {
@@ -89,15 +88,19 @@ class _ScreenProductViewState extends State<ScreenProductView> {
             pinned: true,
             floating: true,
             stretchTriggerOffset: 150,
-            leading: GestureDetector(
-              onTap: () => Get.back(),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(100)),
+            leading: Container(
+              margin: EdgeInsets.only(left: 10),
+              child: Ink(
+                decoration: ShapeDecoration(
+                  color: white,
+                  shape: CircleBorder(),
                 ),
-                margin: EdgeInsets.all(10),
-                child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
+                child: IconButton(
+                  tooltip: "Back",
+                  icon: Icon(LineIcons.arrowLeft, size: 25, color: primary),
+                  splashRadius: 25,
+                  onPressed: () => Get.back(),
+                ),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(

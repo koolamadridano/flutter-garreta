@@ -113,13 +113,13 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                                         style: GoogleFonts.roboto(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
-                                          color: secondary,
+                                          color: primary,
                                         )),
                                     Text(_userController.displayName,
                                         style: GoogleFonts.righteous(
                                           fontSize: 44,
                                           fontWeight: FontWeight.bold,
-                                          color: secondary,
+                                          color: primary,
                                           height: 0.9,
                                         )),
                                   ],
