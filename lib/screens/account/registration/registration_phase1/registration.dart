@@ -53,7 +53,6 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     _nameFocusNode = FocusNode();
     _mobileNumberFocusNode = FocusNode();
     _addressFocusNode = FocusNode();
-    _nameController.addListener(() {});
     _addressController.addListener(() {
       if (_addressController.text.isNotEmpty) {
         setState(() {
@@ -341,6 +340,9 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     _nameFocusNode.dispose();
     _addressFocusNode.dispose();
     _mobileNumberFocusNode.dispose();
+
+    _addressController.removeListener(() {});
+    _mobileNumberController.removeListener(() {});
     super.dispose();
   }
 }

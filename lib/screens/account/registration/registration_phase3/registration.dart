@@ -110,7 +110,6 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
   }
 
   // State
-  bool _stateHasScreenFocus = false;
   Future _onCreateAccount() async {
     final email = _emailController.text;
     final password = _passwordController.text;
@@ -342,9 +341,13 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
 
   @override
   void dispose() {
-    super.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     _confirmPasswordFocusNode.dispose();
+
+    _emailFocusNode.removeListener(() {});
+    _passwordFocusNode.removeListener(() {});
+    _confirmPasswordFocusNode.removeListener(() {});
+    super.dispose();
   }
 }
