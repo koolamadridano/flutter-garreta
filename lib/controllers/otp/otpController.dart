@@ -1,22 +1,30 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-final _otpBaseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php?operation=validateContactNumber&";
+final _baseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php";
 
 class OtpController extends GetxController {
-  var generatedPin;
-  Future validate({@required number}) async {
+  int generatedPin;
+  Future<dynamic> validate({@required number}) async {
+    var request = http.MultipartRequest("POST", Uri.parse(_baseUrl));
+    request.fields['operation'] = "validateContactNumber";
+    request.fields['contactNumber'] = number;
     try {
-      var result = await http.post(Uri.parse("$_otpBaseUrl&contactNumber=${number.toString()}"));
-      if (!(result.body.length == 1)) {
-        generatedPin = result.body;
-        return int.parse(result.body);
+      var streamedResponse = await request.send();
+      var result = await http.Response.fromStream(streamedResponse);
+      var decodedResult = jsonDecode(result.body);
+      if (decodedResult[0]['validation_code'] != null) {
+        generatedPin = decodedResult[0]['validation_code'];
+        print(generatedPin);
+        return decodedResult[0]['validation_code'];
       } else {
         return "Account already registered";
       }
     } catch (e) {
-      return Future.error("Network error");
+      return Future.error("@validate $e");
     }
   }
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/helpers/destroyTextFieldFocus.dart';
+import 'package:garreta/helpers/RegExp.dart';
 import 'package:garreta/screens/account/registration/registration_phase3/confirmPassword/confirmPassword.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/screens/account/registration/registration_phase3/password/password.dart';
 import 'package:garreta/screens/account/registration/registration_phase3/email/email.dart';
-import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,7 +20,6 @@ class ScreenRegistrationPhase3 extends StatefulWidget {
 
 class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
   // Global state
-  final _garretaApiService = Get.put(GarretaApiServiceController());
   final _userController = Get.put(UserController());
 
   // TextController
@@ -39,12 +38,75 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
   bool _isLoading = false;
   bool _isLoginRequestOnGoing = false;
 
+  bool _emailIsValid = true;
+  bool _passwordIsValid = true;
+  bool _confirmPasswordIsMatched = true;
+  bool _toggleConfirmPassword = false;
+
   @override
   void initState() {
     super.initState();
     _emailFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
     _confirmPasswordFocusNode = FocusNode();
+    _passwordController.addListener(() {
+      if (!passwordIsValid.hasMatch(_passwordController.text)) {
+        setState(() {
+          _passwordIsValid = false;
+        });
+      }
+      if (passwordIsValid.hasMatch(_passwordController.text)) {
+        setState(() {
+          _passwordIsValid = true;
+        });
+        if (passwordIsValid.hasMatch(_passwordController.text) && _passwordController.text.isNotEmpty) {
+          setState(() {
+            _toggleConfirmPassword = true;
+          });
+        }
+      }
+      if (_passwordController.text.isEmpty) {
+        setState(() {
+          _passwordIsValid = true;
+        });
+      }
+    });
+    _confirmPasswordController.addListener(() {
+      if (_confirmPasswordController.text.isEmpty) {
+        setState(() {
+          _confirmPasswordIsMatched = true;
+        });
+      }
+      if (_confirmPasswordController.text.isNotEmpty) {
+        if (_passwordController.text == _confirmPasswordController.text) {
+          setState(() {
+            _confirmPasswordIsMatched = true;
+          });
+        } else {
+          setState(() {
+            _confirmPasswordIsMatched = false;
+          });
+        }
+      }
+    });
+    _emailController.addListener(() {
+      if (_emailController.text.isNotEmpty) {
+        if (emailIsValid.hasMatch(_emailController.text)) {
+          setState(() {
+            _emailIsValid = true;
+          });
+        }
+        if (!emailIsValid.hasMatch(_emailController.text)) {
+          setState(() {
+            _emailIsValid = false;
+          });
+        }
+      } else {
+        setState(() {
+          _emailIsValid = true;
+        });
+      }
+    });
   }
 
   // State
@@ -64,21 +126,13 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
             _isLoading = true;
             _isLoginRequestOnGoing = true;
           });
-          var getResponse = await _garretaApiService.register(
-            name: _userController.name,
-            number: _userController.contactNumber,
-            email: _userController.email,
-            address: _userController.address,
-            birthday: _userController.birthday,
-            gender: _getGender(),
-            password: _userController.password,
-          );
+          var getResponse = await _userController.register();
           if (getResponse == 200) {
             setState(() {
               _isLoading = false;
               _isLoginRequestOnGoing = false;
             });
-            Get.toNamed("/store-nearby-store");
+            Get.toNamed("/screen-nearby-vendors");
           }
           if (getResponse == 400) {
             setState(() {
@@ -152,27 +206,42 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
                         ),
                         SizedBox(height: 20),
                         textFieldEmail(
+                          emailIsValid: _emailIsValid,
                           textFieldController: _emailController,
                           textFieldFocusNode: _emailFocusNode,
                         ),
                         SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Text(
-                              "Account security",
-                              style: GoogleFonts.roboto(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w300,
-                                color: primary.withOpacity(0.5),
-                              ),
-                            )
-                          ],
+                        Container(
+                          width: Get.width,
+                          child: Text(
+                            "Account security",
+                            style: GoogleFonts.roboto(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: _passwordIsValid ? primary.withOpacity(0.5) : danger,
+                            ),
+                            textAlign: TextAlign.start,
+                          ),
                         ),
                         SizedBox(height: 10),
                         textFieldPassword(
                           textFieldController: _passwordController,
                           textFieldFocusNode: _passwordFocusNode,
                           isVisible: _statePasswordVisibility,
+                          passwordIsValid: _passwordIsValid,
+                        ),
+                        Container(
+                          width: Get.width,
+                          margin: EdgeInsets.only(top: 10),
+                          child: Text(
+                            "Password must have 1 lower case letter, 1 upper case letter and 1 numeric character",
+                            style: GoogleFonts.roboto(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w300,
+                              color: _passwordIsValid ? primary.withOpacity(0.5) : danger,
+                            ),
+                            textAlign: TextAlign.start,
+                          ),
                         ),
                         CheckboxListTile(
                           onChanged: (state) => setState(() => _statePasswordVisibility = state),
@@ -183,9 +252,14 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
                           controlAffinity: ListTileControlAffinity.leading,
                           value: _statePasswordVisibility,
                         ),
-                        textFieldConfirmPassword(
-                          textFieldController: _confirmPasswordController,
-                          textFieldFocusNode: _confirmPasswordFocusNode,
+                        AnimatedOpacity(
+                          opacity: _toggleConfirmPassword ? 1 : 0,
+                          duration: Duration(milliseconds: 500),
+                          child: textFieldConfirmPassword(
+                            textFieldController: _confirmPasswordController,
+                            textFieldFocusNode: _confirmPasswordFocusNode,
+                            passwordIsMatched: _confirmPasswordIsMatched,
+                          ),
                         ),
                         SizedBox(height: 5),
                         Spacer(flex: 8),
@@ -246,7 +320,7 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
     if (_userController.gender == "Rather not to say") {
       return "Secret";
     } else {
-      return _garretaApiService.customerGender;
+      return _userController.gender;
     }
   }
 

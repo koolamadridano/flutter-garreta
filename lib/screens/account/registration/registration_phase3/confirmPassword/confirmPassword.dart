@@ -5,9 +5,45 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 
 Container textFieldConfirmPassword({
+  bool passwordIsMatched,
   @required TextEditingController textFieldController,
   @required FocusNode textFieldFocusNode,
 }) {
+  OutlineInputBorder _fieldEnabledBorderStyle = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(0.0),
+    borderSide: BorderSide(
+      color: passwordIsMatched ? primary : danger,
+      width: 0.1,
+    ),
+  );
+  OutlineInputBorder _fieldFocusedBorderStyle = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(0.0),
+    borderSide: BorderSide(
+      color: passwordIsMatched ? primary : danger,
+      width: 0.1,
+    ),
+  );
+  TextStyle _fieldTextStyle = GoogleFonts.roboto(
+    fontWeight: FontWeight.w300,
+    color: passwordIsMatched ? primary : danger,
+    fontSize: 16.0,
+  );
+  TextStyle _fieldHintTextStyle = GoogleFonts.roboto(
+    fontWeight: FontWeight.w300,
+    color: passwordIsMatched ? primary : danger,
+    fontSize: 15.0,
+  );
+  TextStyle _fieldLabelStyle = GoogleFonts.roboto(
+    fontWeight: FontWeight.w300,
+    color: passwordIsMatched ? primary : danger,
+    fontSize: 15.0,
+  );
+  Icon _fieldMobileNumberPrefixIconStyle = Icon(
+    LineIcons.lock,
+    color: passwordIsMatched ? primary : danger,
+    size: 22,
+  );
+
   return Container(
     color: Colors.white,
     width: double.infinity,

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/enumeratedTypes.dart';
+import 'package:garreta/helpers/destroyTextFieldFocus.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/username/username.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/address/address.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/name/name.dart';
 import 'package:garreta/services/locationService/locationCoordinates.dart';
 import 'package:garreta/services/locationService/locationTitle.dart';
-import 'package:garreta/utils/enum/enum.dart';
-import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:garreta/controllers/otp/otpController.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
@@ -45,6 +44,9 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
 
   bool _stateHasError = false;
 
+  bool _mobileNumberIsInvalid = false;
+  bool _toggleInputMobileNumber = false;
+
   @override
   void initState() {
     super.initState();
@@ -54,9 +56,27 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
     _nameController.addListener(() {});
     _addressController.addListener(() {
       if (_addressController.text.isNotEmpty) {
-        setState(() => _stateToggleClearAddress = true);
-      } else if (_addressController.text.isEmpty) {
-        setState(() => _stateToggleClearAddress = false);
+        setState(() {
+          _stateToggleClearAddress = true;
+          _toggleInputMobileNumber = true;
+        });
+      }
+      if (_addressController.text.isEmpty) {
+        setState(() {
+          _stateToggleClearAddress = false;
+          _toggleInputMobileNumber = false;
+        });
+      }
+    });
+    _mobileNumberController.addListener(() {
+      if (_mobileNumberController.text.length == 12) {
+        setState(() {
+          _mobileNumberIsInvalid = false;
+        });
+      } else {
+        setState(() {
+          _mobileNumberIsInvalid = true;
+        });
       }
     });
   }
@@ -106,7 +126,7 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
           _stateToggleOnValidateLoader = false;
           _stateHasError = true;
         });
-        print("Network error");
+        print("@onValidate $e");
       }
     }
   }
@@ -130,7 +150,6 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
   // Extra
   void _onClearAddress() => _addressController.text = "";
   void _onReturn() => Get.offAllNamed("/home");
-  void _onNavigateToLogin() => Get.offAllNamed("/login");
 
   @override
   Widget build(BuildContext context) {
@@ -205,10 +224,15 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                           ],
                         ),
                         SizedBox(height: 5),
-                        textFieldUsername(
-                          textFieldController: _mobileNumberController,
-                          textFieldFocusNode: _mobileNumberFocusNode,
-                          hasError: _stateHasError,
+                        AnimatedOpacity(
+                          duration: Duration(milliseconds: 500),
+                          opacity: _toggleInputMobileNumber ? 1 : 0,
+                          child: textFieldUsername(
+                            textFieldController: _mobileNumberController,
+                            textFieldFocusNode: _mobileNumberFocusNode,
+                            hasError: _stateHasError,
+                            mobileNumberIsInvalid: _mobileNumberIsInvalid,
+                          ),
                         ),
                         _stateHasError
                             ? Container(
@@ -238,7 +262,7 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
 
   _buttonGetOtp({@required loaderState}) {
     return SizedBox(
-      height: 50,
+      height: 60,
       width: Get.width,
       child: TextButton(
         style: ButtonStyle(
@@ -274,19 +298,10 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
 
   SizedBox _buttonLogin() {
     return SizedBox(
-      height: 50,
+      height: 60,
       width: Get.width,
       child: TextButton(
         style: ButtonStyle(
-          // shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          //   RoundedRectangleBorder(
-          //     borderRadius: BorderRadius.circular(0.0),
-          //     side: BorderSide(
-          //       color: darkGray,
-          //     ),
-          //   ),
-          // ),
-          // backgroundColor: MaterialStateColor.resolveWith((states) => darkGray),
           overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
         ),
         onPressed: () => Get.offAndToNamed("/login"),

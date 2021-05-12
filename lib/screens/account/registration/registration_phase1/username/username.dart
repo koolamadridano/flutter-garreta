@@ -8,44 +8,45 @@ Container textFieldUsername({
   @required TextEditingController textFieldController,
   @required FocusNode textFieldFocusNode,
   @required bool hasError,
+  bool mobileNumberIsInvalid,
 }) {
   OutlineInputBorder _fieldEnabledBorderStyle = OutlineInputBorder(
     borderRadius: BorderRadius.circular(0.0),
     borderSide: BorderSide(
-      color: hasError ? danger : primary,
+      color: hasError || mobileNumberIsInvalid ? danger : primary,
       width: 0.1,
     ),
   );
   OutlineInputBorder _fieldFocusedBorderStyle = OutlineInputBorder(
     borderRadius: BorderRadius.circular(0.0),
     borderSide: BorderSide(
-      color: hasError ? danger : primary,
+      color: hasError || mobileNumberIsInvalid ? danger : primary,
       width: 0.1,
     ),
   );
   TextStyle _fieldTextStyle = GoogleFonts.roboto(
     fontWeight: FontWeight.w300,
-    color: hasError ? danger : primary,
+    color: hasError || mobileNumberIsInvalid ? danger : primary,
     fontSize: 16.0,
   );
   TextStyle _fieldPrefixTextStyle = GoogleFonts.roboto(
     fontWeight: FontWeight.w300,
-    color: hasError ? danger : primary,
+    color: hasError || mobileNumberIsInvalid ? danger : primary,
     fontSize: 16.0,
   );
   TextStyle _fieldHintTextStyle = GoogleFonts.roboto(
     fontWeight: FontWeight.w300,
-    color: hasError ? danger : primary,
+    color: hasError || mobileNumberIsInvalid ? danger : primary,
     fontSize: 15.0,
   );
   TextStyle _fieldLabelStyle = GoogleFonts.roboto(
     fontWeight: FontWeight.w300,
-    color: hasError ? danger : primary,
+    color: hasError || mobileNumberIsInvalid ? danger : primary,
     fontSize: 15.0,
   );
   Icon _fieldMobileNumberPrefixIconStyle = Icon(
     LineIcons.phone,
-    color: hasError ? danger : primary,
+    color: hasError || mobileNumberIsInvalid ? danger : primary,
     size: 22,
   );
 

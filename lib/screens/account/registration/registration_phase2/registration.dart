@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/controllers/garretaApiServiceController/garretaApiServiceController.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/helpers/destroyTextFieldFocus.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/birthday/birthday.dart';
 import 'package:garreta/screens/account/registration/registration_phase2/gender/gender.dart';
-import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';

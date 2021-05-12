@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/colors.dart';
-import 'package:garreta/controllers/pages/pagesController.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/helpers/destroyTextFieldFocus.dart';
 import 'package:garreta/screens/account/login/password/password.dart';
 import 'package:garreta/screens/account/login/username/username.dart';
-import 'package:garreta/utils/helpers/helper_destroyTextFieldFocus.dart';
 import 'package:garreta/screens/account/login/widgets/widgets.dart' as loginWidget;
 import 'package:extended_masked_text/extended_masked_text.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
@@ -20,7 +19,6 @@ class ScreenLogin extends StatefulWidget {
 
 class _ScreenLoginState extends State<ScreenLogin> {
   // Global state
-  final _pageController = Get.put(PageViewController());
   final _userController = Get.put(UserController());
 
   // TextController
@@ -50,10 +48,9 @@ class _ScreenLoginState extends State<ScreenLogin> {
     });
   }
 
-  Future<void> _onLogin() async {
+  Future<void> _handleLogin() async {
     final mobileNumber = "0" + _mobileNumberController.text.replaceAll(RegExp('[^0-9]'), '').trim();
     final password = _passwordController.text.trim();
-
     // CHECK IF NOT EMPTY
     if (_mobileNumberController.text.isEmpty) {
       _mobileNumberFocusNode.requestFocus();
@@ -70,7 +67,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
         password: password,
       );
       if (getResponse == 200) {
-        _pageController.hasPageIndex.value = 0;
         setState(() {
           _isLoading = false;
           _isLoginRequestOnGoing = false;
@@ -188,7 +184,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                         ),
                         Spacer(flex: 8),
                         _buttonLogin(
-                          action: () => _isLoginRequestOnGoing ? {} : _onLogin(),
+                          action: () => _isLoginRequestOnGoing ? {} : _handleLogin(),
                           toggleSpinner: _isLoading,
                         ),
                         SizedBox(height: 5),
@@ -208,7 +204,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   Widget _buttonLogin({@required action, @required toggleSpinner}) {
     return SizedBox(
-      height: 50,
+      height: 60,
       width: Get.width,
       child: TextButton(
         style: ButtonStyle(
@@ -251,7 +247,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   Widget _buttonCreateAccount() {
     return SizedBox(
-      height: 50,
+      height: 60,
       width: Get.width,
       child: TextButton(
         style: ButtonStyle(

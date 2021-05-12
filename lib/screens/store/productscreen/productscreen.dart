@@ -37,7 +37,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   final _nearbyController = Get.put(NearbyStoreController());
 
   // State
-  int _categoryIndex = 0;
+  int _categoryIndex;
   String _storeName;
   // Hold value for direct-call
 
@@ -50,7 +50,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     _storeName = _storeController.merchantName.value.capitalizeFirstofEach;
   }
 
-  Future<void> _onDialNumber(String number) async {
+  Future<void> _handleDialNumber(String number) async {
     try {
       // If platform is android
       // we can use direct call
@@ -145,7 +145,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
               tooltip: "Call vendor",
               icon: Icon(LineIcons.phone, size: 25),
               splashRadius: 25,
-              onPressed: () => _onDialNumber(_storeController.merchantMobileNumber),
+              onPressed: () => _handleDialNumber(_storeController.merchantMobileNumber),
             ),
             IconButton(
               tooltip: "Vendor's info",
@@ -153,22 +153,22 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
               splashRadius: 25,
               onPressed: () {},
             ),
-            IconButton(
-              tooltip: 'My basket',
-              splashRadius: 25,
-              icon: Badge(
-                animationType: BadgeAnimationType.slide,
-                showBadge: _cartController.cartItems.length >= 1 ? true : false,
-                badgeContent:
-                    Text("${_cartController.cartItems.length > 99 ? '99+' : _cartController.cartItems.length}",
-                        style: GoogleFonts.roboto(
-                          fontSize: _cartController.cartItems.length > 9 ? 7 : 9,
-                          color: Colors.white,
-                        )),
-                child: Icon(Ionicons.basket_outline, size: 25),
-              ),
-              onPressed: () => Get.toNamed("/screen-basket"),
-            ),
+            Obx(() => IconButton(
+                  tooltip: 'My basket',
+                  splashRadius: 25,
+                  icon: Badge(
+                    animationType: BadgeAnimationType.slide,
+                    showBadge: _cartController.cartItems.length >= 1 ? true : false,
+                    badgeContent:
+                        Text("${_cartController.cartItems.length > 99 ? '99+' : _cartController.cartItems.length}",
+                            style: GoogleFonts.roboto(
+                              fontSize: _cartController.cartItems.length > 9 ? 7 : 9,
+                              color: Colors.white,
+                            )),
+                    child: Icon(Ionicons.basket_outline, size: 25),
+                  ),
+                  onPressed: () => Get.toNamed("/screen-basket"),
+                )),
             SizedBox(width: 10),
           ],
         ),
@@ -182,56 +182,17 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
               stretch: true,
               stretchTriggerOffset: 150,
               elevation: 0,
-              expandedHeight: 230,
+              expandedHeight: 200,
               leading: Container(),
               leadingWidth: 0,
               toolbarHeight: 0,
               flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.parallax,
+                collapseMode: CollapseMode.pin,
                 titlePadding: EdgeInsets.all(30),
                 stretchModes: [
                   StretchMode.zoomBackground,
                   StretchMode.fadeTitle,
                 ],
-                // title: Obx(() => Column(
-                //       mainAxisSize: MainAxisSize.min,
-                //       crossAxisAlignment: CrossAxisAlignment.start,
-                //       children: [
-                //         Flexible(
-                //           child: Text(
-                //             "${_storeController.merchantName.value.capitalizeFirstofEach}",
-                //             style: GoogleFonts.roboto(
-                //               color: Colors.white,
-                //               fontWeight: FontWeight.w500,
-                //               fontSize: 18,
-                //             ),
-                //             maxLines: 2,
-                //           ),
-                //         ),
-                //         Flexible(
-                //           child: Text(
-                //             "${_storeController.merchantAddress}",
-                //             style: GoogleFonts.roboto(
-                //               color: Colors.white,
-                //               fontWeight: FontWeight.w400,
-                //               fontSize: 10,
-                //             ),
-                //             maxLines: 2,
-                //           ),
-                //         ),
-                //         Flexible(
-                //           child: Text(
-                //             "${double.parse(_storeController.merchantDistance.value).toStringAsFixed(1)}km",
-                //             style: GoogleFonts.roboto(
-                //               color: Colors.white,
-                //               fontWeight: FontWeight.w300,
-                //               fontSize: 8,
-                //             ),
-                //             maxLines: 2,
-                //           ),
-                //         ),
-                //       ],
-                //     )),
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -242,37 +203,32 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                         fit: BoxFit.cover,
                       ),
                     ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: white,
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 8,
-                              spreadRadius: 5,
-                              offset: Offset(0, 5),
-                            )
-                          ],
-                        ),
-                        width: Get.width * 0.90,
-                        padding: EdgeInsets.all(20),
-                        margin: EdgeInsets.only(bottom: 10),
-                        child: Row(
-                          children: [
-                            Icon(LineIcons.search, color: primary),
-                            SizedBox(width: 10),
-                            Text(
-                              "Looking for something?",
-                              style: GoogleFonts.roboto(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 16,
-                                height: 1,
+                    GestureDetector(
+                      onTap: () => _handleSearch(),
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: white,
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                          ),
+                          width: Get.width * 0.90,
+                          padding: EdgeInsets.all(20),
+                          margin: EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            children: [
+                              Icon(LineIcons.search, color: primary),
+                              SizedBox(width: 10),
+                              Text(
+                                "Looking for something?",
+                                style: GoogleFonts.roboto(
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 16,
+                                  height: 1,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -295,26 +251,14 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.local_fire_department, color: primary, size: 36),
+                          Icon(Icons.local_fire_department, color: primary, size: 24),
                           SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Popular",
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: primary,
-                                  )),
-                              Text("Frequently bought items",
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400,
-                                    color: primary.withOpacity(0.5),
-                                    height: 0.7,
-                                  )),
-                            ],
-                          ),
+                          Text("Popular",
+                              style: GoogleFonts.roboto(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: primary,
+                              )),
                         ],
                       ),
                       Text("See all",
@@ -365,7 +309,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Ionicons.grid, color: primary, size: 36),
+                      Icon(Ionicons.grid, color: primary, size: 24),
                       SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,13 +319,6 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: primary,
-                              )),
-                          Text("Filter to find easily",
-                              style: GoogleFonts.roboto(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                                color: primary.withOpacity(0.5),
-                                height: 0.7,
                               )),
                         ],
                       ),
@@ -394,7 +331,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
             Obx(() => _productController.isLoading.value
                 ? gridLoading as Widget
                 : SliverPadding(
-                    padding: EdgeInsets.only(top: 20.0),
+                    padding: EdgeInsets.only(left: 10, right: 10),
                     sliver: SliverStickyHeader(
                       header: Container(
                         color: Colors.white,
@@ -408,7 +345,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                         ),
                       ),
                       sliver: SliverPadding(
-                        padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 20.0),
+                        padding: EdgeInsets.only(top: 20.0),
                         sliver: SliverGrid.count(
                           crossAxisCount: 2,
                           childAspectRatio: 0.8,
@@ -568,37 +505,22 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   }
 
   List<Widget> _mapStoreCategory({@required data}) {
-    List<InkWell> items = [];
+    List<Widget> items = [];
     for (var i = 0; i < data.length; i++) {
-      var widget = InkWell(
-        onTap: () {
-          setState(() => _categoryIndex = i);
-          print("_categoryIndex[$i]");
-        },
-        child: Container(
-          margin: EdgeInsets.only(right: 10, left: 10),
-          child: Stack(
-            children: [
-              Container(
-                padding: EdgeInsets.all(5),
-                child: Text("${data[i]['cat_name']}",
-                    style: GoogleFonts.roboto(
-                      fontSize: 16,
-                      fontWeight: _categoryIndex == i ? FontWeight.bold : FontWeight.w300,
-                      color: _categoryIndex == i ? primary : primary.withOpacity(0.4),
-                    )),
-              ),
-              Positioned(
-                bottom: 0,
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.easeInOut,
-                  height: 2,
-                  width: Get.width,
-                  color: _categoryIndex == i ? primary : Colors.white,
-                ),
-              ),
-            ],
+      var widget = AnimatedContainer(
+        decoration: BoxDecoration(
+          color: _categoryIndex == i ? primary : white,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        duration: Duration(milliseconds: 1000),
+        child: TextButton(
+          onPressed: () => setState(() => _categoryIndex = i),
+          child: Text(
+            data[i]['cat_name'],
+            style: GoogleFonts.roboto(
+              fontWeight: FontWeight.w300,
+              color: _categoryIndex == i ? white : primary,
+            ),
           ),
         ),
       );

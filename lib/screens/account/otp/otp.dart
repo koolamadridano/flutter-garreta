@@ -22,6 +22,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
 
   // State
   bool _validated = false;
+  bool _pinMatched = true;
 
   @override
   void initState() {
@@ -33,15 +34,19 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
     }
   }
 
-  _handleValidatePin(String typedPin) {
-    if (int.parse(typedPin) == int.parse(_otpController.generatedPin)) {
+  void _handleValidatePin(String typedPin) {
+    if (int.parse(typedPin) == _otpController.generatedPin) {
       if (_pinPutFocusNode.hasFocus) {
         _pinPutFocusNode.unfocus();
-        setState(() => _validated = true);
+        setState(() {
+          _validated = true;
+          _pinMatched = true;
+        });
         Get.toNamed('/registration-phase-2');
       }
       print("PINCODE MATCHED!");
     } else {
+      setState(() => _pinMatched = false);
       print("PINCODE NOT MATCHED!");
     }
   }
@@ -92,6 +97,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
                     onSubmit: (String pin) {
                       _handleValidatePin(pin);
                     },
+                    textStyle: TextStyle(color: _pinMatched ? primary : danger),
                     focusNode: _pinPutFocusNode,
                     controller: _pinPutController,
                     submittedFieldDecoration: _pinPutDecoration.copyWith(
@@ -126,7 +132,7 @@ class _ScreenOtpVerificationState extends State<ScreenOtpVerification> {
 
   BoxDecoration get _pinPutDecoration {
     return BoxDecoration(
-      border: Border.all(color: primary),
+      border: Border.all(color: _pinMatched ? primary : danger),
       borderRadius: BorderRadius.circular(5.0),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:garreta/utils/enum/enum.dart';
+import 'package:garreta/enumeratedTypes.dart';
 import 'package:geocoder/geocoder.dart';
 
 Future locationTitle({@required latitude, @required longitude, @required Location type}) async {

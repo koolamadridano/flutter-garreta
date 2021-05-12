@@ -3,7 +3,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:simple_tooltip/simple_tooltip.dart';
 import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -399,26 +398,26 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        toolbarHeight: 58,
-        leading: GestureDetector(
-          onTap: () => Get.back(),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(100)),
-            ),
-            margin: EdgeInsets.all(10),
-            child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
+        elevation: 5,
+        toolbarHeight: 65,
+        leadingWidth: 45,
+        backgroundColor: white,
+        iconTheme: IconThemeData(color: primary),
+        leading: Container(
+          margin: EdgeInsets.only(left: 10),
+          child: IconButton(
+            tooltip: "Back",
+            icon: Icon(LineIcons.arrowLeft, size: 25),
+            splashRadius: 25,
+            onPressed: () => Get.back(),
           ),
         ),
-        elevation: 5,
         title: Container(
           width: Get.width * 0.5,
           child: Obx(() => Text(
-                "Selected items (${_cartController.cartSelectedItems.length})",
+                "Selected (${_cartController.cartSelectedItems.length})",
                 style: GoogleFonts.roboto(
                   color: primary,
                   fontSize: 18,
@@ -428,107 +427,39 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
         ),
         actions: [
           Obx(
-            () => GestureDetector(
-              onTap: () =>
-                  _cartController.cartSelectedItems.length >= 1 ? _deleteSelected() : {print("No item selected")},
-              child: AnimatedOpacity(
-                duration: Duration(milliseconds: 500),
-                opacity: _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
-                child: Container(
-                  margin: EdgeInsets.only(right: 10),
-                  child: Icon(LineIcons.trash, color: danger),
-                ),
+            () => AnimatedOpacity(
+              duration: Duration(milliseconds: 500),
+              opacity: _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
+              child: IconButton(
+                tooltip: "Remove selected",
+                icon: Icon(LineIcons.trash, size: 25),
+                splashRadius: 25,
+                onPressed: () => _cartController.cartSelectedItems.length >= 1 ? _deleteSelected() : {},
               ),
             ),
           ),
-          SimpleTooltip(
-            borderColor: secondary,
-            backgroundColor: secondary,
-            borderWidth: 0,
-            hideOnTooltipTap: false,
-            arrowTipDistance: 1,
-            animationDuration: Duration(milliseconds: 300),
-            arrowBaseWidth: 20,
-            show: _toggleChangeDeliveryAddressTooltip,
-            minimumOutSidePadding: 3,
-            customShadows: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 3,
-                spreadRadius: 1,
-                offset: Offset(1, 1),
-              ),
-            ],
-            ballonPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-            tooltipDirection: TooltipDirection.left,
-            content: GestureDetector(
-              onTap: () => setState(() {
-                _toggleChangeDeliveryAddressTooltip = false;
-              }),
-              child: Text(
-                "Manage delivery address here",
-                style: GoogleFonts.roboto(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white,
-                  decoration: TextDecoration.none,
-                ),
-              ),
-            ),
-            child: Container(
-              margin: EdgeInsets.only(right: 10),
-              child: Icon(LineIcons.truck, color: primary),
-            ),
+          IconButton(
+            tooltip: "Change delivery address",
+            icon: Icon(LineIcons.truck, size: 25),
+            splashRadius: 25,
+            onPressed: () {},
           ),
-          SimpleTooltip(
-            borderColor: secondary,
-            backgroundColor: secondary,
-            borderWidth: 0,
-            hideOnTooltipTap: false,
-            arrowTipDistance: 1,
-            animationDuration: Duration(milliseconds: 300),
-            arrowBaseWidth: 20,
-            show: _toggleAllItemsTooltip,
-            minimumOutSidePadding: 3,
-            customShadows: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 3,
-                spreadRadius: 1,
-                offset: Offset(1, 1),
-              ),
-            ],
-            ballonPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-            tooltipDirection: TooltipDirection.left,
-            content: GestureDetector(
-              onTap: () => setState(() {
-                _toggleAllItemsTooltip = false;
-                _toggleChangeDeliveryAddressTooltip = true;
-              }),
-              child: Text(
-                "All items",
-                style: GoogleFonts.roboto(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white,
-                  decoration: TextDecoration.none,
+          Obx(() => IconButton(
+                tooltip: 'Entire basket',
+                splashRadius: 25,
+                icon: Badge(
+                  animationType: BadgeAnimationType.slide,
+                  showBadge: _cartController.cartItems.length >= 1 ? true : false,
+                  badgeContent:
+                      Text("${_cartController.cartAllItems.length > 99 ? '99+' : _cartController.cartAllItems.length}",
+                          style: GoogleFonts.roboto(
+                            fontSize: _cartController.cartAllItems.length > 9 ? 7 : 9,
+                            color: Colors.white,
+                          )),
+                  child: Icon(Ionicons.basket_outline, size: 25),
                 ),
-              ),
-            ),
-            child: Badge(
-              position: BadgePosition.topEnd(end: -4, top: 5),
-              badgeColor: danger,
-              animationDuration: Duration(milliseconds: 500),
-              badgeContent: Obx(() => Text(
-                    '${_cartController.cartAllItems.length}',
-                    style: GoogleFonts.roboto(
-                      fontSize: _cartController.cartAllItems.length > 9 ? 5 : 8,
-                      color: Colors.white,
-                    ),
-                  )),
-              child: Icon(LineIcons.shoppingBasket, color: primary),
-            ),
-          ),
+                onPressed: () => Get.toNamed("/screen-basket"),
+              )),
           SizedBox(width: 10),
         ],
       ),
@@ -667,7 +598,7 @@ Expanded _widgetCartIsEmpty = Expanded(
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      Icon(LineIcons.shoppingBasket, size: 85, color: primary.withOpacity(0.1)),
+      Icon(Ionicons.basket_outline, size: 85, color: primary.withOpacity(0.1)),
       Text("Basket is empty",
           style: GoogleFonts.roboto(
             color: primary.withOpacity(0.1),

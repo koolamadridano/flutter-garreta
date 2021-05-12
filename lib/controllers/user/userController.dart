@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-final _loginBaseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php?operation=login2&";
+final _baseUrl = "http://shareatext.com/garreta/webservices/v2/customers.php";
 
 // `KEYs`
 final _keySavedLoginInfo = 'savedLoginInfo';
@@ -76,11 +76,15 @@ class UserController extends GetxController {
     }
   }
 
-  Future<int> login({username, password}) async {
+  Future<dynamic> login({username, password}) async {
     isLoading.value = true;
+    var request = http.MultipartRequest("POST", Uri.parse(_baseUrl));
+    request.fields['operation'] = "login2";
+    request.fields['contactNumber'] = username;
+    request.fields['password'] = password;
     try {
-      var loginUrl = Uri.parse("${_loginBaseUrl}contactNumber=$username&password=$password");
-      var response = await http.post(loginUrl);
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
       if (response.body.isNotEmpty) {
         var result = jsonDecode(response.body);
         id = result[0]["personalDetails"]["cust_id"];
@@ -96,13 +100,11 @@ class UserController extends GetxController {
         password = result[0]["personalDetails"]["cust_password"];
         successfulOrders = result[0]["personalDetails"]["cust_numberOfOrders"];
         cancelledOrders = result[0]["personalDetails"]["cust_numberOfCancelledOrders"];
-
         // `Hold current login info`
         final prefs = await SharedPreferences.getInstance();
         print("username $username : password $password");
         prefs.setStringList(_keyCurrentLoginInfo, [username, password]);
         isLoading.value = false;
-
         return 200;
       }
       if (response.body.isEmpty) {
@@ -113,6 +115,26 @@ class UserController extends GetxController {
     } catch (e) {
       isLoading.value = false;
       print("@login $e");
+      return 400;
+    }
+  }
+
+  Future<dynamic> register() async {
+    var request = http.MultipartRequest("POST", Uri.parse(_baseUrl));
+    request.fields['operation'] = "addNew";
+    request.fields['name'] = name;
+    request.fields['contactNumber'] = contactNumber;
+    request.fields['email'] = email;
+    request.fields['address'] = address;
+    request.fields['birthDate'] = birthday;
+    request.fields['gender'] = gender == "Rather not to say" ? "Secret" : gender;
+    request.fields['password'] = password;
+    try {
+      var streamedResponse = await request.send();
+      var result = await http.Response.fromStream(streamedResponse);
+      print(result.body);
+      return 200;
+    } catch (e) {
       return 400;
     }
   }

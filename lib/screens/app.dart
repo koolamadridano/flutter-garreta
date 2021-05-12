@@ -65,44 +65,50 @@ class _ScreenApplicationState extends State<ScreenApplication> {
       onWillPop: () async => _onExitApp(),
       child: !hasEnabledLocation
           ? Scaffold()
-          : Scaffold(
-              backgroundColor: Colors.white,
-              body: Container(
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        width: Get.width * 0.60,
-                        child: Column(
-                          children: [
-                            Spacer(flex: 1),
-                            Container(
-                              width: double.infinity,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('Garreta', style: _titleStyle),
-                                  Text('SKIP the HASSLE', style: _titleAltStyle),
-                                ],
-                              ),
-                            ),
-                            Spacer(flex: 3),
-                            // Login button
-                            _buttonLogin(),
-                            SizedBox(height: 5),
-                            // Register button
-                            _buttonRegister(),
-                            Spacer(),
-                            // Skip button
-                            _buttonSkip(),
-                            SizedBox(height: 30),
-                          ],
+          : SafeArea(
+              child: Scaffold(
+                backgroundColor: Colors.white,
+                body: Container(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(top: 20),
+                        width: Get.width * 0.80,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                              onPressed: () => Get.toNamed("/screen-nearby-vendors"),
+                              child: Text(
+                                "Skip",
+                                style: GoogleFonts.roboto(color: primary.withOpacity(0.3)),
+                              )),
                         ),
                       ),
-                    ),
-                  ],
+                      Expanded(
+                        child: Container(
+                          width: Get.width * 0.80,
+                          child: Column(
+                            children: [
+                              Spacer(flex: 1),
+                              Image.asset("images/common/motorcycle.png", height: 250),
+
+                              Spacer(flex: 3),
+                              // Login button
+                              _buttonLogin(),
+                              SizedBox(height: 5),
+                              // Register button
+                              _buttonRegister(),
+                              // Skip button
+
+                              SizedBox(height: 30),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -111,7 +117,7 @@ class _ScreenApplicationState extends State<ScreenApplication> {
 
   Widget _buttonLogin() {
     return SizedBox(
-      height: 50,
+      height: 60,
       width: Get.width,
       child: TextButton(
         style: ButtonStyle(
@@ -139,18 +145,10 @@ class _ScreenApplicationState extends State<ScreenApplication> {
 
   Widget _buttonRegister() {
     return SizedBox(
-      height: 50,
+      height: 60,
       width: Get.width,
       child: TextButton(
         style: ButtonStyle(
-          // shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          //   RoundedRectangleBorder(
-          //     borderRadius: BorderRadius.circular(10.0),
-          //     side: BorderSide(
-          //       color: darkGray,
-          //     ),
-          //   ),
-          // ),
           overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
           // backgroundColor: MaterialStateColor.resolveWith((states) => darkGray),
         ),
@@ -167,22 +165,12 @@ class _ScreenApplicationState extends State<ScreenApplication> {
 
   Widget _buttonSkip() {
     return GestureDetector(
-      onTap: () => Get.toNamed("/store-nearby-store"),
-      child: Text("Skip", style: TextStyle(color: primary.withOpacity(0.3))),
+      onTap: () => Get.toNamed("/screen-nearby-vendors"),
+      child: Text("Skip", style: TextStyle(color: primary.withOpacity(0.2))),
     );
   }
 }
 
-final TextStyle _titleStyle = GoogleFonts.quicksand(
-  fontSize: 50,
-  fontWeight: FontWeight.bold,
-  color: primary,
-);
-final TextStyle _titleAltStyle = GoogleFonts.roboto(
-  fontSize: 14,
-  fontWeight: FontWeight.w300,
-  color: primary,
-);
 final TextStyle _onExitAppConfirmTextStyle = GoogleFonts.roboto(
   color: primary,
   fontSize: 14,
