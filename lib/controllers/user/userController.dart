@@ -25,6 +25,12 @@ class UserController extends GetxController {
   var cancelledOrders;
   var password;
 
+  // Delivery
+  List deliveryAddress = [];
+  var selectedDeliveryAddress;
+  var currentLatitude;
+  var currentLongitude;
+
   // Display birthday in readable format
   var displayBirthday;
 
@@ -102,9 +108,14 @@ class UserController extends GetxController {
         cancelledOrders = result[0]["personalDetails"]["cust_numberOfCancelledOrders"];
         // `Hold current login info`
         final prefs = await SharedPreferences.getInstance();
-        print("username $username : password $password");
         prefs.setStringList(_keyCurrentLoginInfo, [username, password]);
         isLoading.value = false;
+
+        if (result[1]['deliveryAddress'].length != 0) {
+          deliveryAddress = result[1]['deliveryAddress'];
+        }
+
+        print(deliveryAddress);
         return 200;
       }
       if (response.body.isEmpty) {

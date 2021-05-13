@@ -4,9 +4,15 @@ enum Location {
   locality,
   subLocality,
   thoroughfare,
+  thoroughfareAndLocality,
   addressLine,
   featureNameAndSubLocality,
   featureNameAndLocality,
+  thoroughfareAndSubLocality,
+  thoroughfareAndSubThoroughfare,
+  thoroughfareAndCountryName,
+  thoroughfareAndLocalityWithCountryName,
+  thoroughfareAndAdminAreaWithCountryName,
 }
 
 enum Qty { add, minus }

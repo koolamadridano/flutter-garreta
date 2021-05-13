@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:garreta/colors.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/defaults.dart';
 import 'package:garreta/helpers/destroyTextFieldFocus.dart';
 import 'package:garreta/screens/account/login/password/password.dart';
 import 'package:garreta/screens/account/login/username/username.dart';
 import 'package:garreta/screens/account/login/widgets/widgets.dart' as loginWidget;
 import 'package:extended_masked_text/extended_masked_text.dart';
+import 'package:garreta/services/locationService/locationCoordinates.dart';
 import 'package:garreta/widgets/spinner/spinner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
@@ -72,6 +74,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
           _isLoginRequestOnGoing = false;
           _stateHasError = false;
         });
+
         if (_userController.isAuthenticated()) {
           Get.toNamed("/screen-nearby-vendors");
         }

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class ScreenApplication extends StatefulWidget {
   const ScreenApplication({Key key}) : super(key: key);
@@ -21,7 +21,7 @@ class _ScreenApplicationState extends State<ScreenApplication> {
   }
 
   Future<void> checkLocationPermission() async {
-    if (await Permission.location.isGranted) {
+    if (await Geolocator.isLocationServiceEnabled()) {
       setState(() => hasEnabledLocation = true);
     } else {
       Get.toNamed('/screen-access-location');

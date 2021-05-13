@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:garreta/enumeratedTypes.dart';
 import 'package:geocoder/geocoder.dart';
 
-Future locationTitle({@required latitude, @required longitude, @required Location type}) async {
+Future locationTitle({@required double latitude, @required double longitude, @required Location type}) async {
   final coordinates = new Coordinates(latitude, longitude);
   final addressesData = await Geocoder.local.findAddressesFromCoordinates(coordinates);
   final address = addressesData.first;
@@ -22,6 +22,18 @@ Future locationTitle({@required latitude, @required longitude, @required Locatio
     return "${address.featureName}, ${address.locality}";
   } else if (type == Location.featureNameAndSubLocality) {
     return "${address.featureName}, ${address.subLocality}";
+  } else if (type == Location.thoroughfareAndSubThoroughfare) {
+    return "${address.thoroughfare}, ${address.subThoroughfare}";
+  } else if (type == Location.thoroughfareAndSubLocality) {
+    return "${address.thoroughfare}, ${address.subLocality}";
+  } else if (type == Location.thoroughfareAndCountryName) {
+    return "${address.thoroughfare}, ${address.countryName}";
+  } else if (type == Location.thoroughfareAndLocalityWithCountryName) {
+    return "${address.thoroughfare}, ${address.locality}, ${address.countryName}";
+  } else if (type == Location.thoroughfareAndAdminAreaWithCountryName) {
+    return "${address.thoroughfare}, ${address.adminArea}, ${address.countryName}";
+  } else if (type == Location.thoroughfareAndLocality) {
+    return "${address.thoroughfare}, ${address.locality}";
   }
   return address.addressLine;
 }

@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:garreta/controllers/location/locationController.dart';
 import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
 import 'package:garreta/controllers/store/product-screen/productController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
+import 'package:garreta/controllers/user/deliveryAddressController.dart';
 import 'package:garreta/screens/store/productscreen/widgets/ui/productScreenUi.dart';
+import 'package:garreta/screens/store/productscreen/widgets/widget/productScreenWidgets.dart';
+import 'package:garreta/screens/ui/locationPicker/locationPicker.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/helpers/textHelper.dart';
 import 'package:garreta/screens/ui/search/search.dart';
 import 'package:garreta/colors.dart';
+import 'package:garreta/services/locationService/locationDistanceBetween.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
@@ -19,7 +24,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
 import 'package:intent/intent.dart' as android_intent;
 import 'package:intent/action.dart' as android_action;
-import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class ScreenProductScreen extends StatefulWidget {
   ScreenProductScreen({Key key}) : super(key: key);
@@ -35,45 +40,53 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   final _productController = Get.put(ProductController());
   final _storeController = Get.put(StoreController());
   final _nearbyController = Get.put(NearbyStoreController());
-
+  final _locationController = Get.put(LocationController());
+  final _deliveryAddressController = Get.put(DeliveryAddressController());
   // State
   int _categoryIndex;
+
+  TextEditingController _notesController;
+
+  // Default set to 0
+  int _selectedDeliveryAddressIndex = 0;
+
   String _storeName;
-  // Hold value for direct-call
+
+  // ADD DELIVERY ADDRESS PROPS
+  String _pickedLocation = "Incheon, South Korea";
+  double _pickedLatitude;
+  double _pickedLongitude;
+
+  bool _selectNewLocation = false;
 
   @override
   void initState() {
     super.initState();
+    _notesController = TextEditingController();
     _productController.fetchStoreProducts();
     _cartController.fetchShoppingCartItems();
     _productController.fetchStoreCategory();
     _storeName = _storeController.merchantName.value.capitalizeFirstofEach;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_userController.selectedDeliveryAddress == null) {
+        _handleSelectDeliveryAddress();
+      }
+    });
   }
 
-  Future<void> _handleDialNumber(String number) async {
-    try {
-      // If platform is android
-      // we can use direct call
-      if (GetPlatform.isAndroid) {
-        var _phoneCallStatus = await Permission.phone.status;
-        if (_phoneCallStatus == PermissionStatus.denied) {
-          await Permission.phone.request();
-        }
-        if (_phoneCallStatus.isGranted) {
-          android_intent.Intent()
-            ..setAction(android_action.Action.ACTION_CALL)
-            ..setData(Uri(scheme: "tel", path: number))
-            ..startActivity().catchError((e) => print(e));
-        }
-      }
-      // Create some exemptions for other platforms
-      // since ios does not support legally a direct call
-      else {
-        await UrlLauncher.launch(number);
-      }
-    } catch (e) {
-      print("@_onDialNumber $e");
-    }
+  @override
+  void dispose() {
+    super.dispose();
+    _notesController.dispose();
+  }
+
+  Future<void> _handleAddDeliveryAddress() async {
+    await _deliveryAddressController.add(
+      deliveryAddress: _pickedLocation,
+      latitude: _pickedLatitude,
+      longitude: _pickedLongitude,
+      notes: _notesController.text,
+    );
   }
 
   void _handleSearch() {
@@ -83,6 +96,215 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
         data: _productController.storeProductsData.toList(),
       ),
     );
+  }
+
+  void _handleUseDeliveryAddress({double latitude, double longitude}) {
+    double calculateDistanceBetween = locationDistanceBetween(
+      startLatitude: _locationController.latitude,
+      startLongitude: _locationController.longitude,
+      endLatitude: latitude,
+      endLongitude: longitude,
+    );
+    print(_storeController.merchantKmAllowcated.toDouble() >= calculateDistanceBetween);
+    print("KM Allowcated ${_storeController.merchantKmAllowcated} : Distance between $calculateDistanceBetween km");
+    // 1 Calculate distance from my location to merchant location using geolocator
+  }
+
+  void _handleSelectDeliveryAddress() {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        isDismissible: false,
+        enableDrag: false,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (BuildContext context, StateSetter bottomSheetSetter) {
+            return Container(
+              height: Get.height * 0.85,
+              color: white,
+              padding: EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Delivery address",
+                              style: GoogleFonts.roboto(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 22.0,
+                              ),
+                            ),
+                            Text(
+                              "A delivery address will be visible if covered by the merchant's delivery distance",
+                              style: GoogleFonts.roboto(
+                                fontWeight: FontWeight.w300,
+                                fontSize: 12.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(left: Get.width * 0.1),
+                        child: IconButton(
+                            icon: Icon(LineIcons.plus, size: 32.0),
+                            onPressed: () async {
+                              await toggleLocationPicker(context: context).then((value) async {
+                                bottomSheetSetter(() {
+                                  _pickedLocation = value.address;
+                                  _selectNewLocation = true;
+                                  _pickedLatitude = value.latLng.latitude;
+                                  _pickedLongitude = value.latLng.longitude;
+                                });
+                              });
+                            }),
+                      ),
+                    ],
+                  ),
+                  _selectNewLocation
+                      ? Container(
+                          margin: EdgeInsets.only(top: 30),
+                          child: Column(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(bottom: 10),
+                                width: Get.width,
+                                child: Text(
+                                  _pickedLocation,
+                                  style: GoogleFonts.roboto(fontSize: 18, fontWeight: FontWeight.bold, color: primary),
+                                  textAlign: TextAlign.start,
+                                ),
+                              ),
+                              textFieldAddDeliveryAddress(textFieldController: _notesController),
+                              Container(
+                                margin: EdgeInsets.only(top: 10),
+                                child: buttonAdd(action: () {
+                                  _handleAddDeliveryAddress().then((value) {
+                                    bottomSheetSetter(() {
+                                      _selectNewLocation = false;
+                                    });
+                                  });
+                                }),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 10),
+                                child: buttonCancel(
+                                    action: () => bottomSheetSetter(
+                                          () => _selectNewLocation = false,
+                                        )),
+                              ),
+                            ],
+                          ),
+                        )
+                      : SizedBox(),
+                  Obx(() => Expanded(
+                        child: ListView.builder(
+                            itemCount: _deliveryAddressController.deliveryAddresses.length,
+                            shrinkWrap: true,
+                            physics: _selectNewLocation ? NeverScrollableScrollPhysics() : BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              double calculateDistanceBetween = locationDistanceBetween(
+                                startLatitude: _locationController.latitude,
+                                startLongitude: _locationController.longitude,
+                                endLatitude: double.parse(
+                                  _deliveryAddressController.deliveryAddresses[index]['del_latitude'],
+                                ),
+                                endLongitude: double.parse(
+                                  _deliveryAddressController.deliveryAddresses[index]['del_longitude'],
+                                ),
+                              );
+                              if (_storeController.merchantKmAllowcated >= calculateDistanceBetween) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    bottomSheetSetter(() {
+                                      _selectedDeliveryAddressIndex = index;
+                                    });
+                                  },
+                                  child: AnimatedOpacity(
+                                    duration: Duration(milliseconds: 500),
+                                    opacity: _selectNewLocation ? 0 : 1,
+                                    child: AnimatedOpacity(
+                                      duration: Duration(milliseconds: 500),
+                                      opacity: _selectedDeliveryAddressIndex == index ? 1 : 0.20,
+                                      child: Container(
+                                        margin: EdgeInsets.only(top: index == 0 ? 20.0 : 0),
+                                        color: white,
+                                        width: Get.width * 0.70,
+                                        padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _deliveryAddressController.deliveryAddresses[index]['del_address'],
+                                              style: GoogleFonts.roboto(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16.0,
+                                                color: primary,
+                                              ),
+                                            ),
+                                            Text(
+                                              _deliveryAddressController.deliveryAddresses[index]['del_notes'],
+                                              style: GoogleFonts.roboto(
+                                                fontWeight: FontWeight.w300,
+                                                fontSize: 14.0,
+                                                color: primary,
+                                              ),
+                                            ),
+                                            _selectedDeliveryAddressIndex == index
+                                                ? _buttonUseAsDeliveyAddress(action: () {
+                                                    _handleUseDeliveryAddress(
+                                                      latitude: double.parse(
+                                                        _deliveryAddressController.deliveryAddresses[index]
+                                                            ['del_latitude'],
+                                                      ),
+                                                      longitude: double.parse(
+                                                        _deliveryAddressController.deliveryAddresses[index]
+                                                            ['del_longitude'],
+                                                      ),
+                                                    );
+                                                  })
+                                                : SizedBox(),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                return SizedBox();
+                              }
+                            }),
+                      )),
+                ],
+              ),
+            );
+          });
+        });
+  }
+
+  Future<void> _handleDialNumber(String number) async {
+    try {
+      // If platform is android
+      // we can use direct call
+      if (GetPlatform.isAndroid) {
+        android_intent.Intent()
+          ..setAction(android_action.Action.ACTION_CALL)
+          ..setData(Uri(scheme: "tel", path: number))
+          ..startActivity().catchError((e) => print(e));
+      }
+      // Create some exemptions for other platforms
+      // since ios does not support legally a direct call
+      else {
+        await UrlLauncher.launch(number);
+      }
+    } catch (e) {
+      print("@_onDialNumber $e");
+    }
   }
 
   Future<void> _handleAddToCart({@required itemId}) async {
@@ -100,6 +322,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: false, // to avoid resizing when keyboard is toggled
         appBar: AppBar(
           elevation: 5,
           toolbarHeight: 65,
@@ -512,7 +735,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
           color: _categoryIndex == i ? primary : white,
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
-        duration: Duration(milliseconds: 1000),
+        duration: Duration(milliseconds: 500),
         child: TextButton(
           onPressed: () => setState(() => _categoryIndex = i),
           child: Text(
@@ -641,4 +864,35 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     }
     return items;
   }
+}
+
+Widget _buttonUseAsDeliveyAddress({action}) {
+  return Container(
+    margin: EdgeInsets.only(top: 10),
+    child: SizedBox(
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0.0),
+              side: BorderSide(
+                color: primary,
+              ),
+            ),
+          ),
+          backgroundColor: MaterialStateColor.resolveWith((states) => primary),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
+        ),
+        onPressed: action,
+        child: Text("Use as delivery address",
+            style: GoogleFonts.roboto(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w300,
+            )),
+      ),
+    ),
+  );
 }

@@ -1,18 +1,23 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/controllers/location/locationController.dart';
+
 import 'package:garreta/screens/store/nearby/widgets/style/nearbyStyles.dart';
 import 'package:garreta/screens/ui/search/search.dart';
+import 'package:garreta/screens/ui/locationPicker/locationPicker.dart';
+
 import 'package:garreta/colors.dart';
+import 'package:garreta/services/locationService/locationCoordinates.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:garreta/helpers/textHelper.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:simple_tooltip/simple_tooltip.dart';
+import 'package:geolocator/geolocator.dart';
 
 class ScreenNearbyStore extends StatefulWidget {
   @override
@@ -29,10 +34,12 @@ List<String> _tempSuggestionsImg = [
 
 class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   // Global state
+  final _locationController = Get.put(LocationController());
   final _userController = Get.put(UserController());
   final _nearbyController = Get.put(NearbyStoreController());
   final _storeController = Get.put(StoreController());
 
+  bool _toolTipChangeLocationIsVisible = true;
   void _onSearch() {
     showSearch(
       context: context,
@@ -45,6 +52,12 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   @override
   void initState() {
     super.initState();
+    initializeNearbyStore();
+    Future.delayed(Duration(seconds: 10), () {
+      setState(() {
+        _toolTipChangeLocationIsVisible = false;
+      });
+    });
     // `On page completely loaded`
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_userController.isAuthenticated()) {
@@ -53,6 +66,21 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         }
       }
     });
+  }
+
+  Future<void> initializeNearbyStore() async {
+    Position coord = await locationCoordinates();
+    await _nearbyController.fetchNearbyStore(
+      latitude: coord.latitude,
+      longitude: coord.longitude,
+    );
+
+    // Initialize user's current location
+    _locationController.latitude = coord.latitude;
+    _locationController.longitude = coord.longitude;
+
+    await _nearbyController.fetchNearbyProducts();
+    await _nearbyController.fetchSearchedKeyword();
   }
 
   @override
@@ -80,29 +108,72 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                   leading: SizedBox(),
                   leadingWidth: 0,
                   toolbarHeight: 65,
-                  title: Container(
-                    margin: EdgeInsets.only(left: 14),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Obx(() => Text(
-                              _nearbyController.locationName.value,
-                              style: GoogleFonts.roboto(
-                                color: primary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                            )),
-                        Text("Nearby store",
-                            style: GoogleFonts.roboto(
-                              color: primary,
-                              fontWeight: FontWeight.w300,
-                              fontSize: 12,
-                            )),
-                      ],
+                  title: SimpleTooltip(
+                    backgroundColor: primary,
+                    tooltipTap: () {},
+                    arrowLength: 30,
+                    animationDuration: Duration(seconds: 1),
+                    hideOnTooltipTap: true,
+                    arrowTipDistance: 2,
+                    show: _toolTipChangeLocationIsVisible,
+                    content: Text(
+                      "Change location",
+                      style: GoogleFonts.roboto(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w300,
+                        color: white,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                    customShadows: [
+                      BoxShadow(color: const Color(1159864866), blurRadius: 0, spreadRadius: 0),
+                    ],
+                    ballonPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                    borderWidth: 0,
+                    tooltipDirection: TooltipDirection.down,
+                    child: GestureDetector(
+                      onTap: () async {
+                        setState(() {
+                          _toolTipChangeLocationIsVisible = false;
+                        });
+                        try {
+                          await toggleLocationPicker(context: context, hint: 'Search location').then((value) async {
+                            await _nearbyController.fetchNearbyStore(
+                              latitude: value.latLng.latitude,
+                              longitude: value.latLng.longitude,
+                              selectedAddress: value.address,
+                            );
+                          });
+                        } catch (e) {
+                          print("$e");
+                        }
+                      },
+                      child: Container(
+                        width: Get.width * 0.70,
+                        margin: EdgeInsets.only(left: 14),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Obx(() => Text(
+                                  _nearbyController.locationName.value,
+                                  style: GoogleFonts.roboto(
+                                    color: primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                )),
+                            Text("Nearby store",
+                                style: GoogleFonts.roboto(
+                                  color: primary,
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12,
+                                )),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   actions: [
@@ -207,150 +278,6 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                       ),
                     ),
 
-                    // `BADGES`
-                    // SliverPadding(
-                    //   padding: EdgeInsets.only(left: 20, right: 20, top: 20),
-                    //   sliver: SliverToBoxAdapter(
-                    //     child: Container(
-                    //       height: 35,
-                    //       child: ListView(
-                    //         shrinkWrap: true,
-                    //         scrollDirection: Axis.horizontal,
-                    //         physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                    //         children: [
-                    //           // `BADGE DISTANCE`
-                    //           Opacity(
-                    //             opacity: 0.8,
-                    //             child: Container(
-                    //               decoration: BoxDecoration(
-                    //                 color: secondary,
-                    //                 borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                    //               ),
-                    //               margin: EdgeInsets.only(right: 10),
-                    //               padding: EdgeInsets.all(10),
-                    //               child: Row(
-                    //                 crossAxisAlignment: CrossAxisAlignment.center,
-                    //                 children: [
-                    //                   Icon(
-                    //                     LineIcons.streetView,
-                    //                     color: Colors.white,
-                    //                     size: 14.0,
-                    //                   ),
-                    //                   SizedBox(width: 2),
-                    //                   Text(
-                    //                     "Distance",
-                    //                     style: GoogleFonts.roboto(
-                    //                       color: Colors.white,
-                    //                       fontSize: 13.0,
-                    //                       fontWeight: FontWeight.w300,
-                    //                       height: 1.2,
-                    //                     ),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ),
-                    //           ),
-                    //           // `BADGE POPULARITY`
-                    //           Opacity(
-                    //             opacity: 1,
-                    //             child: Container(
-                    //               decoration: BoxDecoration(
-                    //                 color: secondary,
-                    //                 borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                    //               ),
-                    //               margin: EdgeInsets.only(right: 10),
-                    //               padding: EdgeInsets.all(10),
-                    //               child: Row(
-                    //                 crossAxisAlignment: CrossAxisAlignment.center,
-                    //                 children: [
-                    //                   Icon(
-                    //                     LineIcons.fire,
-                    //                     color: Colors.white,
-                    //                     size: 14.0,
-                    //                   ),
-                    //                   SizedBox(width: 2),
-                    //                   Text(
-                    //                     "Popularity",
-                    //                     style: GoogleFonts.roboto(
-                    //                       color: Colors.white,
-                    //                       fontSize: 13.0,
-                    //                       fontWeight: FontWeight.w300,
-                    //                       height: 1.2,
-                    //                     ),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ),
-                    //           ),
-                    //           // `BADGE NEWLY OPEN STORE`
-                    //           Opacity(
-                    //             opacity: 1,
-                    //             child: Container(
-                    //               decoration: BoxDecoration(
-                    //                 color: secondary,
-                    //                 borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                    //               ),
-                    //               margin: EdgeInsets.only(right: 10),
-                    //               padding: EdgeInsets.all(10),
-                    //               child: Row(
-                    //                 crossAxisAlignment: CrossAxisAlignment.center,
-                    //                 children: [
-                    //                   Icon(
-                    //                     LineIcons.store,
-                    //                     color: Colors.white,
-                    //                     size: 14.0,
-                    //                   ),
-                    //                   SizedBox(width: 2),
-                    //                   Text(
-                    //                     "Recommended",
-                    //                     style: GoogleFonts.roboto(
-                    //                       color: Colors.white,
-                    //                       fontSize: 13.0,
-                    //                       fontWeight: FontWeight.w300,
-                    //                       height: 1.2,
-                    //                     ),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ),
-                    //           ),
-                    //           // `BADGE NEWLY OPEN STORE`
-                    //           Opacity(
-                    //             opacity: 1,
-                    //             child: Container(
-                    //               decoration: BoxDecoration(
-                    //                 color: secondary,
-                    //                 borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                    //               ),
-                    //               margin: EdgeInsets.only(right: 10),
-                    //               padding: EdgeInsets.all(10),
-                    //               child: Row(
-                    //                 crossAxisAlignment: CrossAxisAlignment.center,
-                    //                 children: [
-                    //                   Icon(
-                    //                     LineIcons.store,
-                    //                     color: Colors.white,
-                    //                     size: 14.0,
-                    //                   ),
-                    //                   SizedBox(width: 2),
-                    //                   Text(
-                    //                     "Newly open",
-                    //                     style: GoogleFonts.roboto(
-                    //                       color: Colors.white,
-                    //                       fontSize: 13.0,
-                    //                       fontWeight: FontWeight.w300,
-                    //                       height: 1.2,
-                    //                     ),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
                     // `SUGGESTIONS TITLE`
                     SliverPadding(
                       padding: EdgeInsets.only(top: 20, left: 20, right: 20),
@@ -498,6 +425,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
         ),
       ),
       isDismissible: false,
+      enableDrag: false,
     );
   }
 
@@ -510,12 +438,14 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
           onTap: () {
             // `This will toggle bottomsheet`
             _handleSelectStore(
-              id: data[i]['mer_id'],
-              name: data[i]['mer_name'],
-              distance: data[i]['distance'],
-              address: data[i]['mer_address'],
-              number: data[i]['mer_contactNumber'],
-            );
+                id: data[i]['mer_id'],
+                name: data[i]['mer_name'],
+                distance: data[i]['distance'],
+                address: data[i]['mer_address'],
+                number: data[i]['mer_contactNumber'],
+                kmAllowcated: int.parse(
+                  data[i]['mer_KM_allowcated'],
+                ));
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -619,7 +549,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     return items;
   }
 
-  void _handleSelectStore({id, name, distance, address, number}) {
+  void _handleSelectStore({id, name, distance, address, number, kmAllowcated}) {
     List props = [id, name, distance, address, number];
     bool propsIsValid = props.every((element) {
       return element != null && element.toString().isNotEmpty;
@@ -630,6 +560,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       _storeController.merchantAddress.value = address;
       _storeController.merchantDistance.value = distance;
       _storeController.merchantMobileNumber = number;
+      _storeController.merchantKmAllowcated = kmAllowcated;
       if (Get.isBottomSheetOpen) {
         Get.back();
       }

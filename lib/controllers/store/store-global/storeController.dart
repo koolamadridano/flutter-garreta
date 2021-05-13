@@ -5,6 +5,6 @@ class StoreController extends GetxController {
   RxString merchantName = "".obs;
   RxString merchantAddress = "".obs;
   RxString merchantDistance = "".obs;
-
+  int merchantKmAllowcated;
   String merchantMobileNumber;
 }

@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/controllers/location/locationController.dart';
 import 'package:garreta/enumeratedTypes.dart';
-import 'package:garreta/services/locationService/locationCoordinates.dart';
 import 'package:garreta/services/locationService/locationTitle.dart';
 import 'package:http/http.dart' as http;
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,6 +16,7 @@ final tempSearchKeywords = [];
 
 class NearbyStoreController extends GetxController {
   final _userController = Get.find<UserController>();
+  final _locationController = Get.find<LocationController>();
 
   RxString locationName = "Obtaining location..".obs;
   RxList nearbyStoreData = [].obs;
@@ -33,25 +34,14 @@ class NearbyStoreController extends GetxController {
   // [String query]
   RxString query = "".obs;
 
-  @override
-  onInit() {
-    super.onInit();
-    fetchSearchedKeyword();
-    fetchNearbyStore();
-  }
-
-  Future<void> fetchNearbyStore() async {
+  Future<void> fetchNearbyStore({@required double latitude, @required longitude, String selectedAddress}) async {
     try {
-      Position currentCoord = await locationCoordinates();
       var coordTitle = await locationTitle(
-        latitude: currentCoord.latitude,
-        longitude: currentCoord.longitude,
+        latitude: latitude,
+        longitude: longitude,
         type: Location.featureNameAndLocality,
       );
-
-      var result = await http.get(Uri.parse(
-        "${_fetchNbStore}lat=${currentCoord.latitude}&lng=${currentCoord.longitude}",
-      ));
+      var result = await http.get(Uri.parse("${_fetchNbStore}lat=$latitude&lng=$longitude"));
       if (result.body.runtimeType == String) {
         var decodedNearbyStore = jsonDecode(result.body);
         decodedNearbyStore.sort((x, y) {
@@ -62,9 +52,9 @@ class NearbyStoreController extends GetxController {
 
         isLoading.value = false;
 
-        latitude = currentCoord.latitude;
-        longitude = currentCoord.longitude;
-        locationName.value = coordTitle;
+        latitude = _locationController.latitude;
+        longitude = _locationController.longitude;
+        locationName.value = coordTitle.toString().contains("null") ? selectedAddress : coordTitle;
 
         nearbyStoreData.value = decodedNearbyStore;
         nearbyStoreData.refresh();
@@ -73,9 +63,6 @@ class NearbyStoreController extends GetxController {
       } else if (result.body.runtimeType != String) {
         isLoading.value = false;
       }
-    } on HttpException catch (e) {
-      isLoading.value = false;
-      print("@fetchNearbyStore $e");
     } catch (e) {
       isLoading.value = false;
       print("@fetchNearbyStore $e");
