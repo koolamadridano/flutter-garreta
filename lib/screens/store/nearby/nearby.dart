@@ -194,111 +194,119 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                   ],
                 ),
                 backgroundColor: Colors.white,
-                body: CustomScrollView(
-                  physics: BouncingScrollPhysics(),
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: GestureDetector(
-                        onTap: () => _onSearch(),
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            width: Get.width * 0.90,
-                            padding: EdgeInsets.all(20),
-                            margin: EdgeInsets.only(bottom: 10, top: 20),
-                            decoration: BoxDecoration(
-                              color: white,
-                              borderRadius: BorderRadius.all(Radius.circular(15)),
-                              border: Border.all(color: primary, width: 0.1),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(LineIcons.search, color: primary),
-                                SizedBox(width: 10),
-                                Text(
-                                  "Looking for something?",
-                                  style: GoogleFonts.roboto(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 16,
-                                    height: 1,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // `SUGGESTIONS TITLE`
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("Frequently bought items",
-                                style: GoogleFonts.roboto(
-                                  color: primary,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                            Text("See all",
-                                style: GoogleFonts.roboto(
-                                  color: primary,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // `SUGGESTIONS ITEMS`
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      sliver: SliverToBoxAdapter(
+                body: _nearbyController.nearbyStoreData.length == 0
+                    ? Center(
                         child: Container(
-                          height: 150,
-                          child: ListView(
-                            shrinkWrap: true,
-                            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              for (var i = 0; i < _tempSuggestionsImg.length; i++)
-                                Container(
-                                  margin: EdgeInsets.only(right: 20),
-                                  height: 150,
-                                  width: 180,
-                                  child: Image.network(
-                                    _tempSuggestionsImg[i],
-                                    fit: BoxFit.cover,
+                          width: Get.width * 0.5,
+                          child: Text("No nearby vendor located on the specified location",
+                              textAlign: TextAlign.center, style: GoogleFonts.roboto(fontWeight: FontWeight.w300)),
+                        ),
+                      )
+                    : CustomScrollView(
+                        physics: BouncingScrollPhysics(),
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: GestureDetector(
+                              onTap: () => _onSearch(),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Container(
+                                  width: Get.width * 0.90,
+                                  padding: EdgeInsets.all(20),
+                                  margin: EdgeInsets.only(bottom: 10, top: 20),
+                                  decoration: BoxDecoration(
+                                    color: white,
+                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                    border: Border.all(color: primary, width: 0.1),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(LineIcons.search, color: primary),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        "Looking for something?",
+                                        style: GoogleFonts.roboto(
+                                          fontWeight: FontWeight.w300,
+                                          fontSize: 16,
+                                          height: 1,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                            ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
+                          // `SUGGESTIONS TITLE`
+                          SliverPadding(
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                            sliver: SliverToBoxAdapter(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("Frequently bought items",
+                                      style: GoogleFonts.roboto(
+                                        color: primary,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                  Text("See all",
+                                      style: GoogleFonts.roboto(
+                                        color: primary,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ),
 
-                    // `SUGGESTIONS TITLE`
-                    SliverPadding(
-                      padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: Text("Nearby stores",
-                            style: GoogleFonts.roboto(
-                              color: primary,
-                              fontWeight: FontWeight.bold,
-                            )),
+                          // `SUGGESTIONS ITEMS`
+                          SliverPadding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            sliver: SliverToBoxAdapter(
+                              child: Container(
+                                height: 150,
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                                  scrollDirection: Axis.horizontal,
+                                  children: [
+                                    for (var i = 0; i < _tempSuggestionsImg.length; i++)
+                                      Container(
+                                        margin: EdgeInsets.only(right: 20),
+                                        height: 150,
+                                        width: 180,
+                                        child: Image.network(
+                                          _tempSuggestionsImg[i],
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // `SUGGESTIONS TITLE`
+                          SliverPadding(
+                            padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                            sliver: SliverToBoxAdapter(
+                              child: Text("Nearby stores",
+                                  style: GoogleFonts.roboto(
+                                    color: primary,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                            ),
+                          ),
+                          //  `NEARBY`
+                          Obx(() => SliverPadding(
+                                padding: EdgeInsets.only(left: 20, right: 20),
+                                sliver: SliverList(
+                                    delegate: SliverChildListDelegate(
+                                  _mapNearbyStore(data: _nearbyController.nearbyStoreData),
+                                )),
+                              )),
+                        ],
                       ),
-                    ),
-                    //  `NEARBY`
-                    Obx(() => SliverPadding(
-                          padding: EdgeInsets.only(left: 20, right: 20),
-                          sliver: SliverList(
-                              delegate: SliverChildListDelegate(
-                            _mapNearbyStore(data: _nearbyController.nearbyStoreData),
-                          )),
-                        )),
-                  ],
-                ),
               )),
       ),
     );
