@@ -27,7 +27,12 @@ class UserController extends GetxController {
 
   // Delivery
   List deliveryAddress = [];
+
   var selectedDeliveryAddress;
+  var selectedDeliveryAddressNote;
+  var selectedDeliveryAddressLong;
+  var selectedDeliveryAddressLat;
+
   var currentLatitude;
   var currentLongitude;
 
@@ -80,6 +85,13 @@ class UserController extends GetxController {
       isLoading.value = false;
       print("@logout $e");
     }
+  }
+
+  void clearSelectedDeliveryAddressDetails() {
+    selectedDeliveryAddress = null;
+    selectedDeliveryAddressNote = null;
+    selectedDeliveryAddressLong = null;
+    selectedDeliveryAddressLat = null;
   }
 
   Future<dynamic> login({username, password}) async {
@@ -143,7 +155,13 @@ class UserController extends GetxController {
     try {
       var streamedResponse = await request.send();
       var result = await http.Response.fromStream(streamedResponse);
-      print(result.body);
+      var decodedResult = jsonDecode(result.body);
+      id = decodedResult[0]["new_Id"];
+      // `Hold current login info`
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setStringList(_keyCurrentLoginInfo, [contactNumber, password]).then((value) {
+        Get.toNamed("/screen-nearby-vendors");
+      });
       return 200;
     } catch (e) {
       return 400;

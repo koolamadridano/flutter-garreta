@@ -36,7 +36,7 @@ void toggleOverlayThreeBounce({BuildContext context, double overlayOpacity, doub
     buttons: [],
     content: SizedBox(
       child: SpinKitThreeBounce(
-        color: secondary,
+        color: primary,
         size: iconSize != null ? iconSize : 40.0,
         duration: Duration(milliseconds: 1000),
       ),
@@ -47,7 +47,7 @@ void toggleOverlayThreeBounce({BuildContext context, double overlayOpacity, doub
       isCloseButton: false,
       backgroundColor: Colors.transparent,
       overlayColor: Colors.white.withOpacity(
-        overlayOpacity != null ? overlayOpacity : 0.9,
+        overlayOpacity != null ? overlayOpacity : 0.8,
       ),
       alertElevation: 0,
       alertBorder: Border(

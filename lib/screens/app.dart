@@ -63,6 +63,10 @@ class _ScreenApplicationState extends State<ScreenApplication> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+    ));
     return WillPopScope(
       onWillPop: () async => _onExitApp(),
       child: !hasEnabledLocation

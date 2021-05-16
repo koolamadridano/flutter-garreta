@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
+import 'package:garreta/controllers/user/userController.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:garreta/colors.dart';
@@ -20,6 +21,10 @@ class ScreenShoppingCart extends StatefulWidget {
 class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   // Global state
   final _cartController = Get.put(CartController());
+  final _userController = Get.put(UserController());
+
+  String _selectedDeliveryAddress;
+  String _selectedDeliveryAddressNote;
 
   bool _toggleAllItemsTooltip = false;
   bool _toggleChangeDeliveryAddressTooltip = false;
@@ -33,7 +38,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _selectAll({@required state}) async {
-    widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
+    widgetOverlay.toggleOverlayThreeBounce(context: context, iconSize: 18.0);
     try {
       if (state) {
         Future.delayed(Duration.zero, () async {
@@ -62,7 +67,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   Future<void> _handleDelete({@required type}) async {
     Get.back();
     try {
-      widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
+      widgetOverlay.toggleOverlayThreeBounce(context: context, iconSize: 18.0);
       if (type) {
         await _cartController.cleanCartItems().then((value) {
           Get.back();
@@ -81,7 +86,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   }
 
   Future<void> _handleSwipeDelete({@required itemId}) async {
-    widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
+    widgetOverlay.toggleOverlayThreeBounce(context: context, iconSize: 18.0);
     await _cartController
         .removeSelectedItem(
       itemid: itemId,
@@ -99,7 +104,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     String hasType,
   }) async {
     if (!_cartController.cartItemSelectState[itemIndex]) {
-      widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
+      widgetOverlay.toggleOverlayThreeBounce(context: context, iconSize: 18.0);
       if (hasType == "increment") qty += 1;
       if (hasType == "decrement") qty -= 1;
       await _cartController.updateSelectedItem(itemid: itemId, qty: qty).then((value) {
@@ -228,11 +233,11 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                         ),
                       ),
                       SizedBox(width: 10),
-                      FadeInImage.assetNetwork(
-                        placeholder: "images/alt/nearby_store_alt_250x250.png",
-                        image: data[i]['img'].length >= 1
+                      Image.network(
+                        data[i]['img'].length >= 1
                             ? "http://shareatext.com${data[i]['img'][0]}"
                             : "https://upload.wikimedia.org/wikipedia/commons/0/0a/No-image-available.png",
+                        fit: BoxFit.cover,
                       ),
                     ],
                   ),
@@ -395,6 +400,8 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
         _toggleAllItemsTooltip = true;
       });
     });
+    _selectedDeliveryAddress = _userController.selectedDeliveryAddress;
+    _selectedDeliveryAddressNote = _userController.selectedDeliveryAddressNote;
   }
 
   @override
@@ -539,41 +546,50 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(width: 0.1, color: primary),
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(0),
-                    bottomRight: Radius.circular(0),
-                  ),
-                  child: Container(
-                    color: secondary,
-                    padding: EdgeInsets.all(15),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(LineIcons.truck, size: 15, color: Colors.white),
-                        SizedBox(width: 3),
-                        Expanded(
-                          child: Text(
-                            "Cagayan de Oro City, Upper Balulang Uptown  Cagayan de Oro City, Upper Balulang Uptown Cagayan de Oro City, Upper Balulang Uptown",
-                            style: GoogleFonts.roboto(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w400,
-                              fontSize: 12,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                color: primary,
+                padding: EdgeInsets.all(15),
+                width: Get.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_selectedDeliveryAddress,
+                        style: GoogleFonts.roboto(
+                          color: white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        )),
+                    Text(_selectedDeliveryAddressNote,
+                        style: GoogleFonts.roboto(
+                          color: white,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 12,
+                        ))
+                  ],
                 ),
               ),
+              // Container(
+              //   color: white,
+              //   padding: EdgeInsets.all(15),
+              //   child: RichText(
+              //     text: TextSpan(
+              //         text: "Will be delivered to ",
+              //         style: GoogleFonts.roboto(
+              //           color: primary,
+              //           fontWeight: FontWeight.w300,
+              //           fontSize: 12,
+              //         ),
+              //         children: <TextSpan>[
+              //           TextSpan(
+              //             text: _selectedDeliveryAddress,
+              //             style: GoogleFonts.roboto(
+              //               color: primary,
+              //               fontWeight: FontWeight.w600,
+              //               fontSize: 12,
+              //             ),
+              //           )
+              //         ]),
+              //   ),
+              // ),
               Obx(
                 () => _cartController.cartItems.length == 0
                     ? _widgetCartIsEmpty as Widget
@@ -613,7 +629,7 @@ Expanded _widgetCartIsEmpty = Expanded(
 TextButton _buttonCheckout() {
   return TextButton(
     style: TextButton.styleFrom(
-      backgroundColor: secondary,
+      backgroundColor: primary,
       padding: EdgeInsets.all(10),
     ),
     onPressed: () {},

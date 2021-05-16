@@ -38,8 +38,11 @@ class DeliveryAddressController extends GetxController {
     var result = await http.get(Uri.parse(
       "$_baseUrl?operation=getAllDeliveryAddressByCustomer&id=${_userController.id}",
     ));
-    var decodedResult = jsonDecode(result.body);
-    deliveryAddresses.value = decodedResult;
-    deliveryAddresses.refresh();
+
+    if (result.body != "") {
+      var decodedResult = jsonDecode(result.body);
+      deliveryAddresses.value = decodedResult;
+      deliveryAddresses.refresh();
+    }
   }
 }

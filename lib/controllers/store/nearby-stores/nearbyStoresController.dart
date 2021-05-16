@@ -43,18 +43,29 @@ class NearbyStoreController extends GetxController {
       );
       locationName.value = coordTitle.toString().contains("null") ? selectedAddress : coordTitle;
       var result = await http.get(Uri.parse("${_fetchNbStore}lat=$latitude&lng=$longitude"));
-      var decodedNearbyStore = jsonDecode(result.body);
-      decodedNearbyStore.sort((x, y) {
-        final distanceX = double.parse(x["distance"]);
-        final distanceY = double.parse(y["distance"]);
-        return distanceX.compareTo(distanceY);
-      });
-      isLoading.value = false;
-      latitude = _locationController.latitude;
-      longitude = _locationController.longitude;
-      nearbyStoreData.value = decodedNearbyStore;
-      nearbyStoreData.refresh();
-      await fetchNearbyProducts();
+
+      if (result.body.length == 2) {
+        isLoading.value = false;
+        nearbyStoreData.value = [];
+        latitude = _locationController.latitude;
+        longitude = _locationController.longitude;
+        return;
+      }
+      // If no nearby store API returns 0 based on debug log
+      else if (result.body.length != 2) {
+        var decodedNearbyStore = jsonDecode(result.body);
+        decodedNearbyStore.sort((x, y) {
+          final distanceX = double.parse(x["distance"]);
+          final distanceY = double.parse(y["distance"]);
+          return distanceX.compareTo(distanceY);
+        });
+        isLoading.value = false;
+        latitude = _locationController.latitude;
+        longitude = _locationController.longitude;
+        nearbyStoreData.value = decodedNearbyStore;
+        nearbyStoreData.refresh();
+        await fetchNearbyProducts();
+      }
     } catch (e) {
       isLoading.value = false;
       print("@fetchNearbyStore $e");

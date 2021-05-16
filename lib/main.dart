@@ -18,14 +18,14 @@ import 'package:garreta/screens/undefined/undefinedScreen.dart';
 import 'package:get/get.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    // Navs
-    statusBarColor: Colors.white,
-    systemNavigationBarColor: Colors.white,
-    // Nav Colors
-    statusBarIconBrightness: Brightness.dark,
-    systemNavigationBarIconBrightness: Brightness.dark,
-  ));
+  // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+  //   // Navs
+  //   statusBarColor: Colors.white,
+  //   systemNavigationBarColor: Colors.white,
+  //   // Nav Colors
+  //   statusBarIconBrightness: Brightness.dark,
+  //   systemNavigationBarIconBrightness: Brightness.dark,
+  // ));
   runApp(
     GetMaterialApp(
       title: 'Garreta',

@@ -103,6 +103,7 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
           _userController.name = name;
           _userController.contactNumber = mobileNumber;
           _userController.address = address;
+
           setState(() {
             _stateToggleOnValidateLoader = false;
             _stateHasError = false;

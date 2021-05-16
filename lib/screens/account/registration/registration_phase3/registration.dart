@@ -131,7 +131,6 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
               _isLoading = false;
               _isLoginRequestOnGoing = false;
             });
-            Get.toNamed("/screen-nearby-vendors");
           }
           if (getResponse == 400) {
             setState(() {

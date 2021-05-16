@@ -26,6 +26,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
   String _productImg;
   String _storeName;
   String _productName;
+  String _productDescription;
 
   @override
   void initState() {
@@ -40,11 +41,12 @@ class _ScreenProductViewState extends State<ScreenProductView> {
     _productStocks = int.parse(Get.arguments['productStocks']);
     _productImg = Get.arguments['productImg'].toString();
     _storeName = Get.arguments['storeName'].toString().capitalizeFirstofEach;
+    _productDescription = Get.arguments['productDescription'];
   }
 
   Future<void> _handleAddToCart() async {
     if (_userController.isAuthenticated()) {
-      widgetOverlay.toggleOverlayThreeBounce(context: context, iconSize: 18);
+      widgetOverlay.toggleOverlayThreeBounce(context: context, iconSize: 18.0);
       await _cartController.addToCart(itemId: _productId, qty: _selectedQty).then((value) {
         // `CLOSE` current overlay
         Get.back();
@@ -118,7 +120,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                     colorFilter: ColorFilter.mode(Colors.transparent, BlendMode.darken),
                     child: Image.network(
                       _productImg,
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
@@ -132,9 +134,9 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                 child: Text(
                   _storeName,
                   style: GoogleFonts.roboto(
-                    color: primary,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 18,
+                    color: primary.withOpacity(0.5),
+                    fontWeight: FontWeight.w300,
+                    fontSize: 15,
                   ),
                   maxLines: 2,
                 ),
@@ -148,24 +150,45 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _productName,
+                              style: GoogleFonts.roboto(
+                                color: primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 26,
+                              ),
+                              maxLines: 2,
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          Text(
+                            '₱$_productPrice',
+                            style: GoogleFonts.rajdhani(
+                              color: primary,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 26,
+                            ),
+                            maxLines: 2,
+                          ),
+                        ],
+                      ),
+                    ),
                     Text(
-                      _productName,
+                      _productDescription == null
+                          ? "Vendor did not provide product description"
+                          : _productDescription.trim(),
                       style: GoogleFonts.roboto(
                         color: primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 26,
+                        fontWeight: FontWeight.w300,
+                        fontSize: 13,
                       ),
-                      maxLines: 2,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      '₱$_productPrice',
-                      style: GoogleFonts.rajdhani(
-                        color: primary,
-                        fontWeight: FontWeight.w400,
-                        fontSize: 26,
-                      ),
-                      maxLines: 2,
                     ),
                   ],
                 ),
@@ -264,7 +287,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                 height: 60,
                 child: TextButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.resolveWith((states) => secondary),
+                    backgroundColor: MaterialStateProperty.resolveWith((states) => primary),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -279,11 +302,11 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Ionicons.basket_outline, color: Colors.white),
+                      Icon(Ionicons.basket_outline, color: white),
                       SizedBox(width: 5),
                       Text("ADD TO BASKET",
                           style: GoogleFonts.roboto(
-                            color: Colors.white,
+                            color: white,
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
                             height: 1.5,

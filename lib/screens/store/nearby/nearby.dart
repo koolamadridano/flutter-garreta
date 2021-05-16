@@ -53,6 +53,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
   void initState() {
     super.initState();
     initializeNearbyStore();
+
     Future.delayed(Duration(seconds: 10), () {
       setState(() {
         _toolTipChangeLocationIsVisible = false;
@@ -455,6 +456,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       // Navigation.pushNamed() shortcut.
       // Pop the current named page and pushes a new [page] to
       // the stack in its place
+      // Clear selected delivery address details
+      _userController.clearSelectedDeliveryAddressDetails();
       Get.toNamed("/screen-products");
     }
   }
