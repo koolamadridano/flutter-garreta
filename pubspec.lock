@@ -245,13 +245,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.0"
-  intent:
-    dependency: "direct dev"
-    description:
-      name: intent
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.4.0"
   intl:
     dependency: "direct overridden"
     description:
@@ -287,6 +280,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  location_permissions:
+    dependency: "direct dev"
+    description:
+      name: location_permissions
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0+1"
   matcher:
     dependency: transitive
     description:

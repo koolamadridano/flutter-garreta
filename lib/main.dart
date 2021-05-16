@@ -12,6 +12,7 @@ import 'package:garreta/screens/store/productscreen/productscreen.dart';
 import 'package:garreta/screens/store/settings/settings.dart';
 import 'package:garreta/screens/store/shoppingcart/shoppingcart.dart';
 import 'package:garreta/screens/location/location.dart';
+import 'package:garreta/screens/ui/splash/splash.dart';
 
 import 'package:garreta/screens/undefined/undefinedScreen.dart';
 import 'package:get/get.dart';
@@ -32,7 +33,7 @@ void main() {
       defaultTransition: Transition.fade,
       transitionDuration: Duration(milliseconds: 400),
       debugShowCheckedModeBanner: false,
-      initialRoute: "/home",
+      initialRoute: "/screen-splash",
       getPages: [
         // # DEFAULT ROUTE
         GetPage(title: 'Home screen', name: "/home", page: () => ScreenApplication()),
@@ -52,6 +53,7 @@ void main() {
         // # MISC
         GetPage(title: 'Settings screen', name: "/settings", page: () => ScreenSettings()),
         GetPage(title: 'Access location', name: "/screen-access-location", page: () => ScreenAccessLocation()),
+        GetPage(title: 'Splash', name: "/screen-splash", page: () => ScreenSplash()),
 
         // # OTP ROUTES
         GetPage(title: 'OTP screen', name: "/otp-verification", page: () => ScreenOtpVerification()),

@@ -4,7 +4,7 @@ import 'package:garreta/colors.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:location_permissions/location_permissions.dart';
 
 class ScreenAccessLocation extends StatefulWidget {
   @override
@@ -20,14 +20,14 @@ class _ScreenAccessLocationState extends State<ScreenAccessLocation> with Widget
 
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
-      if (await Geolocator.isLocationServiceEnabled()) {
+      if (await LocationPermissions().checkPermissionStatus() == PermissionStatus.granted) {
         Get.offAllNamed('/home');
       }
     }
   }
 
   Future<void> _requestLocationPermission() async {
-    await Geolocator.requestPermission();
+    await LocationPermissions().requestPermissions();
   }
 
   @override

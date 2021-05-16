@@ -60,11 +60,11 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                         width: 100,
                         child: SwitchListTile(
                             value: _clearInfo,
-                            activeColor: secondary,
+                            activeColor: primary,
                             controlAffinity: ListTileControlAffinity.leading,
-                            inactiveTrackColor: secondary.withOpacity(0.4),
+                            inactiveTrackColor: primary.withOpacity(0.4),
                             contentPadding: EdgeInsets.all(0),
-                            activeTrackColor: secondary.withOpacity(0.5),
+                            activeTrackColor: primary.withOpacity(0.5),
                             onChanged: (value) {
                               builderSetState(() {
                                 _clearInfo = value;
@@ -111,11 +111,11 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                         width: 100,
                         child: SwitchListTile(
                             value: _logoutAndExitApp,
-                            activeColor: secondary,
+                            activeColor: primary,
                             controlAffinity: ListTileControlAffinity.leading,
-                            inactiveTrackColor: secondary.withOpacity(0.4),
+                            inactiveTrackColor: primary.withOpacity(0.4),
                             contentPadding: EdgeInsets.all(0),
-                            activeTrackColor: secondary.withOpacity(0.5),
+                            activeTrackColor: primary.withOpacity(0.5),
                             onChanged: (value) {
                               builderSetState(() {
                                 _logoutAndExitApp = value;
@@ -146,12 +146,12 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                 width: Get.width,
                 child: TextButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(secondary),
+                    backgroundColor: MaterialStateProperty.all(primary),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
                         side: BorderSide(
-                          color: secondary,
+                          color: primary,
                           width: 1,
                         ),
                       ),
@@ -186,16 +186,9 @@ class _ScreenSettingsState extends State<ScreenSettings> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           toolbarHeight: 58,
-          leading: GestureDetector(
-            onTap: () => Get.back(),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(100)),
-              ),
-              margin: EdgeInsets.all(10),
-              child: Icon(Ionicons.chevron_back, size: 22, color: secondary),
-            ),
+          leading: IconButton(
+            icon: Icon(Ionicons.chevron_back, size: 22, color: primary),
+            onPressed: () => Get.back(),
           ),
         ),
         backgroundColor: Colors.white,
@@ -223,7 +216,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.user, size: 54, color: secondary),
+                              Icon(LineIcons.user, size: 54, color: primary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +254,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.store, size: 54, color: secondary),
+                              Icon(LineIcons.store, size: 54, color: primary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +292,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.alternateShield, size: 54, color: secondary),
+                              Icon(LineIcons.alternateShield, size: 54, color: primary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,7 +330,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.infoCircle, size: 54, color: secondary),
+                              Icon(LineIcons.infoCircle, size: 54, color: primary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,7 +366,7 @@ class _ScreenSettingsState extends State<ScreenSettings> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Icon(LineIcons.doorOpen, size: 54, color: secondary),
+                              Icon(LineIcons.doorOpen, size: 54, color: primary),
                               Spacer(),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

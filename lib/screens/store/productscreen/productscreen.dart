@@ -21,10 +21,6 @@ import 'package:line_icons/line_icons.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:badges/badges.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
-import 'package:intent/intent.dart' as android_intent;
-import 'package:intent/action.dart' as android_action;
-import 'package:geolocator/geolocator.dart';
 
 class ScreenProductScreen extends StatefulWidget {
   ScreenProductScreen({Key key}) : super(key: key);
@@ -291,17 +287,10 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     try {
       // If platform is android
       // we can use direct call
-      if (GetPlatform.isAndroid) {
-        android_intent.Intent()
-          ..setAction(android_action.Action.ACTION_CALL)
-          ..setData(Uri(scheme: "tel", path: number))
-          ..startActivity().catchError((e) => print(e));
-      }
+
       // Create some exemptions for other platforms
       // since ios does not support legally a direct call
-      else {
-        await UrlLauncher.launch(number);
-      }
+
     } catch (e) {
       print("@_onDialNumber $e");
     }

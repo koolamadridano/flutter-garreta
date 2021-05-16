@@ -4,6 +4,7 @@ import 'package:garreta/colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:location_permissions/location_permissions.dart';
 
 class ScreenApplication extends StatefulWidget {
   const ScreenApplication({Key key}) : super(key: key);
@@ -21,10 +22,11 @@ class _ScreenApplicationState extends State<ScreenApplication> {
   }
 
   Future<void> checkLocationPermission() async {
-    if (await Geolocator.isLocationServiceEnabled()) {
-      setState(() => hasEnabledLocation = true);
-    } else {
+    if (await LocationPermissions().checkPermissionStatus() == PermissionStatus.denied) {
       Get.toNamed('/screen-access-location');
+    }
+    if (await Geolocator.isLocationServiceEnabled() == true) {
+      setState(() => hasEnabledLocation = true);
     }
   }
 
