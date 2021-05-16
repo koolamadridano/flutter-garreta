@@ -89,19 +89,19 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
       onWillPop: () async {
         return false;
       },
-      child: SafeArea(
-        child: Obx(() => _nearbyController.isLoading.value
-            ? Scaffold(
-                backgroundColor: white,
-                body: Center(
-                  child: SpinKitPumpingHeart(
-                    color: secondary,
-                    size: 40.0,
-                    duration: Duration(milliseconds: 800),
-                  ),
+      child: Obx(() => _nearbyController.isLoading.value
+          ? Scaffold(
+              backgroundColor: white,
+              body: Center(
+                child: SpinKitThreeBounce(
+                  color: primary,
+                  size: 18.0,
+                  duration: Duration(milliseconds: 800),
                 ),
-              )
-            : Scaffold(
+              ),
+            )
+          : SafeArea(
+              child: Scaffold(
                 appBar: AppBar(
                   backgroundColor: white,
                   elevation: 5,
@@ -307,8 +307,8 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                               )),
                         ],
                       ),
-              )),
-      ),
+              ),
+            )),
     );
   }
 
@@ -437,8 +437,30 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     );
   }
 
-  List<Container> _mapNearbyStore({@required data}) {
-    List<Container> items = [];
+  void _handleSelectStore({id, name, distance, address, number, kmAllowcated}) {
+    List props = [id, name, distance, address, number];
+    bool propsIsValid = props.every((element) {
+      return element != null && element.toString().isNotEmpty;
+    });
+    if (propsIsValid) {
+      _storeController.merchantId.value = id;
+      _storeController.merchantName.value = name;
+      _storeController.merchantAddress.value = address;
+      _storeController.merchantDistance.value = distance;
+      _storeController.merchantMobileNumber = number;
+      _storeController.merchantKmAllowcated = kmAllowcated;
+      if (Get.isBottomSheetOpen) {
+        Get.back();
+      }
+      // Navigation.pushNamed() shortcut.
+      // Pop the current named page and pushes a new [page] to
+      // the stack in its place
+      Get.toNamed("/screen-products");
+    }
+  }
+
+  List<Widget> _mapNearbyStore({@required data}) {
+    List<Widget> items = [];
     for (int i = 0; i < data.length; i++) {
       Container widget = Container(
         margin: EdgeInsets.only(top: i == 0 ? 20 : 0),
@@ -475,14 +497,14 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                     Container(
                       margin: EdgeInsets.only(bottom: 5),
                       child: Text(
-                        "${data[i]['mer_name'].toString().capitalizeFirstofEach} - Store",
+                        data[i]['mer_name'].toString().capitalizeFirstofEach,
                         style: storeNameTextStyle_2,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                       ),
                     ),
                     Text(
-                      "${data[i]['mer_address']}",
+                      data[i]['mer_address'],
                       style: storeAddressTextStyle,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -555,27 +577,5 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
     }
 
     return items;
-  }
-
-  void _handleSelectStore({id, name, distance, address, number, kmAllowcated}) {
-    List props = [id, name, distance, address, number];
-    bool propsIsValid = props.every((element) {
-      return element != null && element.toString().isNotEmpty;
-    });
-    if (propsIsValid) {
-      _storeController.merchantId.value = id;
-      _storeController.merchantName.value = name;
-      _storeController.merchantAddress.value = address;
-      _storeController.merchantDistance.value = distance;
-      _storeController.merchantMobileNumber = number;
-      _storeController.merchantKmAllowcated = kmAllowcated;
-      if (Get.isBottomSheetOpen) {
-        Get.back();
-      }
-      // Navigation.pushNamed() shortcut.
-      // Pop the current named page and pushes a new [page] to
-      // the stack in its place
-      Get.toNamed("/screen-products");
-    }
   }
 }

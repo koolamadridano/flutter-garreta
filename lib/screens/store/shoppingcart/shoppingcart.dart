@@ -230,7 +230,9 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                       SizedBox(width: 10),
                       FadeInImage.assetNetwork(
                         placeholder: "images/alt/nearby_store_alt_250x250.png",
-                        image: "https://bit.ly/3cN0Fl4",
+                        image: data[i]['img'].length >= 1
+                            ? "http://shareatext.com${data[i]['img'][0]}"
+                            : "https://upload.wikimedia.org/wikipedia/commons/0/0a/No-image-available.png",
                       ),
                     ],
                   ),
@@ -244,7 +246,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
                       Container(
                         width: Get.width * 0.45,
                         child: Text(
-                          "${data[i]['itemname']} - lorem ipsum dolor sit amet",
+                          data[i]['itemname'].toString().capitalizeFirst,
                           style: GoogleFonts.roboto(
                             fontSize: 13,
                             color: primary,

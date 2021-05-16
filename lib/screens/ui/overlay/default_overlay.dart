@@ -29,7 +29,7 @@ void toggleOverlay({BuildContext context}) {
   ).show();
 }
 
-void toggleOverlayThreeBounce({BuildContext context}) {
+void toggleOverlayThreeBounce({BuildContext context, double overlayOpacity, double iconSize}) {
   Alert(
     context: context,
     title: "",
@@ -37,7 +37,7 @@ void toggleOverlayThreeBounce({BuildContext context}) {
     content: SizedBox(
       child: SpinKitThreeBounce(
         color: secondary,
-        size: 18.0,
+        size: iconSize != null ? iconSize : 40.0,
         duration: Duration(milliseconds: 1000),
       ),
     ),
@@ -46,7 +46,9 @@ void toggleOverlayThreeBounce({BuildContext context}) {
       titleStyle: TextStyle(height: 0),
       isCloseButton: false,
       backgroundColor: Colors.transparent,
-      overlayColor: Colors.white.withOpacity(0.9),
+      overlayColor: Colors.white.withOpacity(
+        overlayOpacity != null ? overlayOpacity : 0.9,
+      ),
       alertElevation: 0,
       alertBorder: Border(
         top: BorderSide.none,

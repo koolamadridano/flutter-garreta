@@ -44,7 +44,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
 
   Future<void> _handleAddToCart() async {
     if (_userController.isAuthenticated()) {
-      widgetOverlay.toggleOverlayPumpingHeart(context: context, overlayOpacity: 0.5);
+      widgetOverlay.toggleOverlayThreeBounce(context: context, iconSize: 18);
       await _cartController.addToCart(itemId: _productId, qty: _selectedQty).then((value) {
         // `CLOSE` current overlay
         Get.back();
@@ -118,7 +118,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                     colorFilter: ColorFilter.mode(Colors.transparent, BlendMode.darken),
                     child: Image.network(
                       _productImg,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -149,7 +149,7 @@ class _ScreenProductViewState extends State<ScreenProductView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$_productName - lorem ipsum dolor sit amet',
+                      _productName,
                       style: GoogleFonts.roboto(
                         color: primary,
                         fontWeight: FontWeight.w600,

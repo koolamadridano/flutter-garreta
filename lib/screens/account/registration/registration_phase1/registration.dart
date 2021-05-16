@@ -215,7 +215,12 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                           children: [
                             TextButton(
                               onPressed: () => _onGetLocation(),
-                              child: Text("GET ADDRESS", style: GoogleFonts.roboto(color: primary, fontSize: 12)),
+                              child: Text("SET ADDRESS AUTOMATICALLY",
+                                  style: GoogleFonts.roboto(
+                                    color: primary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w300,
+                                  )),
                             ),
                             _stateToggleGetAddressLoader
                                 ? SpinkitThreeBounce(color: primary)
@@ -223,14 +228,17 @@ class _ScreenRegistrationPhase1State extends State<ScreenRegistrationPhase1> {
                           ],
                         ),
                         SizedBox(height: 5),
-                        AnimatedOpacity(
-                          duration: Duration(milliseconds: 500),
-                          opacity: _toggleInputMobileNumber ? 1 : 0,
-                          child: textFieldUsername(
-                            textFieldController: _mobileNumberController,
-                            textFieldFocusNode: _mobileNumberFocusNode,
-                            hasError: _stateHasError,
-                            mobileNumberIsInvalid: _mobileNumberIsInvalid,
+                        IgnorePointer(
+                          ignoring: _toggleInputMobileNumber ? false : true,
+                          child: AnimatedOpacity(
+                            duration: Duration(milliseconds: 500),
+                            opacity: _toggleInputMobileNumber ? 1 : 0,
+                            child: textFieldUsername(
+                              textFieldController: _mobileNumberController,
+                              textFieldFocusNode: _mobileNumberFocusNode,
+                              hasError: _stateHasError,
+                              mobileNumberIsInvalid: _mobileNumberIsInvalid,
+                            ),
                           ),
                         ),
                         _stateHasError

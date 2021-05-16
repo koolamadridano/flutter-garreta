@@ -53,21 +53,21 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
       if (!passwordIsValid.hasMatch(_passwordController.text)) {
         setState(() {
           _passwordIsValid = false;
+          _toggleConfirmPassword = false;
         });
       }
-      if (passwordIsValid.hasMatch(_passwordController.text)) {
+      //
+      else if (passwordIsValid.hasMatch(_passwordController.text) && _passwordController.text.isNotEmpty) {
         setState(() {
           _passwordIsValid = true;
+          _toggleConfirmPassword = true;
         });
-        if (passwordIsValid.hasMatch(_passwordController.text) && _passwordController.text.isNotEmpty) {
-          setState(() {
-            _toggleConfirmPassword = true;
-          });
-        }
       }
-      if (_passwordController.text.isEmpty) {
+      //
+      else if (_passwordController.text.isEmpty) {
         setState(() {
           _passwordIsValid = true;
+          _toggleConfirmPassword = false;
         });
       }
     });
@@ -251,13 +251,16 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
                           controlAffinity: ListTileControlAffinity.leading,
                           value: _statePasswordVisibility,
                         ),
-                        AnimatedOpacity(
-                          opacity: _toggleConfirmPassword ? 1 : 0,
-                          duration: Duration(milliseconds: 500),
-                          child: textFieldConfirmPassword(
-                            textFieldController: _confirmPasswordController,
-                            textFieldFocusNode: _confirmPasswordFocusNode,
-                            passwordIsMatched: _confirmPasswordIsMatched,
+                        IgnorePointer(
+                          ignoring: _toggleConfirmPassword ? false : true,
+                          child: AnimatedOpacity(
+                            opacity: _toggleConfirmPassword ? 1 : 0,
+                            duration: Duration(milliseconds: 500),
+                            child: textFieldConfirmPassword(
+                              textFieldController: _confirmPasswordController,
+                              textFieldFocusNode: _confirmPasswordFocusNode,
+                              passwordIsMatched: _confirmPasswordIsMatched,
+                            ),
                           ),
                         ),
                         SizedBox(height: 5),
@@ -313,14 +316,6 @@ class _ScreenRegistrationPhase3State extends State<ScreenRegistrationPhase3> {
         color: primary.withOpacity(0.1),
       ),
     );
-  }
-
-  _getGender() {
-    if (_userController.gender == "Rather not to say") {
-      return "Secret";
-    } else {
-      return _userController.gender;
-    }
   }
 
   TextStyle _checkBoxTogglePasswordTextStyle = GoogleFonts.roboto(
