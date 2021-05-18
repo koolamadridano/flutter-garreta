@@ -28,10 +28,10 @@ class UserController extends GetxController {
   // Delivery
   List deliveryAddress = [];
 
-  var selectedDeliveryAddress;
-  var selectedDeliveryAddressNote;
-  var selectedDeliveryAddressLong;
-  var selectedDeliveryAddressLat;
+  RxString selectedDeliveryAddress = "".obs;
+  RxString selectedDeliveryAddressNote = "".obs;
+  RxDouble selectedDeliveryAddressLong = 0.0.obs;
+  RxDouble selectedDeliveryAddressLat = 0.0.obs;
 
   var currentLatitude;
   var currentLongitude;
@@ -88,10 +88,10 @@ class UserController extends GetxController {
   }
 
   void clearSelectedDeliveryAddressDetails() {
-    selectedDeliveryAddress = null;
-    selectedDeliveryAddressNote = null;
-    selectedDeliveryAddressLong = null;
-    selectedDeliveryAddressLat = null;
+    selectedDeliveryAddress.value = null;
+    selectedDeliveryAddressNote.value = null;
+    selectedDeliveryAddressLong.value = null;
+    selectedDeliveryAddressLat.value = null;
   }
 
   Future<dynamic> login({username, password}) async {

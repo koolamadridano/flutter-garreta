@@ -11,6 +11,7 @@ class ProductController extends GetxController {
   final _storeController = Get.find<StoreController>();
 
   RxList storeProductsData = [].obs;
+
   RxList storeCategoryData = [].obs;
   RxBool isLoading = true.obs;
   RxBool categoryIsFetching = true.obs;
@@ -40,11 +41,11 @@ class ProductController extends GetxController {
     }
   }
 
-  Future<void> fetchStoreProducts() async {
+  Future<void> fetchStoreProducts({int categoryId}) async {
     try {
       print("@fetchStoreProducts - fetching");
       var result = await http.get(Uri.parse(
-        "${_fetchStoreProductsBaseUrl}merid=${_storeController.merchantId}&categid=0",
+        "${_fetchStoreProductsBaseUrl}merid=${_storeController.merchantId}&categid=${categoryId == null ? 0 : categoryId}",
       ));
       if (result.body.runtimeType == String) {
         print("@fetchStoreProducts - done");

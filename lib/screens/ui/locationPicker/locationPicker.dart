@@ -11,6 +11,7 @@ Future<LocationResult> toggleLocationPicker({BuildContext context, String hint})
   LocationResult result = await showLocationPicker(
     context,
     googlemapApiKey,
+
     initialCenter: LatLng(position.latitude, position.longitude),
     myLocationButtonEnabled: true,
     //layersButtonEnabled: true,

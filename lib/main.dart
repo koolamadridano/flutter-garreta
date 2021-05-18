@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:garreta/screens/account/login/login.dart';
 import 'package:garreta/screens/account/otp/otp.dart';
 import 'package:garreta/screens/account/registration/registration_phase1/registration.dart';
@@ -13,19 +12,10 @@ import 'package:garreta/screens/store/settings/settings.dart';
 import 'package:garreta/screens/store/shoppingcart/shoppingcart.dart';
 import 'package:garreta/screens/location/location.dart';
 import 'package:garreta/screens/ui/splash/splash.dart';
-
 import 'package:garreta/screens/undefined/undefinedScreen.dart';
 import 'package:get/get.dart';
 
 void main() {
-  // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-  //   // Navs
-  //   statusBarColor: Colors.white,
-  //   systemNavigationBarColor: Colors.white,
-  //   // Nav Colors
-  //   statusBarIconBrightness: Brightness.dark,
-  //   systemNavigationBarIconBrightness: Brightness.dark,
-  // ));
   runApp(
     GetMaterialApp(
       title: 'Garreta',

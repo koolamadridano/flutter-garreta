@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:garreta/controllers/user/userController.dart';
@@ -77,6 +78,10 @@ class _ScreenProductViewState extends State<ScreenProductView> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+    ));
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(

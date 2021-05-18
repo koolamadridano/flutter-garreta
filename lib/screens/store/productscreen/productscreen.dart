@@ -38,8 +38,9 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   final _nearbyController = Get.put(NearbyStoreController());
   final _locationController = Get.put(LocationController());
   final _deliveryAddressController = Get.put(DeliveryAddressController());
+
   // State
-  int _categoryIndex;
+  int _categoryIndex = 0;
 
   TextEditingController _notesController;
 
@@ -65,8 +66,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
     _productController.fetchStoreCategory();
     _storeName = _storeController.merchantName.value.capitalizeFirstofEach;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      print(_userController.selectedDeliveryAddress);
-      if (_userController.selectedDeliveryAddress == null) {
+      if (_userController.selectedDeliveryAddress.value == null) {
         _handleSelectDeliveryAddress();
       }
     });
@@ -99,22 +99,16 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   }
 
   void _handleUseDeliveryAddress({String address, String note, double latitude, double longitude}) {
-    // double calculateDistanceBetween = locationDistanceBetween(
-    //   startLatitude: _locationController.latitude,
-    //   startLongitude: _locationController.longitude,
-    //   endLatitude: latitude,
-    //   endLongitude: longitude,
-    // );
-    _userController.selectedDeliveryAddress = address;
-    _userController.selectedDeliveryAddressNote = note;
-    _userController.selectedDeliveryAddressLat = latitude;
-    _userController.selectedDeliveryAddressLong = longitude;
+    _userController.selectedDeliveryAddress.value = address;
+    _userController.selectedDeliveryAddressNote.value = note;
+    _userController.selectedDeliveryAddressLat.value = latitude;
+    _userController.selectedDeliveryAddressLong.value = longitude;
 
     Get.back();
-
-    print("Selected delivery address ${_userController.selectedDeliveryAddress}");
-    print("Selected delivery address latitude ${_userController.selectedDeliveryAddressLat}");
-    print("Selected delivery address longitude ${_userController.selectedDeliveryAddressLong}");
+    print("Selected delivery address ${_userController.selectedDeliveryAddress.value}");
+    print("Selected delivery address latitude ${_userController.selectedDeliveryAddressLat.value}");
+    print("Selected delivery address longitude ${_userController.selectedDeliveryAddressLong.value}");
+    print("Selected delivery address longitude ${_userController.selectedDeliveryAddressNote.value}");
   }
 
   void _handleSelectDeliveryAddress() {
@@ -303,22 +297,21 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                                                   ),
                                                 ),
                                                 _selectedDeliveryAddressIndex == index
-                                                    ? _buttonUseAsDeliveyAddress(action: () {
-                                                        _handleUseDeliveryAddress(
-                                                          latitude: double.parse(
-                                                            _deliveryAddressController.deliveryAddresses[index]
-                                                                ['del_latitude'],
-                                                          ),
-                                                          longitude: double.parse(
-                                                            _deliveryAddressController.deliveryAddresses[index]
-                                                                ['del_longitude'],
-                                                          ),
-                                                          address: _deliveryAddressController.deliveryAddresses[index]
-                                                              ['del_address'],
-                                                          note: _deliveryAddressController.deliveryAddresses[index]
-                                                              ['del_notes'],
-                                                        );
-                                                      })
+                                                    ? _buttonUseAsDeliveyAddress(
+                                                        action: () => _handleUseDeliveryAddress(
+                                                              address: _deliveryAddressController
+                                                                  .deliveryAddresses[index]['del_address'],
+                                                              note: _deliveryAddressController.deliveryAddresses[index]
+                                                                  ['del_notes'],
+                                                              latitude: double.parse(
+                                                                _deliveryAddressController.deliveryAddresses[index]
+                                                                    ['del_latitude'],
+                                                              ),
+                                                              longitude: double.parse(
+                                                                _deliveryAddressController.deliveryAddresses[index]
+                                                                    ['del_longitude'],
+                                                              ),
+                                                            ))
                                                     : SizedBox(),
                                               ],
                                             ),
@@ -337,6 +330,10 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
             );
           });
         });
+  }
+
+  Future<void> _handleSelectCategory(id) async {
+    await _productController.fetchStoreProducts(categoryId: id);
   }
 
   Future<void> _handleDialNumber(String number) async {
@@ -365,6 +362,8 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData defaultTheme = Theme.of(context);
+
     return WillPopScope(
       onWillPop: () async {
         return false;
@@ -387,7 +386,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                     _storeName,
                     style: GoogleFonts.roboto(
                       color: primary,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
                     maxLines: 1,
@@ -413,12 +412,12 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                   onPressed: () => Get.back()),
             ),
             actions: [
-              IconButton(
-                tooltip: "Call vendor",
-                icon: Icon(LineIcons.phone, size: 25),
-                splashRadius: 25,
-                onPressed: () => _handleDialNumber(_storeController.merchantMobileNumber),
-              ),
+              // IconButton(
+              //   tooltip: "Call vendor",
+              //   icon: Icon(LineIcons.phone, size: 25),
+              //   splashRadius: 25,
+              //   onPressed: () => _handleDialNumber(_storeController.merchantMobileNumber),
+              // ),
               IconButton(
                 tooltip: "Vendor's info",
                 icon: Icon(Ionicons.information_circle_outline, size: 25),
@@ -445,241 +444,245 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
             ],
           ),
           backgroundColor: Colors.white,
-          body: CustomScrollView(
-            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            slivers: [
-              // `store` of SliverAppBar
-              SliverAppBar(
-                backgroundColor: white,
-                stretch: true,
-                stretchTriggerOffset: 150,
-                elevation: 0,
-                expandedHeight: 200,
-                leading: Container(),
-                leadingWidth: 0,
-                toolbarHeight: 0,
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.pin,
-                  titlePadding: EdgeInsets.all(30),
-                  stretchModes: [
-                    StretchMode.zoomBackground,
-                    StretchMode.fadeTitle,
-                  ],
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Container(
-                        color: Colors.white,
-                        child: Image.network(
-                          "https://bit.ly/32min8Z",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => _handleSearch(),
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: white,
-                              borderRadius: BorderRadius.all(Radius.circular(15)),
-                            ),
-                            width: Get.width * 0.90,
-                            padding: EdgeInsets.all(20),
-                            margin: EdgeInsets.only(bottom: 10),
-                            child: Row(
-                              children: [
-                                Icon(LineIcons.search, color: primary),
-                                SizedBox(width: 10),
-                                Text(
-                                  "Looking for something?",
-                                  style: GoogleFonts.roboto(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 16,
-                                    height: 1,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+          body: Theme(
+            data: Theme.of(context).copyWith(accentColor: secondary),
+            child: CustomScrollView(
+              //physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              slivers: [
+                // `store` of SliverAppBar
+                SliverAppBar(
+                  backgroundColor: white,
+                  stretch: false,
+                  stretchTriggerOffset: 150,
+                  elevation: 0,
+                  expandedHeight: 200,
+                  leading: Container(),
+                  leadingWidth: 0,
+                  toolbarHeight: 0,
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.pin,
+                    titlePadding: EdgeInsets.all(30),
+                    stretchModes: [
+                      StretchMode.zoomBackground,
+                      StretchMode.fadeTitle,
                     ],
-                  ),
-                ),
-                onStretchTrigger: () async {
-                  await _productController.fetchStoreProducts();
-                },
-              ),
-
-              // `title` of Popular picks
-              SliverPadding(
-                padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 30.0, bottom: 20),
-                sliver: SliverToBoxAdapter(
-                  child: Container(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    background: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        Row(
-                          children: [
-                            Icon(Icons.local_fire_department, color: primary, size: 24),
-                            SizedBox(width: 10),
-                            Text("Popular",
-                                style: GoogleFonts.roboto(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: primary,
-                                )),
-                          ],
-                        ),
-                        Text("See all",
-                            style: GoogleFonts.roboto(
-                              color: primary,
-                              fontWeight: FontWeight.bold,
-                            )),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // `ListView.builder` of popular picks
-              SliverPadding(
-                padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
-                sliver: SliverToBoxAdapter(
-                  child: Container(
-                    height: 100.0,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      physics: BouncingScrollPhysics(),
-                      children: [
-                        for (var i = 0; i < 10; i++)
-                          Container(
-                            margin: EdgeInsets.only(right: 10),
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(20)),
-                              color: light,
-                            ),
-                            child: Container(
-                              height: 100,
-                              width: 100,
-                            ),
-                          )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // `TITLE` of CATEGORIES
-              SliverPadding(
-                padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 30.0),
-                sliver: SliverToBoxAdapter(
-                  child: Container(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Ionicons.grid, color: primary, size: 24),
-                        SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("All categories",
-                                style: GoogleFonts.roboto(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: primary,
-                                )),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              Obx(() => _productController.isLoading.value
-                  ? gridLoading as Widget
-                  : SliverPadding(
-                      padding: EdgeInsets.only(left: 10, right: 10),
-                      sliver: SliverStickyHeader(
-                        header: Container(
+                        Container(
                           color: Colors.white,
-                          height: 60,
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: ListView(
-                            physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                            scrollDirection: Axis.horizontal,
-                            shrinkWrap: true,
-                            children: _mapStoreCategory(data: _productController.storeCategoryData),
+                          child: Image.asset(
+                            "images/store/banner_map.PNG",
+                            fit: BoxFit.cover,
                           ),
-                        ),
-                        sliver: SliverPadding(
-                          padding: EdgeInsets.only(top: 20.0),
-                          sliver: SliverGrid.count(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.8,
-                            crossAxisSpacing: 5,
-                            mainAxisSpacing: 5,
-                            children: _mapStoreItems(data: _productController.storeProductsData),
-                            // Use a delegate to build items as they're scrolled on screen.
-                          ),
-                        ),
-                      ),
-                    )),
-
-              // `title` of "Nearby stores
-              SliverPadding(
-                padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 30.0, bottom: 20),
-                sliver: SliverToBoxAdapter(
-                  child: Container(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(LineIcons.store, color: primary, size: 36),
-                            SizedBox(width: 10),
-                            Text("Other stores",
-                                style: GoogleFonts.roboto(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: primary,
-                                )),
-                          ],
                         ),
                         GestureDetector(
-                          onTap: () => Get.offAndToNamed("/screen-nearby-vendors"),
-                          child: Text("See all",
-                              style: GoogleFonts.roboto(
-                                color: primary,
-                                fontWeight: FontWeight.bold,
-                              )),
-                        )
+                          onTap: () => _handleSearch(),
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: white,
+                                borderRadius: BorderRadius.all(Radius.circular(15)),
+                              ),
+                              width: Get.width * 0.90,
+                              padding: EdgeInsets.all(20),
+                              margin: EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                children: [
+                                  Icon(LineIcons.search, color: primary),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "Looking for something?",
+                                    style: GoogleFonts.roboto(
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 16,
+                                      height: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
+                  onStretchTrigger: () async {
+                    await _productController.fetchStoreProducts();
+                  },
                 ),
-              ),
 
-              // `ListView.builder` of popular picks
-              SliverPadding(
-                padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0, bottom: 50),
-                sliver: SliverToBoxAdapter(
-                  child: Container(
-                    height: 280.0,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      physics: BouncingScrollPhysics(),
-                      children: _mapNearby(data: _nearbyController.nearbyStoreData),
+                // // `title` of Popular picks
+                // SliverPadding(
+                //   padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 30.0, bottom: 20),
+                //   sliver: SliverToBoxAdapter(
+                //     child: Container(
+                //       child: Row(
+                //         crossAxisAlignment: CrossAxisAlignment.center,
+                //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //         children: [
+                //           Row(
+                //             children: [
+                //               Icon(Icons.local_fire_department, color: primary, size: 24),
+                //               SizedBox(width: 10),
+                //               Text("Popular",
+                //                   style: GoogleFonts.roboto(
+                //                     fontSize: 24,
+                //                     fontWeight: FontWeight.bold,
+                //                     color: primary,
+                //                   )),
+                //             ],
+                //           ),
+                //           Text("See all",
+                //               style: GoogleFonts.roboto(
+                //                 color: primary,
+                //                 fontWeight: FontWeight.bold,
+                //               )),
+                //         ],
+                //       ),
+                //     ),
+                //   ),
+                // ),
+
+                // // `ListView.builder` of popular picks
+                // SliverPadding(
+                //   padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0),
+                //   sliver: SliverToBoxAdapter(
+                //     child: Container(
+                //       height: 100.0,
+                //       child: ListView(
+                //         scrollDirection: Axis.horizontal,
+                //         physics: BouncingScrollPhysics(),
+                //         children: [
+                //           for (var i = 0; i < 10; i++)
+                //             Container(
+                //               margin: EdgeInsets.only(right: 10),
+                //               padding: EdgeInsets.all(10),
+                //               decoration: BoxDecoration(
+                //                 borderRadius: BorderRadius.all(Radius.circular(20)),
+                //                 color: light,
+                //               ),
+                //               child: Container(
+                //                 height: 100,
+                //                 width: 100,
+                //               ),
+                //             )
+                //         ],
+                //       ),
+                //     ),
+                //   ),
+                // ),
+
+                // // `TITLE` of CATEGORIES
+                // SliverPadding(
+                //   padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 30.0),
+                //   sliver: SliverToBoxAdapter(
+                //     child: Container(
+                //       child: Row(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           Icon(Ionicons.grid, color: primary, size: 24),
+                //           SizedBox(width: 10),
+                //           Column(
+                //             crossAxisAlignment: CrossAxisAlignment.start,
+                //             children: [
+                //               Text("All categories",
+                //                   style: GoogleFonts.roboto(
+                //                     fontSize: 24,
+                //                     fontWeight: FontWeight.bold,
+                //                     color: primary,
+                //                   )),
+                //             ],
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ),
+                // ),
+
+                Obx(() => _productController.isLoading.value
+                    ? gridLoading as Widget
+                    : SliverPadding(
+                        padding: EdgeInsets.only(left: 10, right: 10),
+                        sliver: SliverStickyHeader(
+                          sticky: true,
+                          header: Container(
+                            color: Colors.white,
+                            height: 60,
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: ListView(
+                              physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                              scrollDirection: Axis.horizontal,
+                              shrinkWrap: true,
+                              children: _mapStoreCategory(data: _productController.storeCategoryData),
+                            ),
+                          ),
+                          sliver: SliverPadding(
+                            padding: EdgeInsets.only(top: 20.0),
+                            sliver: SliverGrid.count(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.8,
+                              crossAxisSpacing: 5,
+                              mainAxisSpacing: 5,
+                              children: _mapStoreItems(data: _productController.storeProductsData),
+                              // Use a delegate to build items as they're scrolled on screen.
+                            ),
+                          ),
+                        ),
+                      )),
+
+                // `title` of "Nearby stores
+                SliverPadding(
+                  padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 30.0, bottom: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: Container(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LineIcons.store, color: primary, size: 36),
+                              SizedBox(width: 10),
+                              Text("Other stores",
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: primary,
+                                  )),
+                            ],
+                          ),
+                          GestureDetector(
+                            onTap: () => Get.offAndToNamed("/screen-nearby-vendors"),
+                            child: Text("See all",
+                                style: GoogleFonts.roboto(
+                                  color: primary,
+                                  fontWeight: FontWeight.bold,
+                                )),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+
+                // `ListView.builder` of popular picks
+                SliverPadding(
+                  padding: EdgeInsets.only(right: 10.0, left: 10.0, top: 10.0, bottom: 50),
+                  sliver: SliverToBoxAdapter(
+                    child: Container(
+                      height: 280.0,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        physics: BouncingScrollPhysics(),
+                        children: _mapNearby(data: _nearbyController.nearbyStoreData),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -780,24 +783,42 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
   List<Widget> _mapStoreCategory({@required data}) {
     List<Widget> items = [];
     for (var i = 0; i < data.length; i++) {
-      var widget = AnimatedContainer(
-        decoration: BoxDecoration(
-          color: _categoryIndex == i ? primary : white,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        duration: Duration(milliseconds: 500),
-        child: TextButton(
-          onPressed: () => setState(() => _categoryIndex = i),
-          child: Text(
-            data[i]['cat_name'],
-            style: GoogleFonts.roboto(
-              fontWeight: FontWeight.w300,
-              color: _categoryIndex == i ? white : primary,
+      if (i == 0) {
+        var widget = Container(
+          child: TextButton(
+            onPressed: () {
+              setState(() => _categoryIndex = i);
+              _handleSelectCategory(0);
+            },
+            child: Text(
+              "All",
+              style: GoogleFonts.roboto(
+                fontWeight: _categoryIndex == i ? FontWeight.bold : FontWeight.w300,
+                color: primary,
+              ),
             ),
           ),
-        ),
-      );
-      items.add(widget);
+        );
+        items.add(widget);
+      }
+      if (i != 0) {
+        var widget = Container(
+          child: TextButton(
+            onPressed: () {
+              setState(() => _categoryIndex = i);
+              _handleSelectCategory(int.parse(data[i]['cat_id']));
+            },
+            child: Text(
+              data[i]['cat_name'],
+              style: GoogleFonts.roboto(
+                fontWeight: _categoryIndex == i ? FontWeight.bold : FontWeight.w300,
+                color: primary,
+              ),
+            ),
+          ),
+        );
+        items.add(widget);
+      }
     }
     return items;
   }
@@ -825,40 +846,28 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
           },
           child: Stack(
             children: [
-              Stack(
-                children: [
-                  Hero(
-                    tag: data[i]['prod_id'].toString(),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(0)),
-                      child: FadeInImage.assetNetwork(
-                        placeholder: "images/alt/alt-product-coming-soon.png",
-                        image: data[i]['img'].length >= 1
-                            ? "http://shareatext.com${data[i]['img'][0]}"
-                            : "https://upload.wikimedia.org/wikipedia/commons/0/0a/No-image-available.png",
-                        fit: BoxFit.cover,
-                        height: Get.height,
-                      ),
-                    ),
+              Hero(
+                tag: data[i]['prod_id'].toString(),
+                child: FadeInImage.assetNetwork(
+                  placeholder: "images/alt/alt-product-coming-soon.png",
+                  image: data[i]['img'].length >= 1
+                      ? "http://shareatext.com${data[i]['img'][0]}"
+                      : "https://upload.wikimedia.org/wikipedia/commons/0/0a/No-image-available.png",
+                  fit: BoxFit.cover,
+                  height: Get.height,
+                ),
+              ),
+              Positioned(
+                top: 100,
+                right: 10,
+                child: CircleAvatar(
+                  radius: 23,
+                  backgroundColor: white,
+                  child: IconButton(
+                    icon: Icon(Ionicons.basket_outline, color: primary),
+                    onPressed: () => _handleAddToCart(itemId: data[i]['prod_id']),
                   ),
-                  Positioned(
-                    top: 100,
-                    right: 10,
-                    child: Material(
-                      color: Colors.white,
-                      elevation: 5,
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                      child: GestureDetector(
-                        onTap: () => _handleAddToCart(itemId: data[i]['prod_id']),
-                        child: Container(
-                          height: 40,
-                          width: 40,
-                          child: Icon(Ionicons.basket_outline, color: primary),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
               ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(0)),
@@ -881,7 +890,7 @@ class _ScreenProductScreenState extends State<ScreenProductScreen> with TickerPr
                             fontWeight: FontWeight.w400,
                           ),
                           overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
+                          maxLines: 1,
                         ),
                         SizedBox(height: 2),
                         Row(

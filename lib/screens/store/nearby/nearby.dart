@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:garreta/controllers/store/nearby-stores/nearbyStoresController.dart';
 import 'package:garreta/controllers/store/store-global/storeController.dart';
 import 'package:garreta/controllers/user/userController.dart';
@@ -132,49 +133,44 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
                     ballonPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                     borderWidth: 0,
                     tooltipDirection: TooltipDirection.down,
-                    child: GestureDetector(
-                      onTap: () async {
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        primary: secondary,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _nearbyController.locationName.value,
+                            style: GoogleFonts.roboto(
+                              color: primary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                          Text("Nearby store",
+                              style: GoogleFonts.roboto(
+                                color: primary,
+                                fontWeight: FontWeight.w300,
+                                fontSize: 12,
+                              )),
+                        ],
+                      ),
+                      onPressed: () async {
                         setState(() {
                           _toolTipChangeLocationIsVisible = false;
                         });
-                        try {
-                          await toggleLocationPicker(context: context, hint: 'Search location').then((value) async {
-                            await _nearbyController.fetchNearbyStore(
-                              latitude: value.latLng.latitude,
-                              longitude: value.latLng.longitude,
-                              selectedAddress: value.address,
-                            );
-                          });
-                        } catch (e) {
-                          print("$e");
-                        }
+                        await toggleLocationPicker(context: context, hint: 'Search location').then((value) async {
+                          await _nearbyController.fetchNearbyStore(
+                            latitude: value.latLng.latitude,
+                            longitude: value.latLng.longitude,
+                            selectedAddress: value.address,
+                          );
+                        });
                       },
-                      child: Container(
-                        width: Get.width * 0.70,
-                        margin: EdgeInsets.only(left: 14),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Obx(() => Text(
-                                  _nearbyController.locationName.value,
-                                  style: GoogleFonts.roboto(
-                                    color: primary,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                )),
-                            Text("Nearby store",
-                                style: GoogleFonts.roboto(
-                                  color: primary,
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: 12,
-                                )),
-                          ],
-                        ),
-                      ),
                     ),
                   ),
                   actions: [
@@ -486,7 +482,7 @@ class _ScreenNearbyStoreState extends State<ScreenNearbyStore> {
             children: [
               FadeInImage.assetNetwork(
                 placeholder: "images/alt/alt-product-coming-soon.png",
-                image: "https://bit.ly/3tA2hoo",
+                image: "https://bit.ly/3oov4uk",
                 height: 70,
                 width: 70,
                 fit: BoxFit.cover,

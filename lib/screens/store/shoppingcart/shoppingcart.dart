@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:garreta/controllers/location/locationController.dart';
 import 'package:garreta/controllers/store/shopping-cart/shoppingCartController.dart';
+import 'package:garreta/controllers/store/store-global/storeController.dart';
+import 'package:garreta/controllers/user/deliveryAddressController.dart';
 import 'package:garreta/controllers/user/userController.dart';
+import 'package:garreta/screens/store/productscreen/widgets/widget/productScreenWidgets.dart';
+import 'package:garreta/screens/ui/locationPicker/locationPicker.dart';
 import 'package:garreta/screens/ui/overlay/default_overlay.dart' as widgetOverlay;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:garreta/colors.dart';
+import 'package:garreta/services/locationService/locationDistanceBetween.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:badges/badges.dart';
@@ -22,12 +28,28 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   // Global state
   final _cartController = Get.put(CartController());
   final _userController = Get.put(UserController());
+  final _deliveryAddressController = Get.put(DeliveryAddressController());
+  final _locationController = Get.put(LocationController());
+  final _storeController = Get.put(StoreController());
 
   String _selectedDeliveryAddress;
   String _selectedDeliveryAddressNote;
 
+  TextEditingController _notesController;
+
+  // ADD DELIVERY ADDRESS PROPS
+  String _pickedLocation = "Incheon, South Korea";
+  double _pickedLatitude;
+  double _pickedLongitude;
+
   bool _toggleAllItemsTooltip = false;
   bool _toggleChangeDeliveryAddressTooltip = false;
+
+  bool _notesIsValid = true;
+  bool _selectNewLocation = false;
+
+  // Default set to 0
+  int _selectedDeliveryAddressIndex = 0;
 
   void _selectItem({@required String type, @required itemId}) {
     if (type == "add") {
@@ -64,6 +86,17 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
     }
   }
 
+  Future<void> _handleAddDeliveryAddress() async {
+    if (_notesController.text.length >= 25) {
+      await _deliveryAddressController.add(
+        deliveryAddress: _pickedLocation,
+        latitude: _pickedLatitude,
+        longitude: _pickedLongitude,
+        notes: _notesController.text,
+      );
+    }
+  }
+
   Future<void> _handleDelete({@required type}) async {
     Get.back();
     try {
@@ -94,6 +127,19 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
         .then((value) {
       Get.back();
     });
+  }
+
+  void _handleUseDeliveryAddress({String address, String note, double latitude, double longitude}) {
+    _userController.selectedDeliveryAddress.value = address;
+    _userController.selectedDeliveryAddressNote.value = note;
+    _userController.selectedDeliveryAddressLat.value = latitude;
+    _userController.selectedDeliveryAddressLong.value = longitude;
+
+    Get.back();
+
+    print("Selected delivery address ${_userController.selectedDeliveryAddress}");
+    print("Selected delivery address latitude ${_userController.selectedDeliveryAddressLat}");
+    print("Selected delivery address longitude ${_userController.selectedDeliveryAddressLong}");
   }
 
   Future<void> _postCartUpdate({
@@ -395,13 +441,14 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
   @override
   void initState() {
     super.initState();
+    _notesController = TextEditingController();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       setState(() {
         _toggleAllItemsTooltip = true;
       });
     });
-    _selectedDeliveryAddress = _userController.selectedDeliveryAddress;
-    _selectedDeliveryAddressNote = _userController.selectedDeliveryAddressNote;
+    _selectedDeliveryAddress = _userController.selectedDeliveryAddress.value;
+    _selectedDeliveryAddressNote = _userController.selectedDeliveryAddressNote.value;
   }
 
   @override
@@ -436,14 +483,17 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
         ),
         actions: [
           Obx(
-            () => AnimatedOpacity(
-              duration: Duration(milliseconds: 500),
-              opacity: _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
-              child: IconButton(
-                tooltip: "Remove selected",
-                icon: Icon(LineIcons.trash, size: 25),
-                splashRadius: 25,
-                onPressed: () => _cartController.cartSelectedItems.length >= 1 ? _deleteSelected() : {},
+            () => IgnorePointer(
+              ignoring: _cartController.cartSelectedItems.length >= 1 ? false : true,
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 500),
+                opacity: _cartController.cartSelectedItems.length >= 1 ? 1 : 0,
+                child: IconButton(
+                  tooltip: "Remove selected",
+                  icon: Icon(LineIcons.trash, size: 25),
+                  splashRadius: 25,
+                  onPressed: () => _cartController.cartSelectedItems.length >= 1 ? _deleteSelected() : {},
+                ),
               ),
             ),
           ),
@@ -451,7 +501,7 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
             tooltip: "Change delivery address",
             icon: Icon(LineIcons.truck, size: 25),
             splashRadius: 25,
-            onPressed: () {},
+            onPressed: () => _handleSelectDeliveryAddress(),
           ),
           Obx(() => IconButton(
                 tooltip: 'Entire basket',
@@ -541,73 +591,271 @@ class _ScreenShoppingCartState extends State<ScreenShoppingCart> {
         ),
       ),
       body: Center(
-        child: Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                color: primary,
-                padding: EdgeInsets.all(15),
-                width: Get.width,
+        child: Obx(() => Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () => _handleSelectDeliveryAddress(),
+                    child: Container(
+                      color: primary,
+                      padding: EdgeInsets.all(15),
+                      width: Get.width,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_userController.selectedDeliveryAddress.value,
+                              style: GoogleFonts.roboto(
+                                color: white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              )),
+                          Text(_userController.selectedDeliveryAddressNote.value,
+                              style: GoogleFonts.roboto(
+                                color: white,
+                                fontWeight: FontWeight.w300,
+                                fontSize: 12,
+                              ))
+                        ],
+                      ),
+                    ),
+                  ),
+                  _cartController.cartItems.length == 0
+                      ? _widgetCartIsEmpty as Widget
+                      : Expanded(
+                          child: Container(
+                          width: Get.width * 0.95,
+                          child: ListView(
+                              physics: BouncingScrollPhysics(),
+                              children: _mapShoppingCartItems(
+                                data: _cartController.cartItems,
+                              )),
+                        )),
+                ],
+              ),
+            )),
+      ),
+    );
+  }
+
+  void _handleSelectDeliveryAddress() {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (BuildContext context, StateSetter bottomSheetSetter) {
+            return WillPopScope(
+              onWillPop: () async {
+                return false;
+              },
+              child: Container(
+                height: Get.height * 0.85,
+                color: white,
+                padding: EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_selectedDeliveryAddress,
-                        style: GoogleFonts.roboto(
-                          color: white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        )),
-                    Text(_selectedDeliveryAddressNote,
-                        style: GoogleFonts.roboto(
-                          color: white,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 12,
-                        ))
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Delivery address",
+                                style: GoogleFonts.roboto(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 22.0,
+                                ),
+                              ),
+                              Text(
+                                "Manage delivery address",
+                                style: GoogleFonts.roboto(
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: Get.width * 0.1),
+                          child: IconButton(
+                              icon: Icon(LineIcons.plus, size: 32.0),
+                              onPressed: () async {
+                                await toggleLocationPicker(context: context).then((value) async {
+                                  bottomSheetSetter(() {
+                                    _pickedLocation = value.address;
+                                    _selectNewLocation = true;
+                                    _pickedLatitude = value.latLng.latitude;
+                                    _pickedLongitude = value.latLng.longitude;
+                                  });
+                                });
+                              }),
+                        ),
+                      ],
+                    ),
+                    _selectNewLocation
+                        ? Container(
+                            margin: EdgeInsets.only(top: 30),
+                            child: Column(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(bottom: 10),
+                                  width: Get.width,
+                                  child: Text(
+                                    _pickedLocation,
+                                    style:
+                                        GoogleFonts.roboto(fontSize: 18, fontWeight: FontWeight.bold, color: primary),
+                                    textAlign: TextAlign.start,
+                                  ),
+                                ),
+                                textFieldAddDeliveryAddress(textFieldController: _notesController),
+                                !_notesIsValid
+                                    ? Container(
+                                        margin: EdgeInsets.symmetric(vertical: 10),
+                                        width: Get.width,
+                                        child: Text(
+                                          "Notes must be explained accurately and must have at least 25 length of characters",
+                                          style: GoogleFonts.roboto(color: danger, fontWeight: FontWeight.w300),
+                                          textAlign: TextAlign.start,
+                                        ),
+                                      )
+                                    : SizedBox(),
+                                Container(
+                                  margin: EdgeInsets.only(top: 10),
+                                  child: buttonAdd(action: () {
+                                    if (_notesController.text.length >= 25) {
+                                      _handleAddDeliveryAddress().then((value) {
+                                        bottomSheetSetter(() {
+                                          _selectNewLocation = false;
+                                        });
+                                      });
+                                    } else {
+                                      bottomSheetSetter(() {
+                                        _notesIsValid = false;
+                                      });
+                                    }
+                                  }),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(top: 10),
+                                  child: buttonCancel(
+                                      action: () => bottomSheetSetter(
+                                            () => _selectNewLocation = false,
+                                          )),
+                                ),
+                              ],
+                            ),
+                          )
+                        : SizedBox(),
+                    Obx(() => _deliveryAddressController.deliveryAddresses.length == 0
+                        ? _selectNewLocation
+                            ? SizedBox()
+                            : Expanded(
+                                child: Container(
+                                  child: Center(
+                                    child: Text(
+                                      "Empty",
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w300,
+                                        color: primary.withOpacity(0.5),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              )
+                        : Expanded(
+                            child: ListView.builder(
+                                itemCount: _deliveryAddressController.deliveryAddresses.length,
+                                shrinkWrap: true,
+                                physics: _selectNewLocation ? NeverScrollableScrollPhysics() : BouncingScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  double calculateDistanceBetween = locationDistanceBetween(
+                                    startLatitude: _locationController.latitude,
+                                    startLongitude: _locationController.longitude,
+                                    endLatitude: double.parse(
+                                      _deliveryAddressController.deliveryAddresses[index]['del_latitude'],
+                                    ),
+                                    endLongitude: double.parse(
+                                      _deliveryAddressController.deliveryAddresses[index]['del_longitude'],
+                                    ),
+                                  );
+                                  if (_storeController.merchantKmAllowcated >= calculateDistanceBetween) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        bottomSheetSetter(() {
+                                          _selectedDeliveryAddressIndex = index;
+                                        });
+                                      },
+                                      child: AnimatedOpacity(
+                                        duration: Duration(milliseconds: 500),
+                                        opacity: _selectNewLocation ? 0 : 1,
+                                        child: AnimatedOpacity(
+                                          duration: Duration(milliseconds: 500),
+                                          opacity: _selectedDeliveryAddressIndex == index ? 1 : 0.20,
+                                          child: Container(
+                                            margin: EdgeInsets.only(top: index == 0 ? 20.0 : 0),
+                                            color: white,
+                                            width: Get.width * 0.70,
+                                            padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  _deliveryAddressController.deliveryAddresses[index]['del_address'],
+                                                  style: GoogleFonts.roboto(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16.0,
+                                                    color: primary,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  _deliveryAddressController.deliveryAddresses[index]['del_notes'],
+                                                  style: GoogleFonts.roboto(
+                                                    fontWeight: FontWeight.w300,
+                                                    fontSize: 14.0,
+                                                    color: primary,
+                                                  ),
+                                                ),
+                                                _selectedDeliveryAddressIndex == index
+                                                    ? _buttonUseAsDeliveyAddress(action: () {
+                                                        _handleUseDeliveryAddress(
+                                                          latitude: double.parse(
+                                                            _deliveryAddressController.deliveryAddresses[index]
+                                                                ['del_latitude'],
+                                                          ),
+                                                          longitude: double.parse(
+                                                            _deliveryAddressController.deliveryAddresses[index]
+                                                                ['del_longitude'],
+                                                          ),
+                                                          address: _deliveryAddressController.deliveryAddresses[index]
+                                                              ['del_address'],
+                                                          note: _deliveryAddressController.deliveryAddresses[index]
+                                                              ['del_notes'],
+                                                        );
+                                                      })
+                                                    : SizedBox(),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    return SizedBox();
+                                  }
+                                }),
+                          )),
                   ],
                 ),
               ),
-              // Container(
-              //   color: white,
-              //   padding: EdgeInsets.all(15),
-              //   child: RichText(
-              //     text: TextSpan(
-              //         text: "Will be delivered to ",
-              //         style: GoogleFonts.roboto(
-              //           color: primary,
-              //           fontWeight: FontWeight.w300,
-              //           fontSize: 12,
-              //         ),
-              //         children: <TextSpan>[
-              //           TextSpan(
-              //             text: _selectedDeliveryAddress,
-              //             style: GoogleFonts.roboto(
-              //               color: primary,
-              //               fontWeight: FontWeight.w600,
-              //               fontSize: 12,
-              //             ),
-              //           )
-              //         ]),
-              //   ),
-              // ),
-              Obx(
-                () => _cartController.cartItems.length == 0
-                    ? _widgetCartIsEmpty as Widget
-                    : Expanded(
-                        child: Container(
-                        width: Get.width * 0.95,
-                        child: ListView(
-                            physics: BouncingScrollPhysics(),
-                            children: _mapShoppingCartItems(
-                              data: _cartController.cartItems,
-                            )),
-                      )),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+            );
+          });
+        });
   }
 }
 
@@ -639,5 +887,36 @@ TextButton _buttonCheckout() {
           fontSize: 14,
           fontWeight: FontWeight.w300,
         )),
+  );
+}
+
+Widget _buttonUseAsDeliveyAddress({action}) {
+  return Container(
+    margin: EdgeInsets.only(top: 10),
+    child: SizedBox(
+      height: 50,
+      width: Get.width,
+      child: TextButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0.0),
+              side: BorderSide(
+                color: primary,
+              ),
+            ),
+          ),
+          backgroundColor: MaterialStateColor.resolveWith((states) => primary),
+          overlayColor: MaterialStateColor.resolveWith((states) => Colors.black12),
+        ),
+        onPressed: action,
+        child: Text("Use as delivery address",
+            style: GoogleFonts.roboto(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w300,
+            )),
+      ),
+    ),
   );
 }
